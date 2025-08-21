@@ -15,8 +15,6 @@ body {
     box-sizing: border-box;
 }
 
-
-
 /* Стили для модального окна входа */
 .modal {
     position: fixed;
@@ -207,4 +205,10 @@ iframe {
     .links-block {
         padding: 16px;
     }
+}#loginModal {
+    /* Добавьте эти строки */
+    display: flex;
+    justify-content: center; /* Центрирует по горизонтали */
+    align-items: center;     /* Центрирует по вертикали */
+    height: 100vh;           /* Задаёт высоту в 100% от высоты экрана */
 }
