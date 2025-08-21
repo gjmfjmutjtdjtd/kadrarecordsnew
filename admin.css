@@ -1,67 +1,256 @@
 /* admin.css */
+
+/* Базовые стили для всего тела страницы */
 body {
-    font-family: 'Inter', sans-serif;
-    color: #ccc;
-    background-color: #121212;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
     margin: 0;
     padding: 20px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     min-height: 100vh;
+    box-sizing: border-box;
 }
 
-.admin-container {
-    padding: 20px;
-    max-width: 600px;
-    margin: 0 auto;
-    background: #333;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+
+
+/* Стили для модального окна входа */
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.modal.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-content {
+    text-align: center;
+}
+
+/* Заголовки */
+h1, h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 28px;
 }
 
 h2 {
-    color: #fff;
-    text-align: center;
-    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+/* Стили для форм и их элементов */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 label {
-    display: block;
-    margin-bottom: 5px;
-    color: #fff;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: -8px;
 }
 
-input,
-button {
+input[type="text"],
+input[type="password"],
+input[type="datetime-local"],
+input[type="url"] {
     width: 100%;
     padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
     box-sizing: border-box;
-    margin-bottom: 15px;
-    border-radius: 4px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* Описания форм */
+.form-description {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-top: -12px;
+}
+
+/* Кнопки */
+.styled-button,
+.link-button {
+    background-color: #3498db;
+    color: #ffffff;
     border: none;
-    background: #444;
-    color: white;
-}
-
-input[type="url"] {
-    background: #444;
-    color: white;
-}
-
-button {
-    background-color: #ff5252;
-    color: white;
-    font-weight: bold;
+    border-radius: 8px;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
-button:hover {
-    background-color: #e04b4b;
+.styled-button:hover,
+.link-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
 }
 
-p {
+.styled-button:active,
+.link-button:active {
+    transform: translateY(0);
+}
+
+.full-width {
+    width: 100%;
+}
+
+.logout-button {
+    background-color: #e74c3c;
+}
+
+.logout-button:hover {
+    background-color: #c0392b;
+}
+
+/* Список кнопок для ссылок */
+.button-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.button-list a {
+    text-decoration: none;
+}
+
+.link-button {
+    width: 100%;
+}
+
+/* Сообщения об успехе или ошибке */
+.message {
+    padding: 12px;
+    border-radius: 8px;
+    margin: 16px 0;
+    text-align: center;
+    font-weight: 600;
+    display: none;
+}
+
+#msg-success {
+    background-color: #e8f5e9;
+    color: #27ae60;
+}
+
+.login-error {
+    color: #e74c3c;
+    font-size: 14px;
     margin-top: 10px;
-    font-weight: bold;
+}
+
+/* Прочие элементы */
+iframe {
+    width: 100%;
+    max-width: 600px;
+    height: 352px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.styled-link {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.styled-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+.navigation-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container,
+    .content-block,
+    .links-block {
+        padding: 16px;
+    }
+}/* admin.css */
+/* ... существующие стили ... */
+
+.chat-history {
+    background-color: #ecf0f1;
+    border-radius: 8px;
+    padding: 12px;
+    height: 300px; /* Задаем высоту для скролла */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.chat-message {
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.user-message {
+    background-color: #3498db;
+    color: #fff;
+    align-self: flex-end;
+}
+
+.bot-message {
+    background-color: #f1f1f1;
+    color: #333;
+    align-self: flex-start;
+}
+
+#chatForm {
+    display: flex;
+    gap: 10px;
+}
+
+#chatInput {
+    flex-grow: 1;
+}
+
+#chatForm button {
+    padding: 10px 15px;
 }
