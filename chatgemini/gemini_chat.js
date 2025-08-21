@@ -31,11 +31,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: message
-                        }]
-                    }]
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [{
+                                text: "Ты — дружелюбный ассистент по вопросам звукозаписи и музыкальной индустрии. Отвечай на вопросы только по этой теме. Если пользователь задаст вопрос, не относящийся к теме, вежливо ответь, что ты можешь помочь только с вопросами о музыке и звукозаписи."
+                            }]
+                        },
+                        {
+                            role: "model",
+                            parts: [{
+                                text: "ОК"
+                            }]
+                        },
+                        {
+                            role: "user",
+                            parts: [{
+                                text: message
+                            }]
+                        }
+                    ]
                 })
             });
 
