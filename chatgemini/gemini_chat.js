@@ -7,37 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Замените на ваш API-ключ Gemini
     const API_KEY = 'AIzaSyAwqbsmNGi_0IE20gk_kgMLJRwmdJmwSPU';
 
-    function addMessage(text, className) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('chat-message', className);
-        messageDiv.textContent = text;
-        chatHistory.appendChild(messageDiv);
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    }
-
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const message = userInput.value.trim();
-        if (!message) return;
-
-        addMessage(message, 'user-message');
-        userInput.value = '';
-        errorMessage.textContent = '';
-
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [{
-                                text: "Ты — дружелюбный ассистент по вопросам звукозаписи и музыкальной индустрии. Отвечай на вопросы только по этой теме. 
-                                    Если пользователь задаст вопрос, не относящийся к теме, вежливо ответь, что ты можешь помочь только с вопросами о музыке и звукозаписи
-                                    Но самое главное ты еще и крутой сонграйтер, ты делаешь текста в стиле : - Повторяющийся припев как мантра, с протяжными звуками или буквами
+    // Ваш промпт для Gemini, вынесенный в отдельную переменную
+    const SYSTEM_PROMPT = `Ты — дружелюбный ассистент по вопросам звукозаписи и музыкальной индустрии. Отвечай на вопросы только по этой теме.
+Если пользователь задаст вопрос, не относящийся к теме, вежливо ответь, что ты можешь помочь только с вопросами о музыке и звукозаписи.
+Но самое главное ты еще и крутой сонграйтер, ты делаешь текста в стиле : - Повторяющийся припев как мантра, с протяжными звуками или буквами
 - Припев — красивая, необычная лексика, описывающая девушку и ощущения
 - Куплеты — короткие строки, визуальный язык, уличный и модный сленг
 - Часто используется точная внутренняя рифма
@@ -67,21 +40,44 @@ document.addEventListener('DOMContentLoaded', () => {
 - Уличная мода + luxury streetwear
 - Городские ночные мотивы: машины, фонари, неон
 - Атмосфера: татуировки, цепи, энергетика улицы
-- Молодёжный lifestyle: вечеринки, соцсети, дерзость, 
-                                    "
-                            }]
+- Молодёжный lifestyle: вечеринки, соцсети, дерзость.`;
+
+    function addMessage(text, className) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('chat-message', className);
+        messageDiv.textContent = text;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        addMessage(message, 'user-message');
+        userInput.value = '';
+        errorMessage.textContent = '';
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [{ text: SYSTEM_PROMPT }]
                         },
                         {
                             role: "model",
-                            parts: [{
-                                text: "ОК"
-                            }]
+                            parts: [{ text: "ОК" }]
                         },
                         {
                             role: "user",
-                            parts: [{
-                                text: message
-                            }]
+                            parts: [{ text: message }]
                         }
                     ]
                 })
@@ -103,4 +99,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
