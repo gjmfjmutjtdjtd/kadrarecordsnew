@@ -1,20 +1,32 @@
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+/* Общий контейнер для чата и заметок */
+.main-content {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px;
 }
 
 .chat-container {
     width: 100%;
     max-width: 700px;
-    background-color: #ffffff;
+    background-color: #1e1e1e;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     padding: 24px;
     display: flex;
     flex-direction: column;
@@ -23,42 +35,63 @@ body {
 
 h1 {
     text-align: center;
-    color: #2c3e50;
+    color: #ffffff;
+    font-weight: 700;
     margin-top: 0;
     margin-bottom: 20px;
 }
 
 .chat-history {
-    background-color: #ecf0f1;
+    background-color: #2c2c2c;
     border-radius: 8px;
-    padding: 12px;
+    padding: 15px;
     height: 500px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 16px;
     flex-grow: 1;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Стили для скроллбара, чтобы он соответствовал тёмной теме */
+.chat-history::-webkit-scrollbar {
+    width: 8px;
+}
+.chat-history::-webkit-scrollbar-thumb {
+    background-color: #4a4a4a;
+    border-radius: 4px;
+}
+.chat-history::-webkit-scrollbar-track {
+    background-color: #1e1e1e;
 }
 
 .chat-message {
-    padding: 10px 15px;
-    border-radius: 18px;
+    padding: 12px 18px;
+    border-radius: 20px;
     max-width: 80%;
     word-wrap: break-word;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .user-message {
-    background-color: #3498db;
-    color: #fff;
+    background-color: #4c4c4c;
+    color: #e0e0e0;
     align-self: flex-end;
+    white-space: pre-wrap;
 }
 
 .bot-message {
-    background-color: #f1f1f1;
-    color: #333;
+    background-color: #4a4a4a;
+    color: #e0e0e0;
     align-self: flex-start;
+    white-space: pre-wrap;
+}
+
+.chat-message p, .notes-container p {
+    margin-bottom: 10px;
 }
 
 .chat-form {
@@ -70,10 +103,15 @@ h1 {
 #user-input {
     flex-grow: 1;
     padding: 12px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #4a4a4a;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 14px;
+    background-color: #2c2c2c;
+    color: #ffffff;
     box-sizing: border-box;
+}
+#user-input::placeholder {
+    color: #a0a0a0;
 }
 
 button[type="submit"] {
@@ -82,7 +120,8 @@ button[type="submit"] {
     color: #fff;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -98,9 +137,97 @@ button[type="submit"]:hover {
     font-weight: 500;
 }
 
+/* Стили для контейнера заметок */
+.notes-container {
+    width: 100%;
+    max-width: 450px;
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.notes-container h2 {
+    text-align: center;
+    color: #ffffff;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+#notes-input {
+    flex-grow: 1;
+    height: 400px;
+    padding: 12px;
+    border: 1px solid #4a4a4a;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #2c2c2c;
+    color: #ffffff;
+    box-sizing: border-box;
+    resize: vertical;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+#save-notes-button {
+    margin-top: 15px;
+    padding: 12px 20px;
+    background-color: #2ecc71;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover {
+    background-color: #27ae60;
+}
+
+.notes-status-message {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* Стили для плеера на телефоне */
+.beatstars-player-container {
+    width: 100%;
+    height: 100vh;
+}
+
+/* Адаптивные стили для мобильных устройств */
 @media (max-width: 768px) {
-    .chat-container {
-        width: 95%;
-        margin: 10px;
+    body {
+        padding-bottom: 250px;
+    }
+    .main-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .chat-container, .notes-container {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .notes-container {
+        height: 300px;
+    }
+    #notes-input {
+        height: 200px;
+    }
+    .beatstars-player-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 250px;
+        z-index: 1000;
+        background-color: #121212;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
     }
 }
