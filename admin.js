@@ -189,3 +189,71 @@ window.addEventListener('load', () => {
     }
 
 });
+// admin.js
+// ... существующая логика ...
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ... существующий код в этом блоке ...
+
+    const gptChatContainer = document.getElementById('gptChatContainer');
+    const chatHistory = document.getElementById('chatHistory');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+
+    // Функция для отображения/скрытия контейнера чата после входа
+    const showChatContainer = () => {
+        // Убедись, что этот вызов не конфликтует с существующим `toggleModal`
+        // Лучше всего вставить его в `loadSavedData()` или после него
+        if (localStorage.getItem('loggedIn')) {
+            gptChatContainer.style.display = 'block';
+        }
+    };
+    
+    // Вызываем, чтобы показать чат после входа
+    showChatContainer();
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        addMessage(message, 'user-message');
+        chatInput.value = '';
+
+        try {
+            // Замени 'YOUR_API_KEY' на свой ключ GPT API
+            const apiKey = 'sk-proj-mig39JxvON8p2oPlHpWKxWxFoSJavzST2bVMY1maFctCStAcpjBDzFUunniq233c4xrJ0QZarfT3BlbkFJqQOSUwABLzFOfPnq5lTcQfP3xC96N8l_U1M3FmoWjPwRcsuj61fw1VydhWbjoasf4L9imcfnAAYOUR_API_KEYsk-proj-mig39JxvON8p2oPlHpWKxWxFoSJavzST2bVMY1maFctCStAcpjBDzFUunniq233c4xrJ0QZarfT3BlbkFJqQOSUwABLzFOfPnq5lTcQfP3xC96N8l_U1M3FmoWjPwRcsuj61fw1VydhWbjoasf4L9imcfnAA';
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo', // Или любая другая модель, которую ты хочешь использовать
+                    messages: [{ role: 'user', content: message }]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            const botMessage = data.choices[0].message.content;
+            addMessage(botMessage, 'bot-message');
+
+        } catch (error) {
+            console.error('Error fetching from GPT API:', error);
+            addMessage('Произошла ошибка. Пожалуйста, попробуйте позже.', 'bot-message');
+        }
+    });
+
+    function addMessage(text, className) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('chat-message', className);
+        messageDiv.textContent = text;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // Прокрутка вниз
+    }
+});
