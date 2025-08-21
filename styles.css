@@ -1,0 +1,1234 @@
+:root {
+    --dark: #121212;
+    --dark-alt: #222;
+    --red: #ff5252;
+    --red-hover: #ff2a2a;
+    --highlight: #ff5252;
+    --white: #fff;
+    --light-grey: #eee;
+    --grey: #aaa;
+    --dark-grey: #333;
+    --shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+    --transition-speed: 0.3s;
+    --green-light: #7eff7e;
+}
+
+/* Base Styles */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--dark);
+    color: var(--light-grey);
+    line-height: 1.6;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3 {
+    font-weight: 800;
+    color: var(--highlight);
+    text-align: center;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+}
+
+h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+
+/* Header and Navigation */
+/* Стили для шапки */
+header {
+    
+    background-color: #000; /* Черный цвет */
+    color: #fff; /* Белый цвет текста */
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between; /* Распределяем элементы по краям */
+    align-items: center; /* Выравниваем по центру по вертикали */
+    position: sticky; /* Делаем шапку "липкой" при прокрутке */
+    top: 0;
+    z-index: 1000;
+}
+
+/* Стили для навигации в шапке */
+header nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+header nav a:hover {
+    color: #ccc; /* Цвет при наведении */
+}
+
+/* Стили для иконок в шапке, если они есть */
+header nav svg {
+    stroke: #fff;
+    transition: stroke 0.3s ease;
+}
+
+header nav a:hover svg {
+    stroke: #ccc;
+}
+
+
+nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+nav a,
+nav button {
+    color: var(--light-grey);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: color var(--transition-speed);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+nav a:hover,
+nav button:hover {
+    color: var(--red);
+}
+
+nav button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+.header-logo {
+    height: 40px;
+    width: auto;
+    filter: drop-shadow(0 0 5px rgba(255, 82, 82, 0.7));
+}
+
+
+
+
+
+/* Hero Section */
+.intro-section {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    text-align: center;
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('img/studio-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    z-index: -2;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+}
+
+.intro-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    z-index: 1;
+}
+
+.logo {
+    width: 150px;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 82, 82, 0.7));
+}
+
+.intro-text {
+    max-width: 600px;
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: var(--light-grey);
+}
+
+.highlight {
+    font-weight: 700;
+    color: var(--red);
+}
+
+
+
+.scroll-down-indicator a {
+    display: block;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.scroll-down-indicator a span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-right: 2px solid var(--red);
+    border-bottom: 2px solid var(--red);
+    transform: rotate(45deg);
+    animation: scroll-down 1.5s infinite;
+    box-sizing: border-box;
+}
+
+.scroll-down-indicator a span:nth-child(2) {
+    animation-delay: -0.2s;
+    top: 8px;
+}
+
+.scroll-down-indicator a span:nth-child(3) {
+    animation-delay: -0.4s;
+    top: 16px;
+}
+
+@keyframes scroll-down {
+    0% {
+        opacity: 0;
+        transform: rotate(45deg) translate(-20px, -20px);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: rotate(45deg) translate(20px, 20px);
+    }
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Header Services */
+.header-services {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 40px auto;
+    flex-wrap: wrap;
+}
+
+.service-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 250px;
+    padding: 20px;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    transition: border-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.service-block:hover {
+    border-color: #ff5252;
+    transform: translateY(-5px);
+}
+
+.service-block h3 {
+    color: #fff;
+    font-size: 1.2em;
+    margin: 0 0 10px 0;
+}
+
+.service-block p {
+    color: #ccc;
+    font-size: 0.9em;
+    margin: 0;
+}
+
+.transport-button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 15px;
+    background-color: #fff;
+    color: #ff5252;
+    text-decoration: none;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.transport-button:hover {
+    background-color: #ff5252;
+    color: #fff;
+}
+
+/* Promo Banner */
+#promo-banner-block {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    background-color: #222;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1000;
+    border-left: 4px solid var(--red);
+}
+
+#promo-banner-block .promo-text {
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 10px;
+    color: var(--light-grey);
+}
+
+#promo-banner-block .timer {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--red);
+    background-color: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--red);
+}
+
+#promo-banner-block .timer.inactive {
+    color: #888;
+    border-color: #888;
+}
+
+.buy-button {
+    background-color: var(--highlight);
+    color: var(--white);
+    font-weight: 700;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.buy-button:hover {
+    background-color: var(--red-hover);
+    transform: translateY(-2px);
+}
+
+/* Award Section */
+.award-section {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 40px auto;
+    flex-wrap: wrap;
+}
+
+.award-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 200px;
+    padding: 20px;
+}
+
+.award-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #fff;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+}
+
+.award-block h3 {
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.award-subtitle {
+    font-size: 13px;
+    color: #ccc;
+    margin-top: -10px;
+    display: block;
+}
+
+.timer-section {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 30px;
+    background: #2a2a2a;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    border: 1px solid #444;
+}
+
+.timer-content h2 {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    color: #fff;
+    font-weight: 700;
+}
+
+#release-countdown {
+    font-family: 'Inter', sans-serif;
+    font-size: 3.5em;
+    font-weight: 900;
+    color: #00ff99;
+    letter-spacing: -2px;
+    margin-bottom: 30px;
+}
+
+.action-button {
+    display: inline-block;
+    padding: 12px 25px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #1a1a1a;
+    background-color: #00ff99;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.action-button:hover:not(.disabled) {
+    background-color: #00e68c;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 153, 0.3);
+}
+
+.action-button.disabled {
+    background-color: #555;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+#release-title {
+    font-size: 3em;
+    font-weight: 900;
+    margin-bottom: 20px;
+    color: #ff5252;
+}
+
+.countdown {
+    font-size: 2.5em;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    letter-spacing: 2px;
+}
+
+/* About Section */
+.about-section {
+    position: relative;
+    padding: 80px 20px;
+    color: var(--light-grey);
+    z-index: 1;
+    text-align: center;
+    background-color: var(--dark-alt);
+}
+
+
+
+.about-background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('img/XXL_height.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat; /* <-- И эту строку */
+    z-index: -2;
+}
+.about-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: -1;
+}
+
+.about-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+}
+
+.about-container h2 {
+    color: #fff;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.about-container p {
+    color: #ccc;
+    line-height: 1.6;
+}
+
+.studios-info {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--dark);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.studios-info h3 {
+    text-align: center;
+    color: var(--highlight);
+    margin-bottom: 20px;
+}
+
+.studios-info p,
+.studios-info ul {
+    text-align: left;
+    margin-bottom: 25px;
+    line-height: 1.8;
+}
+
+.studios-info ul {
+    list-style-type: disc;
+    padding-left: 30px;
+}
+
+.equipment-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    text-align: center;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+}
+
+.equipment-container h3 {
+    color: #fff;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.equipment-container p,
+.equipment-container li {
+    color: #ccc;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.equipment-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.section-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--dark-grey);
+    margin: 30px auto;
+    max-width: 600px;
+}
+
+/* Styles for the image grid */
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 900px;
+    margin: 40px auto 0;
+}
+
+.images-grid img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.images-grid img:hover {
+    transform: scale(1.05);
+}
+
+/* Soundcloud and Players */
+#soundcloud-players-block {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    margin: 40px auto;
+    max-width: 1200px;
+}
+
+.player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 500px;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #333;
+}
+
+.player-container h2 {
+    color: #fff;
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.player-container iframe {
+    width: 100%;
+    height: 400px;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.player-container iframe:hover {
+    transform: translateY(-5px);
+}
+
+/* Contact Section */
+.contact-section {
+    background-color: var(--dark-alt);
+    text-align: center;
+}
+
+.contact-section form {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--dark);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.contact-section label {
+    margin-bottom: 8px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.contact-section input,
+.contact-section button {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--dark-grey);
+    background-color: var(--dark);
+    color: var(--light-grey);
+    font-size: 1rem;
+}
+
+.contact-section input:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 5px var(--red);
+}
+
+.contact-section button {
+    background-color: var(--red);
+    color: var(--white);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform 0.2s ease;
+}
+
+.contact-section button:hover {
+    background-color: var(--red-hover);
+    transform: translateY(-2px);
+}
+
+.telegram-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #2AABEE;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.telegram-button:hover {
+    background-color: #1a96d1;
+}
+
+.form-message {
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--dark);
+    border-top: 1px solid var(--dark-grey);
+    font-size: 0.9rem;
+    color: var(--grey);
+}
+
+/* Modal and Login */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--dark-alt);
+    padding: 30px;
+    border-radius: 12px;
+    width: 320px;
+    max-width: 90%;
+    position: relative;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: var(--highlight);
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content label {
+    text-align: left;
+    font-weight: 600;
+    color: var(--light-grey);
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--dark-grey);
+    border-radius: 8px;
+    background-color: var(--dark-grey);
+    color: var(--light-grey);
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.modal-content button {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--red);
+    color: var(--white);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+}
+
+.modal-content button:hover {
+    background-color: var(--red-hover);
+}
+
+.login-error {
+    color: var(--red);
+    margin-top: 10px;
+}
+
+.telegram-float {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    display: inline-block;
+    padding: 15px 25px;
+    background-color: #0088cc;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.telegram-float:hover {
+    transform: scale(1.05);
+}
+
+.select-song-button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 15px;
+    background-color: #ff5252;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.select-song-button:hover {
+    background-color: #e04a4a;
+}
+.link-button {
+    width: auto; /* Кнопки будут по размеру содержимого */
+    padding: 8px 15px; /* Уменьшаем внутренние отступы */
+    background-color: #eee; /* Светло-серый фон (более универсальный) */
+    color: #333; /* Темно-серый текст */
+    border: 1px solid #ccc; /* Тонкая серая граница */
+    border-radius: 3px; /* Меньший радиус скругления */
+    cursor: pointer;
+    font-size: 14px; /* Уменьшаем размер шрифта */
+    font-weight: normal; /* Обычный вес шрифта */
+    text-align: center;
+    transition: background-color 0.3s ease;
+    display: inline-block; /* Позволяет кнопкам занимать меньше места по ширине */
+}
+
+.link-button:hover {
+    background-color: #ddd; /* Чуть темнее при наведении */
+    color: #000;
+}
+
+/* Обновляем стили для контейнера, чтобы кнопки располагались более компактно */
+.button-list {
+    display: flex;
+    flex-direction: row; /* Располагаем кнопки в ряд */
+    flex-wrap: wrap; /* Разрешаем перенос на новую строку, если не хватает места */
+    gap: 8px; /* Уменьшаем расстояние между кнопками */
+}
+
+.links-block h2 {
+    margin-bottom: 10px; /* Уменьшаем отступ заголовка */
+}/* Добавляем стили для центрирования кнопок */
+.button-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center; /* Центрируем кнопки по горизонтали */
+}
+
+/* Обновляем цвета кнопок */
+.link-button {
+    width: auto;
+    padding: 8px 15px;
+    background-color: #3f51b5; /* Голубовато-синий, подходящий для многих тем */
+    color: #fff; /* Белый текст для контраста */
+    border: none; /* Убираем границу для более современного вида */
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold; /* Делаем шрифт жирным для лучшей читаемости */
+    text-align: center;
+    transition: background-color 0.3s ease;
+    display: inline-block;
+}
+
+.link-button:hover {
+    background-color: #2c387e; /* Темнее при наведении */
+}
+/* Стили для контейнера с Telegram-чатом */
+.telegram-chat-container {
+    max-width: 600px; /* Ограничиваем ширину контейнера */
+    margin-top: 40px; /* Отступ сверху, чтобы опустить блок */
+    margin-left: auto; /* Центрируем по горизонтали */
+    margin-right: auto; /* Центрируем по горизонтали */
+    border-radius: 8px; /* Немного скругляем углы */
+    overflow: hidden; /* Скрываем все, что выходит за пределы */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Добавляем небольшую тень */
+}
+
+.telegram-chat-container iframe {
+    width: 100%; /* Растягиваем iframe на всю ширину контейнера */
+    height: 500px; /* Устанавливаем высоту */
+    display: block;
+}
+/* Прозрачный блок с окантовкой */
+.about-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный черный фон */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Белая окантовка, тоже полупрозрачная */
+    border-radius: 8px; /* Немного скругляем углы */
+    color: #fff; /* Делаем весь текст белым */
+    position: relative; /* Важно для наложения */
+    z-index: 3; /* Размещаем блок поверх фона и оверлея */
+}
+
+/* Стили для заголовков внутри блока "О нас" */
+.about-container h2,
+.about-container h3 {
+    color: #fff; /* Заголовки тоже делаем белыми */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Добавляем тень для лучшей читаемости */
+}
+.twitch-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+#twitch-embed {
+    border: 2px solid var(--neon-purple);
+    box-shadow: 0 0 15px var(--neon-purple), 0 0 25px var(--neon-purple), 0 0 35px var(--neon-purple);
+    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+}
+
+#twitch-embed:hover {
+    box-shadow: 0 0 20px var(--neon-yellow), 0 0 30px var(--neon-yellow), 0 0 40px var(--neon-yellow);
+    border-color: var(--neon-yellow);
+}
+a {
+    text-decoration: none; /* Убирает подчеркивание у всех ссылок */
+}/* --- Стили для блока "Свяжитесь с нами" и его формы --- */
+
+/* Отступ снизу, чтобы блок не наезжал на футер */
+.contact-section {
+    padding: 80px 0;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+/* Стили для контейнера формы */
+.contact-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Общие стили для всех полей ввода и кнопок */
+#contactForm label,
+#contactForm input,
+#contactForm button {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+}
+
+#contactForm input {
+    background-color: #1c1c1c; /* Меняем фон на темно-серый, чтобы поля было видно */
+    border: 2px solid var(--neon-purple);
+    color: var(--text-color);
+    padding: 3px;
+    font-size: 16px;
+    box-shadow: 0 0 10px var(--neon-purple);
+    border-radius: 5px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+/* Эффект свечения при фокусе на поле ввода */
+#contactForm input:focus {
+    border-color: var(--neon-yellow);
+    box-shadow: 0 0 15px var(--neon-yellow);
+}
+
+/* Стили для кнопки "Отправить" */
+#contactForm button {
+    margin-top: 30px;
+    background-color: var(--neon-purple);
+    color: var(--neon-yellow);
+    border: 2px solid var(--neon-yellow);
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--neon-yellow);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#contactForm button:hover {
+    background-color: var(--neon-yellow);
+    color: var(--neon-purple);
+    box-shadow: 0 0 20px var(--neon-purple);
+}@media (max-width: 768px) {
+    /* Эти правила применятся, когда ширина экрана будет 768px или меньше */
+    
+    /* Центрируем блоки с плеерами */
+    .players-container {
+        justify-content: center;
+    }
+    
+    /* Центрируем блоки с наградами */
+    .award-section {
+        justify-content: center;
+    }
+    
+    /* Центрируем блоки из раздела услуг, если они стоят в ряд */
+    .content-row {
+        justify-content: center;
+    }
+}.main-header {
+    display: flex;             /* Включаем Flexbox */
+    justify-content: flex-end; /* Прижимаем содержимое к правому краю */
+    align-items: center;       /* Центрируем по вертикали */
+    padding: 20px 50px;
+}
+
+.header-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%; /* Делаем изображение идеально круглым */
+    border: 3px solid var(--neon-purple);
+    box-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-purple);
+    transition: all 0.3s ease;
+}
+
+.header-logo:hover {
+    border-color: var(--neon-yellow);
+    box-shadow: 0 0 15px var(--neon-yellow), 0 0 25px var(--neon-yellow);
+}.social-icons-block {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin: 40px auto;
+}
+
+.social-icon {
+    font-size: 50px; /* Размер иконки */
+    color: var(--neon-purple); /* Цвет иконки */
+    text-shadow: 0 0 10px var(--neon-purple); /* Свечение текста */
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    color: var(--neon-yellow); /* Цвет при наведении */
+    text-shadow: 0 0 15px var(--neon-yellow), 0 0 25px var(--neon-yellow); /* Эффект свечения */
+}body {
+    /* 1. Наложение градиента для плавного перехода в темноту */
+    background-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8)),
+                      /* 2. Повторяющийся узор из точек для заполнения фона */
+                      radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+
+    /* 3. Основная фоновая картинка */
+    background-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8)), 
+                      radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+                      url('путь/к/вашему/изображению.jpg');
+    
+    /* Добавляем цвет-заглушку на случай, если картинка не загрузится */
+    background-color: #1a1a1a;
+    
+    /* 4. Позиционируем: картинка сверху, а узор повторяется */
+    background-position: center top;
+    background-repeat: no-repeat, repeat;
+    background-size: cover, 10px 10px;
+}a {
+    /* Меняем цвет на светло-голубой */
+    color: lightblue;
+    /* Убираем подчеркивание */
+    text-decoration: none;
+    /* Добавляем плавный переход цвета */
+    transition: color 0.3s ease;
+}.stream-container {
+  /* Ограничиваем максимальную ширину для больших экранов */
+  max-width: 800px; 
+  
+  /* Делаем плеер адаптивным, сохраняя пропорции 16:9 */
+  position: relative;
+  width: 50%;
+  padding-top: 36.25%;
+  overflow: hidden;
+  
+  /* Центрируем блок по горизонтали и задаём небольшой отступ снизу */
+  margin: 0 auto 30px; 
+}
+
+#twitch-embed {
+  /* Растягиваем сам плеер на 100% ширины и высоты контейнера */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.about-container {
+  /* Ограничиваем максимальную ширину для десктопов, чтобы текст не был слишком широким */
+  max-width: 1000px;
+  /* Центрируем блок по горизонтали */
+  margin: 0 auto;
+  /* Добавляем внутренние отступы для красоты, чтобы текст не прилипал к краям */
+  padding: 0 20px;
+}
+/* Этот стиль притягивает текст к левому краю внутри контейнера */
+.about-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+  text-align: left; /* Вот эта строка */
+}
+
+.about-columns {
+  display: flex;
+  gap: 40px;
+}
+
+.column-left,
+.column-right {
+  flex: 1;
+}
+
+@media screen and (max-width: 768px) {
+  .about-columns {
+    flex-direction: column;
+    gap: 20px;
+  }
+}@media (max-width: 768px) {
+    /* Общие стили для мобильных устройств */
+    body {
+        font-size: 14px;
+    }
+
+    /* Адаптация для основного блока */
+    .intro-section {
+        padding: 20px;
+    }
+
+    /* Адаптация для заголовков */
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.8rem;
+    }
+
+    /* Адаптация для логотипа в главном блоке */
+    .logo {
+        width: 120px;
+    }
+    
+    /* Адаптация для фонового изображения */
+    .background-image,
+    .about-background-image {
+        /* Отключаем эффект "замороженного" фона на мобильных, это улучшает производительность */
+        background-attachment: scroll;
+    }
+}#services-block {
+    position: relative;
+    padding: 80px 20px;
+    background-image: url('img/studio-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #fff;
+    overflow: hidden;
+}
+
+#services-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+#services-block > * {
+    position: relative;
+    z-index: 2;
+}@media (max-width: 768px) {
+    /* Добавляем отступы по бокам, чтобы контент не прилипал к краям экрана */
+    .header-services {
+        padding: 0 10px;
+    }
+
+    /* Делаем ширину блока адаптивной */
+    .service-block {
+        /* Эти два параметра заставляют блоки растягиваться и занимать всё доступное место */
+        flex-basis: 100%;
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 20px;
+    }
+
+}#twitch-embed {
+    border: 2px solid var(--neon-purple);
+    box-shadow: 0 0 15px var(--neon-purple), 0 0 25px var(--neon-purple), 0 0 35px var(--neon-purple);
+    border-radius: 10px;
+    transition: all var(--transition-speed) ease-in-out;
+}
+
+#twitch-embed:hover {
+    border-color: var(--neon-yellow);
+    box-shadow: 0 0 20px var(--neon-yellow), 0 0 30px var(--neon-yellow), 0 0 40px var(--neon-yellow);
+}

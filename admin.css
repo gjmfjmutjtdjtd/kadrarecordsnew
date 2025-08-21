@@ -1,0 +1,67 @@
+/* admin.css */
+body {
+    font-family: 'Inter', sans-serif;
+    color: #ccc;
+    background-color: #121212;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.admin-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background: #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+input,
+button {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: none;
+    background: #444;
+    color: white;
+}
+
+input[type="url"] {
+    background: #444;
+    color: white;
+}
+
+button {
+    background-color: #ff5252;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #e04b4b;
+}
+
+p {
+    margin-top: 10px;
+    font-weight: bold;
+}

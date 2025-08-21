@@ -1,0 +1,23 @@
+// Установите дату релиза (Год, Месяц - 1, День, Час, Минута, Секунда)
+const releaseDate = new Date("2025-10-22T10:00:00").getTime();
+
+const countdownElement = document.getElementById("release-countdown");
+const releaseTitle = document.getElementById("release-title");
+
+const updateCountdown = setInterval(function() {
+    const now = new Date().getTime();
+    const distance = releaseDate - now;
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    countdownElement.innerHTML = days + "д " + hours + "ч " + minutes + "м " + seconds + "с ";
+
+    if (distance < 0) {
+        clearInterval(updateCountdown);
+        countdownElement.innerHTML = "Релиз вышел!";
+        releaseTitle.innerHTML = "Слушайте прямо сейчас!";
+    }
+}, 1000);

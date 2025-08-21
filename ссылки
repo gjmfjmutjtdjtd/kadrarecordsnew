@@ -1,0 +1,37 @@
+    <div class="links-block">
+        <h2>Полезные ссылки</h2>
+        <div class="button-list">
+            <a href="https://docs.google.com/spreadsheets/d/1wKI349DI_oJMimm04lAX7z7c_vR-r6FVWkj3kbuFWew/edit?usp=sharing" target="_blank">
+                <button class="link-button">Редактировать таблицу</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 2</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 3</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 4</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 5</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 6</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 7</button>
+            </a>
+        </div>
+    </div>
+
+
+
+    <section>
+  <h3>Прямые трансляции со студии на Twitch</h3>
+  <div class="player-wrapper">
+    <div class="twitch-container">
+      <div id="twitch-embed"></div>
+    </div>
+  </div>
+</section>

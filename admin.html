@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <link rel="stylesheet" href="admin.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Админка — Kadra Records</title>
+</head>
+
+<body>
+    <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7mdZ3K5u0nQv6GR7yXsdAX?utm_source=generator" width="50%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <div class="social-icons-block">
+    <a href="https://www.instagram.com/kadrarecords/" target="_blank">
+
+    <div id="loginModal" class="modal active" role="dialog" aria-modal="true" aria-labelledby="loginTitle" tabindex="-1">
+        <div class="modal-content">
+            <h2 id="loginTitle">Вход в админку</h2>
+            <form id="loginForm">
+                <label for="loginInput">Логин:</label>
+                <input type="text" id="loginInput" name="login" required />
+                <label for="passwordInput">Пароль:</label>
+                <input type="password" id="passwordInput" name="password" required />
+                <button type="submit">Войти</button>
+            </form>
+            <p id="loginError" class="login-error" aria-live="polite"></p>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="container" style="display: none;" role="main" aria-label="Панель редактирования">
+        <h1>Панель управления</h1>
+
+        <div class="content-block">
+            <form id="release-form">
+                <label for="release-date">Дата и время релиза (UTC):</label>
+                <input type="datetime-local" id="release-date" name="release-date" required aria-describedby="release-date-desc" />
+                <div id="release-date-desc" class="form-description">
+                
+                </div>
+
+                <label for="timer-title">Название </label>
+                <input type="text" id="timer-title" name="timer-title" maxlength="40" placeholder="Например: Релиз через" aria-describedby="timer-title-desc" />
+                <div id="timer-title-desc" class="form-description">
+                    
+                </div>
+
+                <button type="submit" class="styled-button full-width">Сохранить дату и название</button>
+            </form>
+        </div>
+        
+        <div class="message-block">
+            <div class="message" id="msg-success" role="alert" aria-live="polite">Данные успешно сохранены!</div>
+        </div>
+
+        <div class="content-block">
+            <form id="link-form">
+                <p>Cсылка <p>
+                <input type="url" id="track-link-input" placeholder="https://ссылка-на-ваш-трек.com" required/>
+                <div class="form-description">
+                    Эту ссылку будет использовать кнопка "Слушать!"
+                </div>
+                <button type="submit" class="styled-button full-width">Сохранить ссылку</button>
+            </form>
+        </div>
+        
+        <div class="navigation-block">
+            <a href="index.html" class="styled-link">← Вернуться на главную</a>
+            <button id="logoutBtn" class="styled-button logout-button">Выйти</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginModal = document.getElementById('loginModal');
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+            const adminPanel = document.getElementById('adminPanel');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const releaseForm = document.getElementById('release-form');
+            const linkForm = document.getElementById('link-form');
+            const successMessage = document.getElementById('msg-success');
+
+            const savedLogin = 'admin';
+            const savedPassword = '123';
+
+            // Функция для показа/скрытия модального окна
+            const toggleModal = (show) => {
+                loginModal.classList.toggle('active', show);
+                adminPanel.style.display = show ? 'none' : 'block';
+            };
+
+            // Обработчик входа
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const login = document.getElementById('loginInput').value;
+                const password = document.getElementById('passwordInput').value;
+
+                if (login === savedLogin && password === savedPassword) {
+                    toggleModal(false);
+                    localStorage.setItem('loggedIn', 'true');
+                    loadSavedData();
+                } else {
+                    loginError.textContent = 'Неверный логин или пароль.';
+                }
+            });
+
+            // Обработчик выхода
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('loggedIn');
+                toggleModal(true);
+            });
+
+            // Обработчик сохранения даты и названия
+            releaseForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const releaseDate = document.getElementById('release-date').value;
+                const timerTitle = document.getElementById('timer-title').value;
+                
+                localStorage.setItem('releaseDate', releaseDate);
+                localStorage.setItem('timerTitle', timerTitle);
+
+                showSuccessMessage();
+            });
+
+            // Обработчик сохранения ссылки
+            linkForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const trackLink = document.getElementById('track-link-input').value;
+                localStorage.setItem('releaseTrackLink', trackLink);
+                showSuccessMessage();
+            });
+            
+            // Загрузка сохраненных данных при входе
+            function loadSavedData() {
+                const savedDate = localStorage.getItem('releaseDate');
+                const savedTitle = localStorage.getItem('timerTitle');
+                const savedLink = localStorage.getItem('releaseTrackLink');
+
+                if (savedDate) {
+                    document.getElementById('release-date').value = savedDate;
+                }
+                if (savedTitle) {
+                    document.getElementById('timer-title').value = savedTitle;
+                }
+                if (savedLink) {
+                    document.getElementById('track-link-input').value = savedLink;
+                }
+            }
+
+            // Функция для показа сообщения об успехе
+            function showSuccessMessage() {
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+            }
+
+            // Проверяем статус входа при загрузке страницы
+            if (localStorage.getItem('loggedIn')) {
+                toggleModal(false);
+                loadSavedData();
+            }
+        });
+    </script>
+    <script src="form-handler.js"></script>
+</body>
+    <div class="links-block">
+        <h2>Полезные ссылки</h2>
+        <div class="button-list">
+            <a href="https://docs.google.com/spreadsheets/d/1wKI349DI_oJMimm04lAX7z7c_vR-r6FVWkj3kbuFWew/edit?usp=sharing" target="_blank">
+                <button class="link-button">Редактировать таблицу</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 2</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 3</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 4</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 5</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 6</button>
+            </a>
+            <a href="#">
+                <button class="link-button">Ссылка 7</button>
+            </a>
+        </div>
+    </div>
+</html>
+        </div>
+        <script src="admin.js"></script>
+    </div>
+
+</html>
+
+
+<script>
+    document.getElementById('save-link-button').addEventListener('click', () => {
+        const linkInput = document.getElementById('track-link-input');
+        const statusMessage = document.getElementById('save-status');
+        const link = linkInput.value;
+
+        if (link) {
+            localStorage.setItem('releaseTrackLink', link);
+            statusMessage.textContent = 'Ссылка успешно сохранена!';
+            statusMessage.style.color = '#7eff7e';
+        } else {
+            statusMessage.textContent = 'Пожалуйста, введите ссылку.';
+            statusMessage.style.color = '#ff5252';
+        }
+    });
+
+   
