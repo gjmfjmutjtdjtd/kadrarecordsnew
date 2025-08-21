@@ -5,17 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Чат с Gemini AI</title>
     <link rel="stylesheet" href="gemini_chat.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="chat-container">
-        <h1>Чат с Gemini AI</h1>
-        <div id="chat-history" class="chat-history"></div>
-        <form id="chat-form" class="chat-form">
-            <input type="text" id="user-input" placeholder="Введите ваше сообщение..." required>
-            <button type="submit">Отправить</button>
-        </form>
-        <p id="error-message" class="error-message"></p>
+    <div class="main-content">
+        <div class="chat-container">
+            <h1>Чат с Gemini AI</h1>
+            <div id="chat-history" class="chat-history"></div>
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="user-input" placeholder="Введите ваше сообщение..." required>
+                <button type="submit">Отправить</button>
+            </form>
+            <p id="error-message" class="error-message"></p>
+        </div>
+
+        <div class="notes-container">
+            <h2>Мои заметки</h2>
+            <textarea id="notes-input" placeholder="Напишите здесь свои идеи..."></textarea>
+            <button id="save-notes-button">Сохранить</button>
+            <p id="notes-status-message" class="notes-status-message"></p>
+        </div>
     </div>
+
+    <div class="beatstars-player-container">
+        <iframe src="https://beatstars.com/embed/collection/188442" 
+                width="100%" 
+                height="100%" 
+                style="border: none;" 
+                allow="autoplay; encrypted-media">
+        </iframe>
+    </div>
+
     <script src="gemini_chat.js"></script>
 </body>
 </html>
