@@ -15,17 +15,6 @@ body {
     box-sizing: border-box;
 }
 
-/* Стили для модального окна входа */
-.modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    visibility: hidden;
-    opacity: 0;
-}
 
 .modal.active {
     visibility: visible;
