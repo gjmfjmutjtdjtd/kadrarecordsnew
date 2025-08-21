@@ -3,11 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const chatHistory = document.getElementById('chat-history');
     const errorMessage = document.getElementById('error-message');
+    
+    const notesInput = document.getElementById('notes-input');
+    const saveNotesButton = document.getElementById('save-notes-button');
+    const notesStatusMessage = document.getElementById('notes-status-message');
 
-    // Замените на ваш API-ключ Gemini
     const API_KEY = 'AIzaSyAwqbsmNGi_0IE20gk_kgMLJRwmdJmwSPU';
 
-    // Ваш промпт для Gemini, вынесенный в отдельную переменную
     const SYSTEM_PROMPT = `Ты — дружелюбный ассистент по вопросам звукозаписи и музыкальной индустрии. Отвечай на вопросы только по этой теме.
 Если пользователь задаст вопрос, не относящийся к теме, вежливо ответь, что ты можешь помочь только с вопросами о музыке и звукозаписи.
 Но самое главное ты еще и крутой сонграйтер, ты делаешь текста в стиле : - Повторяющийся припев как мантра, с протяжными звуками или буквами
@@ -42,20 +44,56 @@ document.addEventListener('DOMContentLoaded', () => {
 - Атмосфера: татуировки, цепи, энергетика улицы
 - Молодёжный lifestyle: вечеринки, соцсети, дерзость.`;
 
-    function addMessage(text, className) {
+    const conversationHistory = [
+        {
+            role: "user",
+            parts: [{ text: SYSTEM_PROMPT }]
+        },
+        {
+            role: "model",
+            parts: [{ text: "ОК" }]
+        }
+    ];
+
+    function addMessage(text, className, role) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('chat-message', className);
         messageDiv.textContent = text;
         chatHistory.appendChild(messageDiv);
         chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        conversationHistory.push({
+            role: role,
+            parts: [{ text: text }]
+        });
     }
+    
+    function loadNotes() {
+        const savedNotes = localStorage.getItem('userNotes');
+        if (savedNotes) {
+            notesInput.value = savedNotes;
+        }
+    }
+    
+    function saveNotes() {
+        const notes = notesInput.value;
+        localStorage.setItem('userNotes', notes);
+        notesStatusMessage.textContent = 'Заметки сохранены!';
+        setTimeout(() => {
+            notesStatusMessage.textContent = '';
+        }, 3000);
+    }
+
+    saveNotesButton.addEventListener('click', saveNotes);
+    
+    loadNotes();
 
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const message = userInput.value.trim();
         if (!message) return;
 
-        addMessage(message, 'user-message');
+        addMessage(message, 'user-message', 'user');
         userInput.value = '';
         errorMessage.textContent = '';
 
@@ -66,20 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [{ text: SYSTEM_PROMPT }]
-                        },
-                        {
-                            role: "model",
-                            parts: [{ text: "ОК" }]
-                        },
-                        {
-                            role: "user",
-                            parts: [{ text: message }]
-                        }
-                    ]
+                    contents: conversationHistory
                 })
             });
 
@@ -90,12 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
             const botMessage = data.candidates[0].content.parts[0].text;
-            addMessage(botMessage, 'bot-message');
+            addMessage(botMessage, 'bot-message', 'model');
 
         } catch (error) {
             console.error('Error fetching from Gemini API:', error);
             errorMessage.textContent = 'Произошла ошибка. Пожалуйста, попробуйте позже.';
-            addMessage('Произошла ошибка. Пожалуйста, попробуйте позже.', 'bot-message');
+            addMessage('Произошла ошибка. Пожалуйста, попробуйте позже.', 'bot-message', 'model');
         }
     });
 });
