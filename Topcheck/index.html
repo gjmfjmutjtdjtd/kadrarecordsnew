@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Плейлисты</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuQl1gaewiAYFcw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+    <div class="container">
+        <h1>Топ-чарты</h1>
+        <div class="song-grid" id="song-grid">
+            <div class="song-item" data-embed-code='<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/6mKEyAOZ82zQm4ysV3LvqQ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>'>
+                <div class="playlist-title">Spotify</div>
+            </div>
+            
+            <div class="song-item" data-embed-code='<iframe ...>...</iframe>'>
+                <div class="playlist-title">YouTube Music</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="player-container" class="player-container">
+        <span class="close-btn">×</span>
+        <div id="embed-content"></div>
+        <div class="touch-overlay"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
