@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Весь ваш код для чата
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const chatHistory = document.getElementById('chat-history');
@@ -123,4 +124,47 @@ document.addEventListener('DOMContentLoaded', () => {
             addMessage('Произошла ошибка. Пожалуйста, попробуйте позже.', 'bot-message', 'model');
         }
     });
+
+    // Код для кнопок "Свернуть/Развернуть"
+    const collapseButtons = document.querySelectorAll('.collapse-btn');
+
+    collapseButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-target');
+            const targetElement = document.getElementById(targetId);
+
+            if (targetElement) {
+                targetElement.classList.toggle('collapsed');
+                if (targetElement.classList.contains('collapsed')) {
+                    button.textContent = '+';
+                } else {
+                    button.textContent = '-';
+                }
+            }
+        });
+    });
+
+    // Инициализируем контент как свернутый по умолчанию
+    const initialCollapsible = document.querySelectorAll('.collapsible-content');
+    initialCollapsible.forEach(el => {
+        el.classList.add('collapsed');
+    });
+
+    // --- Код для выдвигающегося плеера ---
+    const playerToggleBtn = document.getElementById('player-toggle-btn');
+    const playerSidebar = document.getElementById('player-sidebar');
+    const playerSidebarHandle = document.querySelector('.player-sidebar-handle');
+    const body = document.body;
+    
+    if (playerToggleBtn && playerSidebar && playerSidebarHandle) {
+        playerToggleBtn.addEventListener('click', () => {
+            playerSidebar.classList.toggle('active');
+            body.classList.toggle('sidebar-open');
+        });
+
+        playerSidebarHandle.addEventListener('click', () => {
+            playerSidebar.classList.remove('active');
+            body.classList.remove('sidebar-open');
+        });
+    }
 });
