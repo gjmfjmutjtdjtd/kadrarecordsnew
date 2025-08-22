@@ -8,21 +8,38 @@ body {
     min-height: 100vh;
     margin: 0;
     box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Новый контейнер для отступов */
+.content-wrapper {
+    width: 100%;
     padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Класс для блокировки скролла, когда плеер открыт */
+body.sidebar-open {
+    overflow-y: hidden;
 }
 
 /* Общий контейнер для чата и заметок */
 .main-content {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap; 
     gap: 30px;
     width: 100%;
     max-width: 1200px;
-    margin: 20px;
+    margin: 20px 0;
 }
 
+/* Сделаем блоки гибкими, чтобы они делили пространство */
 .chat-container {
-    width: 100%;
+    flex: 1;
     max-width: 700px;
     background-color: #1e1e1e;
     border-radius: 12px;
@@ -33,13 +50,60 @@ body {
     box-sizing: border-box;
 }
 
-h1 {
-    text-align: center;
-    color: #ffffff;
-    font-weight: 700;
-    margin-top: 0;
+.notes-container {
+    flex: 1;
+    max-width: 450px;
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
 }
+
+h1, h2 {
+    color: #ffffff;
+    font-weight: 700;
+    margin: 0;
+    text-align: left;
+}
+
+/* Стили для кнопки "Свернуть" */
+.collapse-btn {
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 10px;
+}
+
+.collapse-btn:hover {
+    color: #2ecc71;
+}
+
+/* Класс, который будет сворачивать контент */
+.collapsible-content {
+    display: block;
+    transition: max-height 0.5s ease-out;
+    max-height: 1000px;
+    overflow: hidden;
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 
 .chat-history {
     background-color: #2c2c2c;
@@ -56,17 +120,10 @@ h1 {
     line-height: 1.6;
 }
 
-/* Стили для скроллбара, чтобы он соответствовал тёмной теме */
-.chat-history::-webkit-scrollbar {
-    width: 8px;
-}
-.chat-history::-webkit-scrollbar-thumb {
-    background-color: #4a4a4a;
-    border-radius: 4px;
-}
-.chat-history::-webkit-scrollbar-track {
-    background-color: #1e1e1e;
-}
+/* Стили для скроллбара */
+.chat-history::-webkit-scrollbar { width: 8px; }
+.chat-history::-webkit-scrollbar-thumb { background-color: #4a4a4a; border-radius: 4px; }
+.chat-history::-webkit-scrollbar-track { background-color: #1e1e1e; }
 
 .chat-message {
     padding: 12px 18px;
@@ -90,9 +147,7 @@ h1 {
     white-space: pre-wrap;
 }
 
-.chat-message p, .notes-container p {
-    margin-bottom: 10px;
-}
+.chat-message p, .notes-container p { margin-bottom: 10px; }
 
 .chat-form {
     display: flex;
@@ -110,9 +165,7 @@ h1 {
     color: #ffffff;
     box-sizing: border-box;
 }
-#user-input::placeholder {
-    color: #a0a0a0;
-}
+#user-input::placeholder { color: #a0a0a0; }
 
 button[type="submit"] {
     padding: 12px 20px;
@@ -126,27 +179,13 @@ button[type="submit"] {
     transition: background-color 0.2s;
 }
 
-button[type="submit"]:hover {
-    background-color: #27ae60;
-}
+button[type="submit"]:hover { background-color: #27ae60; }
 
 .error-message {
     color: #e74c3c;
     margin-top: 10px;
     text-align: center;
     font-weight: 500;
-}
-
-/* Стили для контейнера заметок */
-.notes-container {
-    width: 100%;
-    max-width: 450px;
-    background-color: #1e1e1e;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
 }
 
 .notes-container h2 {
@@ -167,7 +206,7 @@ button[type="submit"]:hover {
     background-color: #2c2c2c;
     color: #ffffff;
     box-sizing: border-box;
-    resize: vertical;
+    resize: none; 
     line-height: 1.6;
     white-space: pre-wrap;
 }
@@ -184,10 +223,7 @@ button[type="submit"]:hover {
     cursor: pointer;
     transition: background-color 0.2s;
 }
-
-button[type="submit"]:hover {
-    background-color: #27ae60;
-}
+#save-notes-button:hover { background-color: #27ae60; }
 
 .notes-status-message {
     text-align: center;
@@ -195,39 +231,87 @@ button[type="submit"]:hover {
     margin-top: 10px;
 }
 
-/* Стили для плеера на телефоне */
-.beatstars-player-container {
+/* Стили для полноэкранной выдвигающейся панели с плеером */
+.player-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100vh;
+    background-color: #1a1a1a;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
+    transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    z-index: 1000;
+    transform: translateX(100%);
+    visibility: hidden;
 }
 
+.player-sidebar.active {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+/* Стили для ручки-триггера закрытия */
+.player-sidebar-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50px; 
+    height: 100%;
+    cursor: pointer;
+    z-index: 1002;
+}
+
+/* Стили для кнопки, которая открывает сайдбар */
+.player-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: none; 
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+    padding: 0;
+}
+
+.player-toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Стили для SVG-иконки внутри кнопки */
+.player-toggle-btn svg {
+    stroke: #2ecc71;
+    transition: stroke 0.3s ease;
+}
+
+.player-toggle-btn:hover svg {
+    stroke: #27ae60;
+}
+
+
+/* --- */
 /* Адаптивные стили для мобильных устройств */
 @media (max-width: 768px) {
-    body {
-        padding-bottom: 250px;
-    }
+    /* Меняем направление блоков на колонку */
     .main-content {
         flex-direction: column;
         gap: 20px;
     }
     .chat-container, .notes-container {
         max-width: 100%;
-        box-sizing: border-box;
+        padding: 15px;
     }
-    .notes-container {
-        height: 300px;
+    .content-wrapper {
+        padding: 15px;
+    }
+    h1, h2 {
+        font-size: 24px;
     }
     #notes-input {
         height: 200px;
-    }
-    .beatstars-player-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 250px;
-        z-index: 1000;
-        background-color: #121212;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
     }
 }
