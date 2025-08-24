@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приложение для Музыкантов</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Общие стили для всего приложения */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #121212; /* Темный фон */
+            color: #e0e0e0; /* Светлый текст */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            box-sizing: border-box;
+            overflow-x: hidden; /* Скрываем горизонтальный скролл */
+        }
+        
+        /* Обертка для основного контента (для отступов) */
+        .content-wrapper {
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* Класс для блокировки вертикального скролла, когда плеер или модал открыт */
+        body.sidebar-open, body.modal-open {
+            overflow: hidden;
+        }
+        
+        /* Контейнер для двух основных блоков: чат, заметки */
+        .main-dashboard-area {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Позволяет блокам переноситься на новую строку на маленьких экранах */
+            gap: 30px; /* Расстояние между блоками */
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px 0;
+        }
+        
+        /* Общие стили для всех виджетов (чат, заметки) */
+        .widget-container {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            min-height: 300px; /* Минимальная высота для виджетов */
+        }
+
+        /* Индивидуальные размеры для виджетов на больших экранах */
+        .chat-widget {
+            flex: 2; /* Чат занимает больше места */
+            max-width: 700px;
+        }
+
+        .notes-widget {
+            flex: 1; /* Заметки занимают среднее место */
+            max-width: 450px;
+        }
+        
+        /* Заголовок виджета с кнопкой свернуть/развернуть */
+        .header-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        h1, h2 {
+            color: #ffffff;
+            font-weight: 700;
+            margin: 0;
+            text-align: left;
+        }
+        
+        /* Стили для кнопки "Свернуть/Развернуть" */
+        .collapse-btn {
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 10px;
+        }
+        
+        .collapse-btn:hover {
+            color: #2ecc71;
+        }
+        
+        /* Класс для сворачиваемого контента */
+        .collapsible-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            transition: max-height 0.5s ease-out;
+            max-height: 1000px; /* Достаточно большая высота для развернутого состояния */
+            overflow: hidden;
+        }
+        
+        /* Свернутое состояние */
+        .collapsible-content.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        
+        /* Стили для области чата */
+        .chat-history {
+            background-color: #2c2c2c;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 200px; /* Минимальная высота для чата */
+            height: 500px; /* Начальная высота */
+            overflow-y: auto; /* Скролл для истории */
+            resize: vertical; /* Разрешаем изменять высоту */
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-grow: 1;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Стили для скроллбара чата */
+        .chat-history::-webkit-scrollbar { width: 8px; }
+        .chat-history::-webkit-scrollbar-thumb { background-color: #4a4a4a; border-radius: 4px; }
+        .chat-history::-webkit-scrollbar-track { background-color: #1e1e1e; }
+        
+        /* Стили для сообщений в чате */
+        .chat-message {
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 80%;
+            word-wrap: break-word;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-message {
+            background-color: #4c4c4c;
+            color: #e0e0e0;
+            align-self: flex-end;
+            white-space: pre-wrap;
+        }
+
+        .bot-message {
+            background-color: #4a4a4a;
+            color: #e0e0e0;
+            align-self: flex-start;
+            white-space: pre-wrap;
+        }
+        
+        /* Стили для формы ввода чата */
+        .chat-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #4a4a4a;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+        #user-input::placeholder { color: #a0a0a0; }
+
+        .chat-form button[type="submit"] { /* Специфичность для кнопки отправки чата */
+            padding: 12px 20px;
+            background-color: #2ecc71;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-form button[type="submit"]:hover { background-color: #27ae60; }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        /* Стили для текстового поля заметок и промпта */
+        #notes-input, #prompt-input, #api-key-input {
+            flex-grow: 1;
+            padding: 12px 18px;
+            border: none; 
+            border-radius: 20px;
+            font-size: 14px;
+            background-color: #4a4a4a;
+            color: #ffffff;
+            box-sizing: border-box;
+            resize: vertical; /* Разрешаем изменять высоту */
+            line-height: 1.6;
+            white-space: pre-wrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            min-height: 200px; /* Минимальная высота */
+        }
+        #api-key-input {
+            min-height: auto; /* Для ключа не нужна большая высота */
+            height: 40px; /* Фиксированная высота */
+            resize: none; /* Отключаем изменение размера */
+        }
+
+
+        /* Стили для кнопок сохранения заметок и промпта */
+        #save-notes-button, #save-prompt-button, #save-api-key-button {
+            margin-top: 15px;
+            padding: 12px 20px;
+            background-color: #2ecc71;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #save-notes-button:hover, #save-prompt-button:hover, #save-api-key-button:hover { background-color: #27ae60; }
+        
+        .notes-status-message, .prompt-status-message, .api-key-status-message {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        /* Стили для полноэкранной выдвигающейся панели с плеером */
+        .player-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #1a1a1a;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+            z-index: 1000;
+            transform: translateX(100%); /* Изначально скрыт */
+            visibility: hidden; /* Скрываем, чтобы не мешал скроллу */
+        }
+        
+        .player-sidebar.active {
+            transform: translateX(0); /* Выдвигаем */
+            visibility: visible;
+        }
+        
+        /* Стили для ручки-триггера закрытия */
+        .player-sidebar-handle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50px; 
+            height: 100%;
+            cursor: pointer;
+            z-index: 1002;
+        }
+        
+        /* Стили для кнопки, которая открывает сайдбар */
+        .player-toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: none; 
+            border: none;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease, right 0.5s ease, left 0.5s ease;
+            padding: 0;
+        }
+
+        /* Перемещение кнопки, когда плеер активен */
+        .player-toggle-btn.active {
+            right: auto;
+            left: 20px;
+        }
+        
+        .player-toggle-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Стили для SVG-иконки внутри кнопки */
+        .player-toggle-btn svg {
+            stroke: #2ecc71;
+            transition: stroke 0.3s ease;
+        }
+        
+        .player-toggle-btn:hover svg {
+            stroke: #27ae60;
+        }
+        
+        /* Кнопка открытия модального окна настроек промпта */
+        #settings-toggle-btn {
+            position: fixed;
+            bottom: 20px; /* Смещаем вниз */
+            left: 20px; /* Смещаем влево */
+            background-color: #8d4fbf; /* Фиолетовый фон */
+            border: none;
+            border-radius: 50%; /* Делаем круглой */
+            width: 50px; /* Размер кнопки */
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            z-index: 1001; /* Поверх контента */
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        #settings-toggle-btn:hover {
+            background-color: #6c3a91; /* Темнее при наведении */
+            transform: scale(1.05);
+        }
+
+        #settings-toggle-btn svg {
+            stroke: #ffffff; /* Белая иконка для контраста */
+            transition: stroke 0.3s ease;
+        }
+        
+        /* Модальное окно для настроек промпта */
+        #prompt-settings-modal {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed; /* Поверх всего */
+            z-index: 2000; /* Выше плеера */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Если контента много, можно скроллить */
+            background-color: rgba(0,0,0,0.6); /* Полупрозрачный фон */
+            justify-content: center;
+            align-items: center;
+        }
+
+        #prompt-settings-modal.active {
+            display: flex; /* Показываем модальное окно */
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.7);
+            width: 80%; /* Ширина модального окна */
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative; /* Для позиционирования кнопки закрытия */
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Модальное окно для ввода пароля к настройкам */
+        #settings-password-modal {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed;
+            z-index: 2100; /* Выше модального окна настроек */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8); /* Более темный фон */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #settings-password-modal.active {
+            display: flex;
+        }
+
+        #settings-password-form {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            position: relative; /* Для позиционирования кнопки закрытия */
+        }
+
+        #settings-password-input {
+            padding: 10px;
+            border: 1px solid #4a4a4a;
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            box-sizing: border-box;
+            width: 200px;
+            text-align: center;
+        }
+
+        #settings-password-input::placeholder {
+            color: #a0a0a0;
+        }
+
+        #settings-password-submit-btn {
+            padding: 10px 20px;
+            background-color: #8d4fbf; /* Фиолетовый цвет кнопки для настроек */
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #settings-password-submit-btn:hover {
+            background-color: #6c3a91;
+        }
+
+        #settings-password-error-message {
+            color: #e74c3c;
+            font-weight: 500;
+            margin-top: -5px;
+            font-size: 14px;
+        }
+        
+        /* Адаптивные стили для мобильных устройств (ширина экрана до 768px) */
+        @media (max-width: 768px) {
+            .main-dashboard-area {
+                flex-direction: column; /* Блоки выстраиваются в колонку */
+                gap: 20px;
+            }
+            .widget-container {
+                width: 100%; /* Занимают всю ширину */
+                max-width: 100%; /* Убеждаемся, что не превышают 100% */
+                padding: 15px; /* Уменьшаем отступы */
+            }
+            .content-wrapper {
+                padding: 15px; /* Уменьшаем отступы по бокам */
+            }
+            h1, h2 {
+                font-size: 24px; /* Уменьшаем размер заголовков */
+            }
+            #notes-input, #prompt-input, #api-key-input {
+                min-height: 150px; /* Оптимизируем высоту для мобильных */
+                height: auto; /* Позволяем высоте подстраиваться под контент */
+                resize: vertical; /* Разрешаем изменение размера только для промпта */
+            }
+            #api-key-input { /* Фиксированная высота для API ключа на мобильных */
+                height: 40px;
+                min-height: auto;
+                resize: none;
+            }
+
+            .chat-history {
+                min-height: 250px; /* Оптимизируем высоту для мобильных */
+                height: auto;
+            }
+            .player-toggle-btn { /* Кнопка плеера остается справа вверху */
+                top: 15px;
+                right: 15px;
+                left: auto;
+                width: 45px;
+                height: 45px;
+            }
+            #settings-toggle-btn { /* Кнопка настроек остается слева внизу */
+                bottom: 15px;
+                left: 15px;
+                width: 45px;
+                height: 45px;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+            #settings-password-form {
+                padding: 25px;
+            }
+            #settings-password-input {
+                width: 180px;
+            }
+        }
+
+        /* Адаптивные стили для планшетов (ширина экрана от 769px до 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .main-dashboard-area {
+                gap: 20px; /* Немного уменьшаем расстояние между блоками */
+            }
+            .widget-container {
+                padding: 20px;
+            }
+            .chat-widget {
+                flex: 3; /* Чат занимает 3 части */
+                max-width: calc(66% - 10px); /* 2/3 ширины минус половина gap */
+            }
+            .notes-widget {
+                flex: 1; /* Заметки занимают 1 часть */
+                max-width: calc(33% - 10px); /* 1/3 ширины минус половина gap */
+            }
+            #settings-toggle-btn {
+                bottom: 20px;
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="main-dashboard-area">
+            
+            <!-- Блок для чата GPT -->
+            <div class="widget-container chat-widget">
+                <div class="header-with-button">
+                    <h1>Мой AI-ассистент</h1>
+                    <button class="collapse-btn" data-target="chat-content">+</button>
+                </div>
+                <div id="chat-content" class="collapsible-content">
+                    <!-- Здесь будет сам чат -->
+                    <div id="chat-history" class="chat-history"></div>
+                    <form id="chat-form" class="chat-form">
+                        <input type="text" id="user-input" placeholder="Введите ваше сообщение..." required>
+                        <button type="submit">Отправить</button>
+                    </form>
+                    <p id="error-message" class="error-message"></p>
+                </div>
+            </div>
+    
+            <!-- Блок для личных заметок -->
+            <div class="widget-container notes-widget">
+                <div class="header-with-button">
+                    <h2>Мои заметки</h2>
+                    <button class="collapse-btn" data-target="notes-content">+</button>
+                </div>
+                <div id="notes-content" class="collapsible-content">
+                    <textarea id="notes-input" placeholder="Напишите здесь свои идеи..."></textarea>
+                    <button id="save-notes-button">Сохранить</button>
+                    <p id="notes-status-message" class="notes-status-message"></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- Кнопка для открытия/закрытия плеера -->
+    <button id="player-toggle-btn" class="player-toggle-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+    </button>
+
+    <!-- Кнопка открытия модального окна настроек промпта -->
+    <button id="settings-toggle-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .3 1.67L21 18l-2 2-1.65-.32a1.65 1.65 0 0 0-1.67.3L12 21h-2l-.32-1.65a1.65 1.65 0 0 0-1.67-.3L3 18l2-2-.32-1.65a1.65 1.65 0 0 0 .3-1.67L3 12h2l.32-1.65a1.65 1.65 0 0 0-.3-1.67L3 6l2-2 1.65.32a1.65 1.65 0 0 0 1.67-.3L12 3h2l.32 1.65a1.65 1.65 0 0 0 1.67.3L21 6l-2 2 .32 1.65a1.65 1.65 0 0 0-.3 1.67L21 12h-2l-.32 1.65a1.65 1.65 0 0 0-.3 1.67z"></path>
+        </svg>
+    </button>
+
+    <!-- Полноэкранный сайдбар с плеером -->
+    <div id="player-sidebar" class="player-sidebar">
+        <div class="player-sidebar-handle"></div>
+        <iframe src="https://beatstars.com/embed/collection/188442" 
+                width="100%" 
+                height="100%" 
+                style="border: none;" 
+                allow="autoplay; encrypted-media">
+        </iframe>
+    </div>
+
+    <!-- Модальное окно для ввода пароля к настройкам -->
+    <div id="settings-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-settings-password-modal">&times;</span>
+            <h2>Введите пароль для настроек</h2>
+            <form id="settings-password-form">
+                <input type="password" id="settings-password-input" placeholder="Пароль" required>
+                <button type="submit" id="settings-password-submit-btn">Войти</button>
+                <p id="settings-password-error-message" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно для настроек промпта и API-ключа -->
+    <div id="prompt-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-prompt-settings-modal">&times;</span>
+            <h2>Настройки AI-ассистента</h2>
+            
+            <!-- Секция для API-ключа -->
+            <h3>Ключ API Gemini</h3>
+            <input type="text" id="api-key-input" placeholder="Введите ваш Gemini API ключ" required>
+            <button id="save-api-key-button">Сохранить API ключ</button>
+            <p id="api-key-status-message" class="api-key-status-message"></p>
+
+            <!-- Секция для промпта -->
+            <h3>Системный промпт</h3>
+            <textarea id="prompt-input" placeholder="Введите здесь системный промпт для AI..."></textarea>
+            <button id="save-prompt-button">Сохранить промпт</button>
+            <p id="prompt-status-message" class="prompt-status-message"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Функциональность заметок ---
+            const notesInput = document.getElementById('notes-input');
+            const saveNotesButton = document.getElementById('save-notes-button');
+            const notesStatusMessage = document.getElementById('notes-status-message');
+            
+            if (notesInput && saveNotesButton && notesStatusMessage) {
+                function loadNotes() {
+                    const savedNotes = localStorage.getItem('userNotes');
+                    if (savedNotes) {
+                        notesInput.value = savedNotes;
+                    }
+                }
+                
+                function saveNotes() {
+                    const notes = notesInput.value;
+                    localStorage.setItem('userNotes', notes);
+                    notesStatusMessage.textContent = 'Заметки сохранены!';
+                    setTimeout(() => {
+                        notesStatusMessage.textContent = '';
+                    }, 3000);
+                }
+            
+                saveNotesButton.addEventListener('click', saveNotes);
+                loadNotes();
+            }
+        
+            // --- Функциональность сворачиваемых блоков (чат, заметки) ---
+            const collapseButtons = document.querySelectorAll('.collapse-btn');
+        
+            collapseButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+        
+                    if (targetElement) {
+                        targetElement.classList.toggle('collapsed');
+                        if (targetElement.classList.contains('collapsed')) {
+                            button.textContent = '+';
+                        } else {
+                            button.textContent = '-';
+                        }
+                    }
+                });
+            });
+        
+            // Инициализируем контент как свернутый по умолчанию
+            const initialCollapsible = document.querySelectorAll('.collapsible-content');
+            initialCollapsible.forEach(el => {
+                el.classList.add('collapsed');
+                const button = el.previousElementSibling ? el.previousElementSibling.querySelector('.collapse-btn') : null;
+                if (button) {
+                    button.textContent = '+';
+                }
+            });
+        
+            // --- Функциональность музыкального плеера ---
+            const playerToggleBtn = document.getElementById('player-toggle-btn');
+            const playerSidebar = document.getElementById('player-sidebar');
+            const playerSidebarHandle = document.querySelector('.player-sidebar-handle');
+            const body = document.body;
+            
+            if (playerToggleBtn && playerSidebar && playerSidebarHandle && body) {
+                playerToggleBtn.addEventListener('click', () => {
+                    playerSidebar.classList.toggle('active');
+                    body.classList.toggle('sidebar-open');
+                    playerToggleBtn.classList.toggle('active');
+                });
+        
+                playerSidebarHandle.addEventListener('click', () => {
+                    playerSidebar.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                    playerToggleBtn.classList.remove('active');
+                });
+            }
+
+            // --- Функциональность чата Gemini ---
+            const chatForm = document.getElementById('chat-form');
+            const userInput = document.getElementById('user-input');
+            const chatHistory = document.getElementById('chat-history');
+            const chatErrorMessage = document.getElementById('error-message');
+        
+            // --- Функциональность настроек промпта и API-ключа ---
+            const promptInput = document.getElementById('prompt-input');
+            const savePromptButton = document.getElementById('save-prompt-button');
+            const promptStatusMessage = document.getElementById('prompt-status-message');
+            const settingsToggleBtn = document.getElementById('settings-toggle-btn');
+            const promptSettingsModal = document.getElementById('prompt-settings-modal');
+            const closePromptSettingsModal = document.getElementById('close-prompt-settings-modal');
+            
+            // Модальное окно пароля для настроек
+            const settingsPasswordModal = document.getElementById('settings-password-modal');
+            const settingsPasswordInput = document.getElementById('settings-password-input');
+            const settingsPasswordForm = document.getElementById('settings-password-form');
+            const settingsPasswordErrorMessage = document.getElementById('settings-password-error-message');
+            const closeSettingsPasswordModal = document.getElementById('close-settings-password-modal');
+            const CORRECT_SETTINGS_PASSWORD = 'Ioioiohyadfg'; // Ваш пароль для настроек
+
+            // API Key элементы
+            const apiKeyInput = document.getElementById('api-key-input');
+            const saveApiKeyButton = document.getElementById('save-api-key-button');
+            const apiKeyStatusMessage = document.getElementById('api-key-status-message');
+            const DEFAULT_API_KEY = 'AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo'; // Ваш стандартный ключ API
+
+            // Ваш стандартный (дефолтный) системный промпт
+            const DEFAULT_SYSTEM_PROMPT = `Ты — дружелюбный ассистент и крутой сонграйтер, специализирующийся на создании текстов песен в определённом стиле.
+Твоя задача: генерировать тексты песен по запросу пользователя, **строго** следуя заданному стилю, структуре и **ОБЯЗАТЕЛЬНО проверяя рифмы.**
+Отвечай только на запросы, связанные с музыкой и звукозаписи. Если вопрос не по теме, вежливо укажи на это.
+
+**Мой стиль:**
+- Повторяющийся припев как мантра, с протяжными звуками или буквами.
+- **Припев должен быть коротким и запоминающимся, не более 4-6 строк.** Исключи длинные припевы.
+- Припев — красивая, необычная лексика, описывающая девушку и ощущения.
+- Куплеты — короткие строки, визуальный язык, уличный и модный сленг.
+- **ВСЕГДА используй точную внутреннюю рифму.**
+- Темы: уличная романтика, тусовки, стиль, ночь, боль, отношения, тоска.
+- Настроения: от дерзкого до чувственного, от стильного до меланхоличного.
+- Атмосфера: городская ночь, фары, алкоголь, дым, холод, роскошь.
+- Интонация — полу-певаемая, музыкально ритмичная.
+
+**ЦА:** молодёжь 16–28 лет, городской ритм, соцсети, визуальность, эмоции, стиль.
+
+**Лингвистика:**
+- Простые, но образные слова.
+- Повторения как мантра (по запросу).
+- **Строгий чёрный список:** «сердце», «вектор», «мгла», «изумруд», «бойский», «сальса», «на зорю», «кораллы у моря».
+- Расширенный словарь: синонимы и уличный сленг.
+- **ОБЯЗАТЕЛЬНО используй точные рифмы по умолчанию.**
+
+**Структура трека (чередуй припевы: мантру с не-мантрой):**
+1. Припев (мантраобразный)
+2. Куплет
+3. Припев (не-мантра)
+4. Куплет
+5. Бридж (опционально)
+6. **Обязательно завершай текст осмысленной и логичной концовкой, а не обрывай его.**
+
+**Пример желаемого стиля и структуры (ОБЯЗАТЕЛЬНО следуй этим примерам для рифмы, стиля, структуры и длины припевов):**
+
+**Пример 1: Мантра-припев (короткий и запоминающийся)**
+
+**Припев:**
+Убей меня красото-о-ой
+Прямо сквозь мою бро-о-онь
+Ее взгляд пулево-о-ой
+Девочка fire дай мне ого-о-онь
+
+**Куплет 1:**
+Гори гори ясно, только не погас-ни
+Освети дорогу мне в пути этом опас-ном
+Я попадаю в сказку, где ты мое богатс-тво
+Просто оставайся моим смыслом не сдаваться
+Я ночью пропитаюсь басом, выжму газ аирмак-сом
+Скорость плавит пластмассу, но у нас нет ма-сок
+Мы валим по трассе на криминальном s-cla-ss
+Доверься мне полностью, не сомнева-йся
+
+**Пример 2: Не-мантра припев (короткий и запоминающийся)**
+
+**Припев:**
+Твой силуэт в лучах неона,
+Эта ночь зовет нас, вне закона.
+Мы в потоке света, без лишних слов,
+Сквозь город мчим, ломаем оков.
+
+**Куплет 1:**
+Дым сигарет, растворяет мысли
+Bit на repeat, так легко зависнуть
+Твои губы — вишня, красная как грех
+В этом ритме мы забыли всех.
+
+**ЗАДАЧА:** **Всегда проверяй рифмы и их точность!** Чередуй припевы (мантра с не-мантрой), **делай их короткими и запоминающимися (4-6 строк)**, не повторяйся в припевах (используй разные варианты мантры/не-мантры), **строго** сохраняй структуру стиха с чередованием. **ОБЯЗАТЕЛЬНО создавай осмысленные концовки.**`;
+            
+            function loadSystemPrompt() {
+                if (promptInput) {
+                    const savedPrompt = localStorage.getItem('customSystemPrompt');
+                    if (savedPrompt) {
+                        promptInput.value = savedPrompt;
+                    } else {
+                        promptInput.value = DEFAULT_SYSTEM_PROMPT;
+                    }
+                }
+            }
+
+            function saveSystemPrompt() {
+                if (promptInput && promptStatusMessage) {
+                    const promptText = promptInput.value;
+                    localStorage.setItem('customSystemPrompt', promptText);
+                    promptStatusMessage.textContent = 'Промпт сохранен!';
+                    setTimeout(() => {
+                        promptStatusMessage.textContent = '';
+                    }, 3000);
+                }
+            }
+        
+            if (savePromptButton) {
+                savePromptButton.addEventListener('click', saveSystemPrompt);
+            }
+            // loadSystemPrompt() будет вызван после успешного ввода пароля
+
+            // --- Функции для API-ключа ---
+            function loadApiKey() {
+                if (apiKeyInput) {
+                    const savedApiKey = localStorage.getItem('geminiApiKey');
+                    if (savedApiKey) {
+                        apiKeyInput.value = savedApiKey;
+                    } else {
+                        apiKeyInput.value = DEFAULT_API_KEY; // Устанавливаем дефолтный ключ
+                    }
+                }
+            }
+
+            function saveApiKey() {
+                if (apiKeyInput && apiKeyStatusMessage) {
+                    const apiKey = apiKeyInput.value;
+                    localStorage.setItem('geminiApiKey', apiKey);
+                    apiKeyStatusMessage.textContent = 'API ключ сохранен!';
+                    setTimeout(() => {
+                        apiKeyStatusMessage.textContent = '';
+                    }, 3000);
+                }
+            }
+
+            if (saveApiKeyButton) {
+                saveApiKeyButton.addEventListener('click', saveApiKey);
+            }
+            // loadApiKey() будет вызван после успешного ввода пароля
+            
+            const conversationHistory = []; // История чата начинается пустой
+        
+            function addChatMessage(text, className, role) {
+                if (chatHistory) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('chat-message', className);
+                    messageDiv.textContent = text;
+                    chatHistory.appendChild(messageDiv);
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+            
+                    conversationHistory.push({
+                        role: role,
+                        parts: [{ text: text }]
+                    });
+                }
+            }
+            
+            if (chatForm) {
+                chatForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const message = userInput ? userInput.value.trim() : '';
+                    if (!message) return;
+            
+                    addChatMessage(message, 'user-message', 'user');
+                    if (userInput) userInput.value = '';
+                    if (chatErrorMessage) chatErrorMessage.textContent = '';
+            
+                    try {
+                        const currentSystemPrompt = localStorage.getItem('customSystemPrompt') || DEFAULT_SYSTEM_PROMPT;
+                        const currentApiKey = localStorage.getItem('geminiApiKey') || DEFAULT_API_KEY; // Используем сохраненный или дефолтный ключ
+
+                        if (!currentApiKey || currentApiKey === 'YOUR_GEMINI_API_KEY_HERE') { // Проверка, что ключ не пустой или не дефолтный заполнитель
+                            if (chatErrorMessage) chatErrorMessage.textContent = 'Пожалуйста, введите ваш API-ключ Gemini в настройках.';
+                            addChatMessage('Ошибка: API-ключ не настроен. Пожалуйста, введите его в настройках.', 'bot-message', 'model');
+                            return; // Прерываем выполнение, если ключ недействителен
+                        }
+
+                        const contentsToSend = [
+                            { role: "user", parts: [{ text: currentSystemPrompt }] },
+                            { role: "model", parts: [{ text: "ОК" }] }, 
+                            ...conversationHistory 
+                        ];
+
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${currentApiKey}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: contentsToSend
+                            })
+                        });
+            
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`API error: ${response.statusText}. Details: ${JSON.stringify(errorData)}`);
+                        }
+            
+                        const data = await response.json();
+                        const botMessage = data.candidates[0].content.parts[0].text;
+                        addChatMessage(botMessage, 'bot-message', 'model');
+            
+                    } catch (error) {
+                        console.error('Error fetching from Gemini API:', error);
+                        if (chatErrorMessage) chatErrorMessage.textContent = 'Произошла ошибка. Пожалуйста, попробуйте позже. Проверьте ваш API-ключ.';
+                        addChatMessage('Произошла ошибка. Пожалуйста, попробуйте позже. Возможно, ваш API-ключ недействителен.', 'bot-message', 'model');
+                    }
+                });
+            }
+
+            // --- Логика для открытия модального окна настроек промпта ---
+            if (settingsToggleBtn && settingsPasswordModal && body && settingsPasswordInput && settingsPasswordErrorMessage && settingsPasswordForm) {
+                settingsToggleBtn.addEventListener('click', () => {
+                    settingsPasswordModal.classList.add('active');
+                    body.classList.add('modal-open');
+                    settingsPasswordInput.focus();
+                    settingsPasswordErrorMessage.textContent = '';
+                    settingsPasswordInput.value = '';
+                });
+            }
+
+            if (settingsPasswordForm && settingsPasswordInput && settingsPasswordErrorMessage && settingsPasswordModal && promptSettingsModal && body && promptInput && apiKeyInput) {
+                settingsPasswordForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (settingsPasswordInput.value === CORRECT_SETTINGS_PASSWORD) {
+                        settingsPasswordModal.classList.remove('active');
+                        promptSettingsModal.classList.add('active');
+                        loadSystemPrompt(); // Загружаем промпт
+                        loadApiKey();       // Загружаем API-ключ
+                        promptInput.focus(); 
+                    } else {
+                        settingsPasswordErrorMessage.textContent = 'Неверный пароль. Попробуйте снова.';
+                    }
+                });
+            }
+
+            if (closePromptSettingsModal && promptSettingsModal && body) {
+                closePromptSettingsModal.addEventListener('click', () => {
+                    promptSettingsModal.classList.remove('active');
+                    body.classList.remove('modal-open');
+                });
+            }
+
+            if (closeSettingsPasswordModal && settingsPasswordModal && body) {
+                closeSettingsPasswordModal.addEventListener('click', () => {
+                    settingsPasswordModal.classList.remove('active');
+                    body.classList.remove('modal-open');
+                });
+            }
+
+            window.addEventListener('click', (event) => {
+                if (event.target === promptSettingsModal && promptSettingsModal && body) {
+                    promptSettingsModal.classList.remove('active');
+                    body.classList.remove('modal-open');
+                }
+                 if (event.target === settingsPasswordModal && settingsPasswordModal && body) { // Добавлено закрытие парольного модала по клику вне
+                    settingsPasswordModal.classList.remove('active');
+                    body.classList.remove('modal-open');
+                }
+            });
+
+            // Инициализация промпта и API-ключа при первой загрузке, если их нет
+            if (!localStorage.getItem('customSystemPrompt')) {
+                localStorage.setItem('customSystemPrompt', DEFAULT_SYSTEM_PROMPT);
+            }
+            if (!localStorage.getItem('geminiApiKey')) {
+                localStorage.setItem('geminiApiKey', DEFAULT_API_KEY);
+            }
+        });
+    </script>
+</body>
+</html>
