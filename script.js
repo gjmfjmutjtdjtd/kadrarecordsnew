@@ -169,4 +169,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const timerInterval = setInterval(updateTimer, 1000);
     updateTimer();
+});document.addEventListener('DOMContentLoaded', () => {
+    const expandButtons = document.querySelectorAll('.expand-button');
+
+    expandButtons.forEach(button => {
+        const content = document.getElementById(button.getAttribute('aria-controls'));
+
+        button.addEventListener('click', () => {
+            const isExpanded = button.getAttribute('aria-expanded') === 'true';
+            button.setAttribute('aria-expanded', !isExpanded);
+
+            if (content) {
+                if (!isExpanded) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.padding = '10px 0';
+                } else {
+                    content.style.maxHeight = '0';
+                    content.style.padding = '0';
+                }
+            }
+        });
+    });
 });
