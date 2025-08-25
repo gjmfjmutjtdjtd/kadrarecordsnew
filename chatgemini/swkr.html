@@ -77,6 +77,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            position: relative; /* Для позиционирования тултипа */
         }
         
         h1, h2 {
@@ -84,6 +85,7 @@
             font-weight: 700;
             margin: 0;
             text-align: left;
+            position: relative; /* Для наведения на заголовок */
         }
         
         /* Стили для кнопки "Свернуть/Развернуть" */
@@ -260,6 +262,11 @@
             z-index: 1000;
             transform: translateX(100%); /* Изначально скрыт */
             visibility: hidden; /* Скрываем, чтобы не мешал скроллу */
+            display: flex; /* Добавлено, чтобы iframe растягивался */
+            flex-direction: column; /* Добавлено, чтобы iframe растягивался */
+            justify-content: center; /* Выравнивание iframe по центру */
+            align-items: center; /* Выравнивание iframe по центру */
+            overscroll-behavior: contain; /* Предотвращает прокрутку родительской страницы */
         }
         
         .player-sidebar.active {
@@ -281,7 +288,7 @@
         /* Стили для кнопки, которая открывает сайдбар */
         .player-toggle-btn {
             position: fixed;
-            top: 20px;
+            top: 20px; /* Справа вверху */
             right: 20px;
             background: none; 
             border: none;
@@ -297,7 +304,7 @@
         /* Перемещение кнопки, когда плеер активен */
         .player-toggle-btn.active {
             right: auto;
-            left: 20px;
+            left: 20px; /* Перемещается влево, когда плеер открыт */
         }
         
         .player-toggle-btn:hover {
@@ -317,8 +324,8 @@
         /* Кнопка открытия модального окна настроек промпта */
         #settings-toggle-btn {
             position: fixed;
-            bottom: 20px; /* Смещаем вниз */
-            left: 20px; /* Смещаем влево */
+            bottom: 20px; /* Слева внизу */
+            left: 20px;
             background-color: #8d4fbf; /* Фиолетовый фон */
             border: none;
             border-radius: 50%; /* Делаем круглой */
@@ -556,16 +563,16 @@
         <div class="main-dashboard-area">
             
             <!-- Блок для чата GPT -->
-            <div class="widget-container chat-widget">
+            <div class="widget-container chat-widget" title="Ваш личный помощник для создания текстов песен и идей. Задавайте вопросы, получайте рифмы и развивайте свои мысли.">
                 <div class="header-with-button">
-                    <h1>Мой AI-ассистент</h1>
+                    <h1>AI Ассистент Songwriter</h1>
                     <button class="collapse-btn" data-target="chat-content">+</button>
                 </div>
                 <div id="chat-content" class="collapsible-content">
                     <!-- Здесь будет сам чат -->
                     <div id="chat-history" class="chat-history"></div>
                     <form id="chat-form" class="chat-form">
-                        <input type="text" id="user-input" placeholder="Введите ваше сообщение..." required>
+                        <input type="text" id="user-input" placeholder="С чего начнем?..." required>
                         <button type="submit">Отправить</button>
                     </form>
                     <p id="error-message" class="error-message"></p>
@@ -573,9 +580,9 @@
             </div>
     
             <!-- Блок для личных заметок -->
-            <div class="widget-container notes-widget">
+            <div class="widget-container notes-widget" title="Записывайте и сохраняйте все свои музыкальные идеи и наброски текстов.">
                 <div class="header-with-button">
-                    <h2>Мои заметки</h2>
+                    <h2>Lirycs</h2>
                     <button class="collapse-btn" data-target="notes-content">+</button>
                 </div>
                 <div id="notes-content" class="collapsible-content">
@@ -589,7 +596,7 @@
     </div>
     
     <!-- Кнопка для открытия/закрытия плеера -->
-    <button id="player-toggle-btn" class="player-toggle-btn">
+    <button id="player-toggle-btn" class="player-toggle-btn" title="Открыть музыкальный плеер.найди подходящий демо Beat на Beatstars">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 18V5l12-2v13"></path>
             <circle cx="6" cy="18" r="3"></circle>
@@ -598,7 +605,7 @@
     </button>
 
     <!-- Кнопка открытия модального окна настроек промпта -->
-    <button id="settings-toggle-btn">
+    <button id="settings-toggle-btn" title="Настройки">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .3 1.67L21 18l-2 2-1.65-.32a1.65 1.65 0 0 0-1.67.3L12 21h-2l-.32-1.65a1.65 1.65 0 0 0-1.67-.3L3 18l2-2-.32-1.65a1.65 1.65 0 0 0 .3-1.67L3 12h2l.32-1.65a1.65 1.65 0 0 0-.3-1.67L3 6l2-2 1.65.32a1.65 1.65 0 0 0 1.67-.3L12 3h2l.32 1.65a1.65 1.65 0 0 0 1.67.3L21 6l-2 2 .32 1.65a1.65 1.65 0 0 0-.3 1.67L21 12h-2l-.32 1.65a1.65 1.65 0 0 0-.3 1.67z"></path>
@@ -752,7 +759,7 @@
             const apiKeyInput = document.getElementById('api-key-input');
             const saveApiKeyButton = document.getElementById('save-api-key-button');
             const apiKeyStatusMessage = document.getElementById('api-key-status-message');
-            const DEFAULT_API_KEY = 'secrets.geminiapi'; // Ваш стандартный ключ API
+            const DEFAULT_API_KEY = 'AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo'; // Ваш стандартный ключ API
 
             // Ваш стандартный (дефолтный) системный промпт
             const DEFAULT_SYSTEM_PROMPT = `Ты — дружелюбный ассистент и крутой сонграйтер, специализирующийся на создании текстов песен в определённом стиле.
