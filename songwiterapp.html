@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KADRA Сонграйтер</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- React and ReactDOM CDNs -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel for JSX transformation in browser (for simple embeds without a build step) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Custom styles for Inter font, if not fully covered by Tailwind */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100 flex flex-col items-center p-4">
+
+  <div id="root">
+    <!-- React приложение будет загружено сюда -->
+  </div>
+
+  <script type="text/babel">
+    // NOTE: In a real React app with a build process (like Create React App, Next.js),
+    // you would install 'google-generative-ai' via npm/yarn and import it directly.
+    // For this simple HTML embed, we're mimicking its behavior with a mock object.
+
+    // Mocking the genai library for direct browser use
+    // In a real application, you would install and import google-generative-ai
+    const genai = {
+      configure: ({ apiKey }) => {
+        // Эта функция configure в мок-объекте ничего не делает для хардкоженного ключа fetch.
+        // В реальной настройке GoogleGenerativeAI она устанавливает глобальный API-ключ.
+      },
+      GenerativeModel: function(options) {
+        const { model_name, system_instruction, generation_config } = options;
+        this.model_name = model_name;
+        this.system_instruction = system_instruction;
+        this.generation_config = generation_config;
+
+        this.generateContent = async (user_request) => {
+          // Имитация вызова API и ответа
+          // В реальном приложении это был бы вызов fetch к Gemini API.
+          // Для этой среды Canvas мы используем мок-объект fetch.
+          // ВАЖНО: Установите apiKey в "" для Canvas, чтобы он мог внедрить ключ во время выполнения.
+          // Для вашего сайта, если вы не используете Canvas, вам нужно будет безопасно
+          // передать сюда ваш реальный API-ключ (например, через бэкенд прокси или переменные окружения).
+          const apiKey = "AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo"; // Здесь Canvas автоматически подставит ваш API-ключ.
+
+          const payload = {
+            contents: [
+              { role: "user", parts: [{ text: this.system_instruction }] },
+              { role: "user", parts: [{ text: user_request }] }
+            ],
+            generationConfig: this.generation_config
+          };
+
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${this.model_name}:generateContent?key=${apiKey}`;
+
+          try {
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              throw new Error(`API error: ${response.status} ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+              return { text: result.candidates[0].content.parts[0].text };
+            } else {
+              console.error("Unexpected API response structure:", result);
+              return { text: "Извините, произошла ошибка при генерации текста." };
+            }
+          } catch (error) {
+            console.error("Error calling Gemini API:", error);
+            return { text: `Ошибка: ${error.message}. Пожалуйста, попробуйте еще раз.` };
+          }
+        };
+      }
+    };
+
+
+    // Наши дистиллированные инструкции для написания песен в стиле KADRA
+    const KADRA_SYSTEM_INSTRUCTION = `
+РОЛЬ: KADRA-помощник
+ЗАДАЧА: Ты — эксперт по лирике в стиле KADRA. Твоя задача — писать тексты по запросу пользователя.
+
+ОБЩИЕ ПРАВИЛА:
+* Фокус всегда на **девушке** и её **нахваливании**.
+* Используй **полную** рифму.
+* Текст должен быть **простым** для понимания.
+* Тексты должны быть **лаконичными** и **ёмкими**, избегай излишней многословности.
+* Сочетай образы роскоши, улиц и эмоций.
+* **КЛЮЧЕВОЕ ПРАВИЛО**: **НЕ ИСПОЛЬЗУЙ** слова из "СЛОВАРЯ" напрямую в генерируемых текстах. Вместо них генерируй **рандомные синонимы** или другие слова, которые передают то же настроение, смысл и стиль KADRA. Будь максимально креативным в выборе лексики, избегая буквального повторения.
+* **ПРАВИЛО ДЛЯ ПРИПЕВОВ**: Припевы должны быть **короткими**, **цепляющими** и **максимально простыми** для запоминания.
+
+СЛОВАРЬ (только для ПОНИМАНИЯ СТИЛЯ, НЕ ИСПОЛЬЗУЙ слова из списка в тексте):
+\`неон\`, \`хром\`, \`асфальт\`, \`огни\`, \`трасса\`, \`адреналин\`, \`хаос\`, \`закон\`, \`бензин\`, \`пожар\`, \`шлейф\`, \`флоу\`, \`дикарка\`.
+
+ЧЁРНЫЙ СПИСОК (НИКОГДА НЕ ИСПОЛЬЗОВАТЬ):
+\`бездна\`, \`тачка\`, \`волки\`, \`движ\`, \`гроб\`, \`глазища\`, \`панелька\`.
+
+МАНТРЫ: Используй мантры (\`Ууу\`, \`Ааа\`, \`Ооо\`, \`Аййййй\`, \`Омммм\`) **умеренно**, для усиления атмосферы или в качестве связки, **чередуя их** и избегая однотипных повторений подряд.
+    `;
+
+    function App() {
+      // Import useState and useEffect from React
+      const { useState, useEffect } = React;
+
+      const [model, setModel] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [generatedText, setGeneratedText] = useState("");
+      const [error, setError] = useState("");
+      const [activeRequest, setActiveRequest] = useState('');
+
+      // Initialize Gemini Model on component mount
+      useEffect(() => {
+        // В Canvas, __api_key__ предоставляется автоматически.
+        // Для локальной разработки вам может потребоваться установить его вручную или из переменных окружения.
+        // В данном HTML-файле, для реального использования вне Canvas,
+        // API-ключ должен быть получен безопасно (например, с бэкенда).
+        // Здесь мы полагаемся на то, что apiKey = "" в generateContent будет работать в Canvas.
+        const newModel = new genai.GenerativeModel({
+          model_name: "gemini-2.5-flash-preview-05-20", // Использована часто доступная модель
+          system_instruction: KADRA_SYSTEM_INSTRUCTION,
+          generation_config: { temperature: 0.8 }, // Температура 0.8 для баланса креативности и связности
+        });
+        setModel(newModel);
+      }, []); // Пустой массив зависимостей, запускается один раз при монтировании
+
+      const generateLyrics = async (prompt) => {
+        if (!model) {
+          setError("Модель ИИ не инициализирована. Пожалуйста, попробуйте перезагрузить приложение.");
+          return;
+        }
+        setLoading(true);
+        setError("");
+        setGeneratedText("");
+
+        try {
+          const result = await model.generateContent(prompt);
+          setGeneratedText(result.text);
+        } catch (err) {
+          console.error("Ошибка при генерации текста:", err);
+          setError("Не удалось сгенерировать текст. Возможно, проблема с API ключом или сетевым соединением. Пожалуйста, попробуйте еще раз.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleButtonClick = (type) => {
+        let prompt = '';
+        setActiveRequest(type);
+        switch (type) {
+          case 'intro':
+            prompt = 'Напиши интро для трека в стиле KADRA.';
+            break;
+          case 'chorus':
+            prompt = 'Напиши припев для трека в стиле KADRA.';
+            break;
+          case 'verse':
+            prompt = 'Напиши куплет для трека в стиле KADRA.';
+            break;
+          case 'outro':
+            prompt = 'Напиши аутро для трека в стиле KADRA.';
+            break;
+          case 'full_track':
+            prompt = 'Напиши полный трек (интро, припев, куплет, аутро) в стиле KADRA.';
+            break;
+          default:
+            prompt = 'Напиши текст в стиле KADRA.';
+        }
+        generateLyrics(prompt);
+      };
+
+      return (
+        <div className="min-h-screen bg-gray-950 text-gray-100 font-inter flex flex-col items-center p-4">
+          {/* Header */}
+          <div className="w-full max-w-4xl text-center mb-8">
+            <h1 className="text-5xl font-extrabold text-green-400 mb-2 drop-shadow-lg">KADRA Сонграйтер</h1>
+            <p className="text-xl text-gray-300">
+              Ваш персональный помощник по созданию лирики в стиле KADRA.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8 w-full max-w-2xl">
+            <Button onClick={() => handleButtonClick('intro')} active={activeRequest === 'intro'}>
+              Интро
+            </Button>
+            <Button onClick={() => handleButtonClick('chorus')} active={activeRequest === 'chorus'}>
+              Припев
+            </Button>
+            <Button onClick={() => handleButtonClick('verse')} active={activeRequest === 'verse'}>
+              Куплет
+            </Button>
+            <Button onClick={() => handleButtonClick('outro')} active={activeRequest === 'outro'}>
+              Аутро
+            </Button>
+            <Button onClick={() => handleButtonClick('full_track')} active={activeRequest === 'full_track'}>
+              Полный Трек
+            </Button>
+          </div>
+
+          {/* Output Area */}
+          <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6">
+            {loading && (
+              <div className="flex justify-center items-center h-48">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
+                <p className="ml-4 text-lg text-green-300">Генерируем шедевр...</p>
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-700 p-4 rounded-lg text-red-100 text-center">
+                {error}
+              </div>
+            )}
+            {generatedText && (
+              <div className="whitespace-pre-wrap text-lg leading-relaxed text-gray-200">
+                {generatedText}
+              </div>
+            )}
+            {!loading && !error && !generatedText && (
+              <div className="text-center text-gray-500 text-lg py-12">
+                Нажмите на кнопку, чтобы начать творить!
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="mt-12 text-center text-gray-500 text-sm">
+            <p>Создано с Gemini API</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Custom Button Component for styling
+    const Button = ({ children, onClick, active }) => (
+      <button
+        onClick={onClick}
+        className={`
+          px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300
+          shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2
+          ${active
+            ? 'bg-green-600 text-white transform scale-105 ring-green-500 ring-offset-gray-950'
+            : 'bg-gray-700 text-gray-200 hover:bg-gray-600 ring-gray-600 ring-offset-gray-950'}
+        `}
+      >
+        {children}
+      </button>
+    );
+
+    // Render the App component
+    const rootElement = document.getElementById('root');
+    ReactDOM.createRoot(rootElement).render(<App />);
+
+  </script>
+</body>
+</html>
