@@ -13,20 +13,30 @@
             background-color: #1a1a1a;
             color: #e5e5e5;
         }
+        /* Стили для центрирования навигации, если это нужно */
+        .centered-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .centered-nav a {
+            padding: 0 1rem;
+            color: #e5e5e5;
+            text-decoration: none;
+        }
     </style>
 </head>
-    <header>
-    
-    <nav>
-        <a href="#about" aria-label="О лейбле">О нас</a>
-        <a href="#contact" aria-label="Свяжитесь с нами">Контакты</a>
-        <a href="chatgemini/swkr.html" id="adminLoginBtn" aria-label="Открыть чат с Songwriter">Songwriter</a>
-         <a href="price-list.html" id="adminLoginBtn" aria-label="Прайс лист Студии звукозаписи в Королёве">Цены</a>
-            </svg>
-        </a>
-    </nav>
-</header>
 <body class="p-4 md:p-8">
+
+    <header class="text-center mb-8">
+        <nav class="centered-nav">
+            <a href="#about" aria-label="О лейбле">О нас</a>
+            <a href="#contact" aria-label="Свяжитесь с нами">Контакты</a>
+            <a href="chatgemini/swkr.html" aria-label="Открыть чат с Songwriter">Songwriter</a>
+            <a href="price-list.html" aria-label="Прайс лист Студии звукозаписи в Королёве">Цены</a>
+        </nav>
+    </header>
 
     <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-neutral-900 rounded-2xl shadow-xl">
         <header class="text-center mb-12">
@@ -39,7 +49,6 @@
         <section id="recording" class="mb-12">
             <h2 class="text-3xl font-semibold mb-6 border-b-2 border-neutral-700 pb-2">1. Запись Вокала г. Королёв</h2>
             <div class="space-y-6">
-                <!-- Карта услуги: Запись вокала/инструментов -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Запись вокала / инструментов</h3>
                     <p class="text-2xl font-bold mt-2 text-white">Акция 800 <s>1200</s> руб/час</p>
@@ -55,7 +64,6 @@
         <section id="mixing" class="mb-12">
             <h2 class="text-3xl font-semibold mb-6 border-b-2 border-neutral-700 pb-2">2. Сведение и мастеринг в Королёве</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Карта услуги: Сведение трека -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Сведение трека (Mixing)</h3>
                     <p class="text-2xl font-bold mt-2 text-white">от 5000 руб/трек</p>
@@ -63,7 +71,6 @@
                         Финальный баланс и обработка всех дорожек для получения чистого и мощного звучания.
                     </p>
                 </div>
-                <!-- Карта услуги: Мастеринг трека -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Мастеринг трека (Mastering)</h3>
                     <p class="text-2xl font-bold mt-2 text-white"> Free </p>
@@ -77,7 +84,6 @@
         <section id="packages" class="mb-12">
             <h2 class="text-3xl font-semibold mb-6 border-b-2 border-neutral-700 pb-2">3. Песня на заказ "Под ключ"</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Карта пакета: Трек под ключ -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Песня "под ключ"</h3>
                     <p class="text-2xl font-bold mt-2 text-white">от 23 900 руб</p>
@@ -88,12 +94,11 @@
                         <li>Готовый трек в высоком качестве</li>
                     </ul>
                 </div>
-                <!-- Карта пакета: Песня в подарок -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Песня в подарок (на свадьбу или праздник) Королёв, Мытищи, Пушкино</h3>
                     <p class="text-2xl font-bold mt-2 text-white">от 6 900 руб</p>
                     <ul class="list-disc list-inside mt-4 text-neutral-300 space-y-2">
-                        <li>Написание текста (отдельно) </li>
+                        <li>Написание текста (отдельно)</li>
                         <li>Запись вокала/ редактирование нот (тюн)</li>
                         <li>Обработка вокала эффектами</li>
                         <li>Готовый трек для исполнения в живую и публикации в соц сетях</li>
@@ -105,17 +110,14 @@
         <section id="additional" class="mb-12">
             <h2 class="text-3xl font-semibold mb-6 border-b-2 border-neutral-700 pb-2">4. Дополнительные услуги</h2>
             <div class="space-y-6">
-                <!-- Карта услуги: Гострайтинг -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Гострайтинг (написание текста) / Полные права</h3>
                     <p class="text-2xl font-bold mt-2 text-white"> 9 900 руб</p>
                 </div>
-                 <!-- Карта услуги: Аранжировка -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Аранжировка / создание бита (Полные права)</h3>
                     <p class="text-2xl font-bold mt-2 text-white">от 14 900 руб</p>
                 </div>
-                <!-- Карта услуги: Запись подкастов -->
                 <div class="bg-neutral-800 rounded-xl p-6 hover:bg-neutral-700 transition-colors duration-200">
                     <h3 class="text-xl font-bold text-teal-300">Запись подкастов, аудиокниг</h3>
                     <p class="text-2xl font-bold mt-2 text-white">Акция 800 <s>1200</s> руб/час </p>
@@ -128,7 +130,7 @@
             <div class="bg-neutral-800 rounded-xl p-6">
                 <p class="text-neutral-300 text-lg mb-6 text-center">
                     Студия звукозаписи KADRA Records (город Королёв), мы всегда на связи. Свяжитесь с нами удобным для вас способом. к нам легко доехать с г. Мытищи, Пушкино
-                </p> 
+                </p>
                 <div class="flex flex-wrap justify-center items-center gap-6 mb-8">
                     <a href="mailto:thekadrainfo@gmail.com" class="flex items-center space-x-2 text-lg text-neutral-300 hover:text-teal-300 transition-colors duration-200">
                         <i class="fas fa-envelope"></i>
@@ -169,11 +171,11 @@
                 </div>
             </div>
         </section>
-
+        
         <footer class="text-center mt-12">
             <p class="text-neutral-400">
                 Стоимость проектов рассчитывается индивидуально после обсуждения деталей.
-      
+            </p>
         </footer>
     </div>
 
