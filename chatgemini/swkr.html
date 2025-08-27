@@ -1,1019 +1,476 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Приложение для Музыкантов</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        /* Общие стили для всего приложения */
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #121212; /* Темный фон */
-            color: #e0e0e0; /* Светлый текст */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            box-sizing: border-box;
-            overflow-x: hidden; /* Скрываем горизонтальный скролл */
-        }
-        
-        /* Обертка для основного контента (для отступов) */
-        .content-wrapper {
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        /* Класс для блокировки вертикального скролла, когда плеер или модал открыт */
-        body.sidebar-open, body.modal-open {
-            overflow: hidden;
-        }
-        
-        /* Контейнер для двух основных блоков: чат, заметки */
-        .main-dashboard-area {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap; /* Позволяет блокам переноситься на новую строку на маленьких экранах */
-            gap: 30px; /* Расстояние между блоками */
-            width: 100%;
-            max-width: 1200px;
-            margin: 20px 0;
-        }
-        
-        /* Общие стили для всех виджетов (чат, заметки) */
-        .widget-container {
-            background-color: #1e1e1e;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            min-height: 300px; /* Минимальная высота для виджетов */
-        }
-
-        /* Индивидуальные размеры для виджетов на больших экранах */
-        .chat-widget {
-            flex: 2; /* Чат занимает больше места */
-            max-width: 700px;
-        }
-
-        .notes-widget {
-            flex: 1; /* Заметки занимают среднее место */
-            max-width: 450px;
-        }
-        
-        /* Заголовок виджета с кнопкой свернуть/развернуть */
-        .header-with-button {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            position: relative; /* Для позиционирования тултипа */
-        }
-        
-        h1, h2 {
-            color: #ffffff;
-            font-weight: 700;
-            margin: 0;
-            text-align: left;
-            position: relative; /* Для наведения на заголовок */
-        }
-        
-        /* Стили для кнопки "Свернуть/Развернуть" */
-        .collapse-btn {
-            font-size: 24px;
-            background: none;
-            border: none;
-            color: #e0e0e0;
-            cursor: pointer;
-            padding: 0;
-            margin-left: 10px;
-        }
-        
-        .collapse-btn:hover {
-            color: #2ecc71;
-        }
-        
-        /* Класс для сворачиваемого контента */
-        .collapsible-content {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            transition: max-height 0.5s ease-out;
-            max-height: 1000px; /* Достаточно большая высота для развернутого состояния */
-            overflow: hidden;
-        }
-        
-        /* Свернутое состояние */
-        .collapsible-content.collapsed {
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-        
-        /* Стили для области чата */
-        .chat-history {
-            background-color: #2c2c2c;
-            border-radius: 8px;
-            padding: 15px;
-            min-height: 200px; /* Минимальная высота для чата */
-            height: 500px; /* Начальная высота */
-            overflow-y: auto; /* Скролл для истории */
-            resize: vertical; /* Разрешаем изменять высоту */
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
-            flex-grow: 1;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        /* Стили для скроллбара чата */
-        .chat-history::-webkit-scrollbar { width: 8px; }
-        .chat-history::-webkit-scrollbar-thumb { background-color: #4a4a4a; border-radius: 4px; }
-        .chat-history::-webkit-scrollbar-track { background-color: #1e1e1e; }
-        
-        /* Стили для сообщений в чате */
-        .chat-message {
-            padding: 12px 18px;
-            border-radius: 20px;
-            max-width: 80%;
-            word-wrap: break-word;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .user-message {
-            background-color: #4c4c4c;
-            color: #e0e0e0;
-            align-self: flex-end;
-            white-space: pre-wrap;
-        }
-
-        .bot-message {
-            background-color: #4a4a4a;
-            color: #e0e0e0;
-            align-self: flex-start;
-            white-space: pre-wrap;
-        }
-        
-        /* Стили для формы ввода чата */
-        .chat-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        #user-input {
-            flex-grow: 1;
-            padding: 12px;
-            border: 1px solid #4a4a4a;
-            border-radius: 8px;
-            font-size: 14px;
-            background-color: #2c2c2c;
-            color: #ffffff;
-            box-sizing: border-box;
-        }
-        #user-input::placeholder { color: #a0a0a0; }
-
-        .chat-form button[type="submit"] { /* Специфичность для кнопки отправки чата */
-            padding: 12px 20px;
-            background-color: #2ecc71;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .chat-form button[type="submit"]:hover { background-color: #27ae60; }
-        
-        .error-message {
-            color: #e74c3c;
-            margin-top: 10px;
-            text-align: center;
-            font-weight: 500;
-        }
-        
-        /* Стили для текстового поля заметок и промпта */
-        #notes-input, #prompt-input, #api-key-input {
-            flex-grow: 1;
-            padding: 12px 18px;
-            border: none; 
-            border-radius: 20px;
-            font-size: 14px;
-            background-color: #4a4a4a;
-            color: #ffffff;
-            box-sizing: border-box;
-            resize: vertical; /* Разрешаем изменять высоту */
-            line-height: 1.6;
-            white-space: pre-wrap;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            min-height: 200px; /* Минимальная высота */
-        }
-        #api-key-input {
-            min-height: auto; /* Для ключа не нужна большая высота */
-            height: 40px; /* Фиксированная высота */
-            resize: none; /* Отключаем изменение размера */
-        }
-
-
-        /* Стили для кнопок сохранения заметок и промпта */
-        #save-notes-button, #save-prompt-button, #save-api-key-button {
-            margin-top: 15px;
-            padding: 12px 20px;
-            background-color: #2ecc71;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #save-notes-button:hover, #save-prompt-button:hover, #save-api-key-button:hover { background-color: #27ae60; }
-        
-        .notes-status-message, .prompt-status-message, .api-key-status-message {
-            text-align: center;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        
-        /* Стили для полноэкранной выдвигающейся панели с плеером */
-        .player-sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background-color: #1a1a1a;
-            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
-            transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
-            z-index: 1000;
-            transform: translateX(100%); /* Изначально скрыт */
-            visibility: hidden; /* Скрываем, чтобы не мешал скроллу */
-            display: flex; /* Добавлено, чтобы iframe растягивался */
-            flex-direction: column; /* Добавлено, чтобы iframe растягивался */
-            justify-content: center; /* Выравнивание iframe по центру */
-            align-items: center; /* Выравнивание iframe по центру */
-            overscroll-behavior: contain; /* Предотвращает прокрутку родительской страницы */
-        }
-        
-        .player-sidebar.active {
-            transform: translateX(0); /* Выдвигаем */
-            visibility: visible;
-        }
-        
-        /* Стили для ручки-триггера закрытия */
-        .player-sidebar-handle {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50px; 
-            height: 100%;
-            cursor: pointer;
-            z-index: 1002;
-        }
-        
-        /* Стили для кнопки, которая открывает сайдбар */
-        .player-toggle-btn {
-            position: fixed;
-            top: 20px; /* Справа вверху */
-            right: 20px;
-            background: none; 
-            border: none;
-            cursor: pointer;
-            z-index: 1001;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.3s ease, right 0.5s ease, left 0.5s ease;
-            padding: 0;
-        }
-
-        /* Перемещение кнопки, когда плеер активен */
-        .player-toggle-btn.active {
-            right: auto;
-            left: 20px; /* Перемещается влево, когда плеер открыт */
-        }
-        
-        .player-toggle-btn:hover {
-            transform: scale(1.1);
-        }
-        
-        /* Стили для SVG-иконки внутри кнопки */
-        .player-toggle-btn svg {
-            stroke: #2ecc71;
-            transition: stroke 0.3s ease;
-        }
-        
-        .player-toggle-btn:hover svg {
-            stroke: #27ae60;
-        }
-        
-        /* Кнопка открытия модального окна настроек промпта */
-        #settings-toggle-btn {
-            position: fixed;
-            bottom: 20px; /* Слева внизу */
-            left: 20px;
-            background-color: #8d4fbf; /* Фиолетовый фон */
-            border: none;
-            border-radius: 50%; /* Делаем круглой */
-            width: 50px; /* Размер кнопки */
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            z-index: 1001; /* Поверх контента */
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        #settings-toggle-btn:hover {
-            background-color: #6c3a91; /* Темнее при наведении */
-            transform: scale(1.05);
-        }
-
-        #settings-toggle-btn svg {
-            stroke: #ffffff; /* Белая иконка для контраста */
-            transition: stroke 0.3s ease;
-        }
-        
-        /* Модальное окно для настроек промпта */
-        #prompt-settings-modal {
-            display: none; /* Скрыто по умолчанию */
-            position: fixed; /* Поверх всего */
-            z-index: 2000; /* Выше плеера */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto; /* Если контента много, можно скроллить */
-            background-color: rgba(0,0,0,0.6); /* Полупрозрачный фон */
-            justify-content: center;
-            align-items: center;
-        }
-
-        #prompt-settings-modal.active {
-            display: flex; /* Показываем модальное окно */
-        }
-
-        .modal-content {
-            background-color: #1e1e1e;
-            margin: auto;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.7);
-            width: 80%; /* Ширина модального окна */
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            position: relative; /* Для позиционирования кнопки закрытия */
-        }
-
-        .modal-content h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .close-button {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: #fff;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* Модальное окно для ввода пароля к настройкам */
-        #settings-password-modal {
-            display: none; /* Скрыто по умолчанию */
-            position: fixed;
-            z-index: 2100; /* Выше модального окна настроек */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8); /* Более темный фон */
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        #settings-password-modal.active {
-            display: flex;
-        }
-
-        #settings-password-form {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-            position: relative; /* Для позиционирования кнопки закрытия */
-        }
-
-        #settings-password-input {
-            padding: 10px;
-            border: 1px solid #4a4a4a;
-            border-radius: 8px;
-            font-size: 15px;
-            background-color: #2c2c2c;
-            color: #ffffff;
-            box-sizing: border-box;
-            width: 200px;
-            text-align: center;
-        }
-
-        #settings-password-input::placeholder {
-            color: #a0a0a0;
-        }
-
-        #settings-password-submit-btn {
-            padding: 10px 20px;
-            background-color: #8d4fbf; /* Фиолетовый цвет кнопки для настроек */
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #settings-password-submit-btn:hover {
-            background-color: #6c3a91;
-        }
-
-        #settings-password-error-message {
-            color: #e74c3c;
-            font-weight: 500;
-            margin-top: -5px;
-            font-size: 14px;
-        }
-        
-        /* Адаптивные стили для мобильных устройств (ширина экрана до 768px) */
-        @media (max-width: 768px) {
-            .main-dashboard-area {
-                flex-direction: column; /* Блоки выстраиваются в колонку */
-                gap: 20px;
-            }
-            .widget-container {
-                width: 100%; /* Занимают всю ширину */
-                max-width: 100%; /* Убеждаемся, что не превышают 100% */
-                padding: 15px; /* Уменьшаем отступы */
-            }
-            .content-wrapper {
-                padding: 15px; /* Уменьшаем отступы по бокам */
-            }
-            h1, h2 {
-                font-size: 24px; /* Уменьшаем размер заголовков */
-            }
-            #notes-input, #prompt-input, #api-key-input {
-                min-height: 150px; /* Оптимизируем высоту для мобильных */
-                height: auto; /* Позволяем высоте подстраиваться под контент */
-                resize: vertical; /* Разрешаем изменение размера только для промпта */
-            }
-            #api-key-input { /* Фиксированная высота для API ключа на мобильных */
-                height: 40px;
-                min-height: auto;
-                resize: none;
-            }
-
-            .chat-history {
-                min-height: 250px; /* Оптимизируем высоту для мобильных */
-                height: auto;
-            }
-            .player-toggle-btn { /* Кнопка плеера остается справа вверху */
-                top: 15px;
-                right: 15px;
-                left: auto;
-                width: 45px;
-                height: 45px;
-            }
-            #settings-toggle-btn { /* Кнопка настроек остается слева внизу */
-                bottom: 15px;
-                left: 15px;
-                width: 45px;
-                height: 45px;
-            }
-            .modal-content {
-                width: 95%;
-                padding: 20px;
-            }
-            #settings-password-form {
-                padding: 25px;
-            }
-            #settings-password-input {
-                width: 180px;
-            }
-        }
-
-        /* Адаптивные стили для планшетов (ширина экрана от 769px до 1024px) */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .main-dashboard-area {
-                gap: 20px; /* Немного уменьшаем расстояние между блоками */
-            }
-            .widget-container {
-                padding: 20px;
-            }
-            .chat-widget {
-                flex: 3; /* Чат занимает 3 части */
-                max-width: calc(66% - 10px); /* 2/3 ширины минус половина gap */
-            }
-            .notes-widget {
-                flex: 1; /* Заметки занимают 1 часть */
-                max-width: calc(33% - 10px); /* 1/3 ширины минус половина gap */
-            }
-            #settings-toggle-btn {
-                bottom: 20px;
-                left: 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KADRA Сонграйтер</title>
+  <!-- Tailwind CSS CDN для стилизации -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- React и ReactDOM CDNs -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel для преобразование JSX в браузере -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Firebase CDN (версия 8.10.1 для совместимости) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <style>
+    /* Кастомные стили для шрифта Inter */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
-<body>
-    <div class="content-wrapper">
-        <div class="main-dashboard-area">
-            
-            <!-- Блок для чата GPT -->
-            <div class="widget-container chat-widget" title="Ваш личный помощник для создания текстов песен и идей. Задавайте вопросы, получайте рифмы и развивайте свои мысли.">
-                <div class="header-with-button">
-                    <h1>AI Ассистент Songwriter</h1>
-                    <button class="collapse-btn" data-target="chat-content">+</button>
-                </div>
-                <div id="chat-content" class="collapsible-content">
-                    <!-- Здесь будет сам чат -->
-                    <div id="chat-history" class="chat-history"></div>
-                    <form id="chat-form" class="chat-form">
-                        <input type="text" id="user-input" placeholder="С чего начнем?..." required>
-                        <button type="submit">Отправить</button>
-                    </form>
-                    <p id="error-message" class="error-message"></p>
-                </div>
-            </div>
+<body class="min-h-screen bg-gray-950 text-gray-100 flex flex-col items-center p-4">
+
+  <div id="root">
+    <!-- React приложение будет загружено сюда -->
+  </div>
+
+  <script type="text/babel">
+    // Instructions for the AI model, defining the KADRA style
+    const KADRA_SYSTEM_INSTRUCTION = `
+РОЛЬ: KADRA-помощник
+ЗАДАЧА: Ты — эксперт по лирике в стиле KADRA. Твоя задача — писать тексты по запросу пользователя.
+
+ОБЩИЕ ПРАВИЛА:
+* Фокус всегда на **девушке** и её **нахваливании**.
+* Используй **полную** рифму.
+* Текст должен быть **простым** для понимания.
+* Тексты должны быть **лаконичными** и **ёмкими**, избегай излишней многословности.
+* Сочетай образы роскоши, улиц и эмоций.
+* **КЛЮЧЕВОЕ ПРАВИЛО**: **НЕ ИСПОЛЬЗУЙ** слова из "СЛОВАРЯ" напрямую в генерируемых текстах. Вместо них генерируй **рандомные синонимы** или другие слова, которые передают то же настроение, смысл и стиль KADRA. Будь максимально креативным в выборе лексики, избегая буквального повторения.
+* **ПРАВИЛО ДЛЯ ПРИПЕВОВ**: Припевы должны быть **короткими**, **цепляющими** и **максимально простыми** для запоминания.
+
+СЛОВАРЬ (только для ПОНИМАНИЯ СТИЛЯ, НЕ ИСПОЛЬЗУЙ слова из списка в тексте):
+\`неон\`, \`хром\`, \`асфальт\`, \`огни\`, \`трасса\`, \`адреналин\`, \`хаос\`, \`закон\`, \`бензин\`, \`пожар\`, \`шлейф\`, \`флоу\`, \`дикарка\`.
+
+ЧЁРНЫЙ СПИСОК (НИКОГДА НЕ ИСПОЛЬЗОВАТЬ):
+\`бездна\`, \`тачка\`, \`волки\`, \`движ\`, \`гроб\`, \`глазища\`, \`панелька\`.
+
+МАНТРЫ: Используй мантры (\`Ууу\`, \`Ааа\`, \`Ооо\`, \`Аййййй\`, \`Омммм\`) **умеренно**, для усиления атмосферы или в качестве связки, **чередуя их** и избегая однотипных повторений подряд.
+    `;
+
+    // Debounce function to limit how often a function is called
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+      };
+    }
     
-            <!-- Блок для личных заметок -->
-            <div class="widget-container notes-widget" title="Записывайте и сохраняйте все свои музыкальные идеи и наброски текстов.">
-                <div class="header-with-button">
-                    <h2>Lirycs</h2>
-                    <button class="collapse-btn" data-target="notes-content">+</button>
-                </div>
-                <div id="notes-content" class="collapsible-content">
-                    <textarea id="notes-input" placeholder="Напишите здесь свои идеи..."></textarea>
-                    <button id="save-notes-button">Сохранить</button>
-                    <p id="notes-status-message" class="notes-status-message"></p>
-                </div>
-            </div>
+    // Main App component
+    function App() {
+      // Import useState and useEffect hooks from React
+      const { useState, useEffect, useCallback } = React;
 
-        </div>
-    </div>
-    
-    <!-- Кнопка для открытия/закрытия плеера -->
-    <button id="player-toggle-btn" class="player-toggle-btn" title="Открыть музыкальный плеер.найди подходящий демо Beat на Beatstars">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18V5l12-2v13"></path>
-            <circle cx="6" cy="18" r="3"></circle>
-            <circle cx="18" cy="16" r="3"></circle>
-        </svg>
-    </button>
+      // State for AI functionality
+      const [loading, setLoading] = useState(false);
+      const [generatedText, setGeneratedText] = useState("");
+      const [error, setError] = useState("");
+      const [activeRequest, setActiveRequest] = useState('');
 
-    <!-- Кнопка открытия модального окна настроек промпта -->
-    <button id="settings-toggle-btn" title="Настройки">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .3 1.67L21 18l-2 2-1.65-.32a1.65 1.65 0 0 0-1.67.3L12 21h-2l-.32-1.65a1.65 1.65 0 0 0-1.67-.3L3 18l2-2-.32-1.65a1.65 1.65 0 0 0 .3-1.67L3 12h2l.32-1.65a1.65 1.65 0 0 0-.3-1.67L3 6l2-2 1.65.32a1.65 1.65 0 0 0 1.67-.3L12 3h2l.32 1.65a1.65 1.65 0 0 0 1.67.3L21 6l-2 2 .32 1.65a1.65 1.65 0 0 0-.3 1.67L21 12h-2l-.32 1.65a1.65 1.65 0 0 0-.3 1.67z"></path>
-        </svg>
-    </button>
+      // State for new blocks
+      const [showPlayer, setShowPlayer] = useState(false);
+      const [showPlayer2, setShowPlayer2] = useState(false); 
+      const [notesContent, setNotesContent] = useState('');
+      const [notesLoading, setNotesLoading] = useState(true);
 
-    <!-- Полноэкранный сайдбар с плеером -->
-    <div id="player-sidebar" class="player-sidebar">
-        <div class="player-sidebar-handle"></div>
-        <iframe src="https://beatstars.com/embed/collection/188442" 
-                width="100%" 
-                height="100%" 
-                style="border: none;" 
-                allow="autoplay; encrypted-media">
-        </iframe>
-    </div>
+      // State for Firebase
+      const [db, setDb] = useState(null);
+      const [auth, setAuth] = useState(null);
+      const [userId, setUserId] = useState(null);
 
-    <!-- Модальное окно для ввода пароля к настройкам -->
-    <div id="settings-password-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-settings-password-modal">&times;</span>
-            <h2>Введите пароль для настроек</h2>
-            <form id="settings-password-form">
-                <input type="password" id="settings-password-input" placeholder="Пароль" required>
-                <button type="submit" id="settings-password-submit-btn">Войти</button>
-                <p id="settings-password-error-message" class="error-message"></p>
-            </form>
-        </div>
-    </div>
+      // State for API settings
+      const [api_key, setApiKey] = useState('AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo');
 
-    <!-- Модальное окно для настроек промпта и API-ключа -->
-    <div id="prompt-settings-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-prompt-settings-modal">&times;</span>
-            <h2>Настройки AI-ассистента</h2>
-            
-            <!-- Секция для API-ключа -->
-            <h3>Ключ API Gemini</h3>
-            <input type="text" id="api-key-input" placeholder="Введите ваш Gemini API ключ" required>
-            <button id="save-api-key-button">Сохранить API ключ</button>
-            <p id="api-key-status-message" class="api-key-status-message"></p>
+      // Firebase Initialization and Authentication
+      useEffect(() => {
+        let unsubscribeAuth = () => {};
+        let unsubscribeNotes = () => {};
+        
+        try {
+          // Get variables from the external environment
+          const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+          const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+          
+          if (firebaseConfig) {
+            // Initialize Firebase with V8 SDK
+            const app = firebase.initializeApp(firebaseConfig);
+            const authInstance = firebase.auth();
+            const firestoreDb = firebase.firestore();
+            setDb(firestoreDb);
+            setAuth(authInstance);
 
-            <!-- Секция для промпта -->
-            <h3>Системный промпт</h3>
-            <textarea id="prompt-input" placeholder="Введите здесь системный промпт для AI..."></textarea>
-            <button id="save-prompt-button">Сохранить промпт</button>
-            <p id="prompt-status-message" class="prompt-status-message"></p>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Функциональность заметок ---
-            const notesInput = document.getElementById('notes-input');
-            const saveNotesButton = document.getElementById('save-notes-button');
-            const notesStatusMessage = document.getElementById('notes-status-message');
-            
-            if (notesInput && saveNotesButton && notesStatusMessage) {
-                function loadNotes() {
-                    const savedNotes = localStorage.getItem('userNotes');
-                    if (savedNotes) {
-                        notesInput.value = savedNotes;
-                    }
+            const signIn = async () => {
+              try {
+                if (initialAuthToken) {
+                  await authInstance.signInWithCustomToken(initialAuthToken);
+                } else {
+                  await authInstance.signInAnonymously();
                 }
+              } catch (e) {
+                console.error("Firebase auth error:", e);
+                setError("Ошибка авторизации. Попробуйте перезагрузить страницу.");
+              }
+            };
+            signIn();
+
+            // onAuthStateChanged - V8 syntax
+            unsubscribeAuth = authInstance.onAuthStateChanged((user) => {
+              if (user) {
+                setUserId(user.uid);
+                // Load notes only after successful authentication
+                const notesRef = firestoreDb.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('notes').doc('user_notes');
                 
-                function saveNotes() {
-                    const notes = notesInput.value;
-                    localStorage.setItem('userNotes', notes);
-                    notesStatusMessage.textContent = 'Заметки сохранены!';
-                    setTimeout(() => {
-                        notesStatusMessage.textContent = '';
-                    }, 3000);
-                }
-            
-                saveNotesButton.addEventListener('click', saveNotes);
-                loadNotes();
-            }
-        
-            // --- Функциональность сворачиваемых блоков (чат, заметки) ---
-            const collapseButtons = document.querySelectorAll('.collapse-btn');
-        
-            collapseButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetId = button.getAttribute('data-target');
-                    const targetElement = document.getElementById(targetId);
-        
-                    if (targetElement) {
-                        targetElement.classList.toggle('collapsed');
-                        if (targetElement.classList.contains('collapsed')) {
-                            button.textContent = '+';
-                        } else {
-                            button.textContent = '-';
-                        }
-                    }
+                // onSnapshot - V8 syntax
+                unsubscribeNotes = notesRef.onSnapshot((docSnap) => {
+                  if (docSnap.exists) {
+                    setNotesContent(docSnap.data().content);
+                  } else {
+                    setNotesContent(""); 
+                  }
+                  setNotesLoading(false);
+                }, (error) => {
+                  console.error("Error fetching notes:", error);
+                  setError("Ошибка загрузки заметок. Пожалуйста, попробуйте еще раз.");
+                  setNotesLoading(false);
                 });
+              } else {
+                setUserId(null);
+                setNotesLoading(false);
+              }
             });
-        
-            // Инициализируем контент как свернутый по умолчанию
-            const initialCollapsible = document.querySelectorAll('.collapsible-content');
-            initialCollapsible.forEach(el => {
-                el.classList.add('collapsed');
-                const button = el.previousElementSibling ? el.previousElementSibling.querySelector('.collapse-btn') : null;
-                if (button) {
-                    button.textContent = '+';
-                }
-            });
-        
-            // --- Функциональность музыкального плеера ---
-            const playerToggleBtn = document.getElementById('player-toggle-btn');
-            const playerSidebar = document.getElementById('player-sidebar');
-            const playerSidebarHandle = document.querySelector('.player-sidebar-handle');
-            const body = document.body;
-            
-            if (playerToggleBtn && playerSidebar && playerSidebarHandle && body) {
-                playerToggleBtn.addEventListener('click', () => {
-                    playerSidebar.classList.toggle('active');
-                    body.classList.toggle('sidebar-open');
-                    playerToggleBtn.classList.toggle('active');
-                });
-        
-                playerSidebarHandle.addEventListener('click', () => {
-                    playerSidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                    playerToggleBtn.classList.remove('active');
-                });
-            }
+          }
+        } catch (e) {
+          console.error("Firebase initialization error:", e);
+          setError("Ошибка инициализации Firebase. Заметки могут не сохраняться.");
+          setNotesLoading(false);
+        }
 
-            // --- Функциональность чата Gemini ---
-            const chatForm = document.getElementById('chat-form');
-            const userInput = document.getElementById('user-input');
-            const chatHistory = document.getElementById('chat-history');
-            const chatErrorMessage = document.getElementById('error-message');
-        
-            // --- Функциональность настроек промпта и API-ключа ---
-            const promptInput = document.getElementById('prompt-input');
-            const savePromptButton = document.getElementById('save-prompt-button');
-            const promptStatusMessage = document.getElementById('prompt-status-message');
-            const settingsToggleBtn = document.getElementById('settings-toggle-btn');
-            const promptSettingsModal = document.getElementById('prompt-settings-modal');
-            const closePromptSettingsModal = document.getElementById('close-prompt-settings-modal');
-            
-            // Модальное окно пароля для настроек
-            const settingsPasswordModal = document.getElementById('settings-password-modal');
-            const settingsPasswordInput = document.getElementById('settings-password-input');
-            const settingsPasswordForm = document.getElementById('settings-password-form');
-            const settingsPasswordErrorMessage = document.getElementById('settings-password-error-message');
-            const closeSettingsPasswordModal = document.getElementById('close-settings-password-modal');
-            const CORRECT_SETTINGS_PASSWORD = 'Ioioiohyadfg'; // Ваш пароль для настроек
+        return () => {
+          unsubscribeAuth();
+          if (unsubscribeNotes) {
+            unsubscribeNotes();
+          }
+        };
+      }, []);
 
-            // API Key элементы
-            const apiKeyInput = document.getElementById('api-key-input');
-            const saveApiKeyButton = document.getElementById('save-api-key-button');
-            const apiKeyStatusMessage = document.getElementById('api-key-status-message');
-            const DEFAULT_API_KEY = 'AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo'; // Ваш стандартный ключ API
+      // Function to save notes to Firestore (with debounce)
+      const saveNotes = useCallback(debounce(async (content) => {
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        if (db && userId && appId) {
+          try {
+            // V8 syntax for setting document data
+            const notesRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('notes').doc('user_notes');
+            await notesRef.set({ content: content || '' }, { merge: true });
+            console.log("Notes saved successfully!");
+          } catch (e) {
+            console.error("Error saving notes:", e);
+          }
+        }
+      }, 500), [db, userId]);
 
-            // Ваш стандартный (дефолтный) системный промпт
-            const DEFAULT_SYSTEM_PROMPT = `Ты — дружелюбный ассистент и крутой сонграйтер, специализирующийся на создании текстов песен в определённом стиле.
-Твоя задача: генерировать тексты песен по запросу пользователя, **строго** следуя заданному стилю, структуре и **ОБЯЗАТЕЛЬНО проверяя рифмы.**
-Отвечай только на запросы, связанные с музыкой и звукозаписи. Если вопрос не по теме, вежливо укажи на это.
+      // Function to call the API and generate text
+      const generateLyrics = useCallback(async (prompt) => {
+        const apiKey = api_key;
+        if (!apiKey) {
+          setError("API-ключ не задан. Пожалуйста, откройте настройки и вставьте ваш ключ.");
+          return;
+        }
 
-**Мой стиль:**
-- Повторяющийся припев как мантра, с протяжными звуками или буквами.
-- **Припев должен быть коротким и запоминающимся, не более 4-6 строк.** Исключи длинные припевы.
-- Припев — красивая, необычная лексика, описывающая девушку и ощущения.
-- Куплеты — короткие строки, визуальный язык, уличный и модный сленг.
-- **ВСЕГДА используй точную внутреннюю рифму.**
-- Темы: уличная романтика, тусовки, стиль, ночь, боль, отношения, тоска.
-- Настроения: от дерзкого до чувственного, от стильного до меланхоличного.
-- Атмосфера: городская ночь, фары, алкоголь, дым, холод, роскошь.
-- Интонация — полу-певаемая, музыкально ритмичная.
+        const model_name = "gemini-2.5-flash-preview-05-20";
+        const system_instruction = KADRA_SYSTEM_INSTRUCTION;
+        const generation_config = { temperature: 0.8 };
 
-**ЦА:** молодёжь 16–28 лет, городской ритм, соцсети, визуальность, эмоции, стиль.
+        setLoading(true);
+        setError("");
+        setGeneratedText("");
 
-**Лингвистика:**
-- Простые, но образные слова.
-- Повторения как мантра (по запросу).
-- **Строгий чёрный список:** «сердце», «вектор», «мгла», «изумруд», «бойский», «сальса», «на зорю», «кораллы у моря».
-- Расширенный словарь: синонимы и уличный сленг.
-- **ОБЯЗАТЕЛЬНО используй точные рифмы по умолчанию.**
+        try {
+          const payload = {
+            contents: [
+              { role: "user", parts: [{ text: system_instruction }] },
+              { role: "user", parts: [{ text: prompt }] }
+            ],
+            generationConfig: generation_config
+          };
 
-**Структура трека (чередуй припевы: мантру с не-мантрой):**
-1. Припев (мантраобразный)
-2. Куплет
-3. Припев (не-мантра)
-4. Куплет
-5. Бридж (опционально)
-6. **Обязательно завершай текст осмысленной и логичной концовкой, а не обрывай его.**
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model_name}:generateContent?key=${apiKey}`;
 
-**Пример желаемого стиля и структуры (ОБЯЗАТЕЛЬНО следуй этим примерам для рифмы, стиля, структуры и длины припевов):**
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
 
-**Пример 1: Мантра-припев (короткий и запоминающийся)**
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+          }
 
-**Припев:**
-Убей меня красото-о-ой
-Прямо сквозь мою бро-о-онь
-Ее взгляд пулево-о-ой
-Девочка fire дай мне ого-о-онь
+          const result = await response.json();
+          if (result.candidates && result.candidates.length > 0 &&
+              result.candidates[0].content && result.candidates[0].content.parts &&
+              result.candidates[0].content.parts.length > 0) {
+            setGeneratedText(result.candidates[0].content.parts[0].text);
+          } else {
+            console.error("Unexpected API response structure:", result);
+            setGeneratedText("Извините, произошла ошибка при генерации текста.");
+          }
+        } catch (err) {
+          console.error("Error calling Gemini API:", err);
+          setError(`Ошибка: ${err.message}. Пожалуйста, попробуйте еще раз.`);
+        } finally {
+          setLoading(false);
+        }
+      }, [api_key]); // Dependency array: regenerate this function if api_key changes
 
-**Куплет 1:**
-Гори гори ясно, только не погас-ни
-Освети дорогу мне в пути этом опас-ном
-Я попадаю в сказку, где ты мое богатс-тво
-Просто оставайся моим смыслом не сдаваться
-Я ночью пропитаюсь басом, выжму газ аирмак-сом
-Скорость плавит пластмассу, но у нас нет ма-сок
-Мы валим по трассе на криминальном s-cla-ss
-Доверься мне полностью, не сомнева-йся
+      // Handler for AI generation button clicks
+      const handleButtonClick = (type) => {
+        let prompt = '';
+        setActiveRequest(type);
+        switch (type) {
+          case 'intro':
+            prompt = 'Напиши интро для трека в стиле KADRA.';
+            break;
+          case 'chorus':
+            prompt = 'Напиши припев для трека в стиле KADRA.';
+            break;
+          case 'verse':
+            prompt = 'Напиши куплет для трека в стиле KADRA.';
+            break;
+          case 'outro':
+            prompt = 'Напиши аутро для трека в стиле KADRA.';
+            break;
+          case 'full_track':
+            prompt = 'Напиши полный трек (интро, припев, куплет, аутро) в стиле KADRA.';
+            break;
+          default:
+            prompt = 'Напиши текст в стиле KADRA.';
+        }
+        generateLyrics(prompt);
+      };
 
-**Пример 2: Не-мантра припев (короткий и запоминающийся)**
+      // Render the main component
+      return (
+        <div className="min-h-screen bg-gray-950 text-gray-100 font-inter flex flex-col items-center p-4 relative overflow-hidden">
+          
+          {/* Settings button in the top-left corner */}
+          <div className="fixed top-4 left-4 z-50">
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="
+                p-2 rounded-full text-gray-400 hover:text-gray-200 transition-colors duration-300
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 ring-offset-gray-950
+              "
+              title="Настройки"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.533.326 1.144.372 1.724.038z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
 
-**Припев:**
-Твой силуэт в лучах неона,
-Эта ночь зовет нас, вне закона.
-Мы в потоке света, без лишних слов,
-Сквозь город мчим, ломаем оков.
+          {/* Floating player buttons in the bottom-right corner */}
+          <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-50">
+            {/* Player button 1 (Trap) */}
+            <SmallPlayerButton 
+              onClick={() => { setShowPlayer(!showPlayer); setShowPlayer2(false); }} 
+              title="Открыть плейлист Trap"
+            >
+              Trap
+            </SmallPlayerButton>
+            {/* Player button 2 (G-House) */}
+            <SmallPlayerButton 
+              onClick={() => { setShowPlayer2(!showPlayer2); setShowPlayer(false); }} 
+              title="Открыть плейлист G-House"
+            >
+              G-House
+            </SmallPlayerButton>
+          </div>
 
-**Куплет 1:**
-Дым сигарет, растворяет мысли
-Bit на repeat, так легко зависнуть
-Твои губы — вишня, красная как грех
-В этом ритме мы забыли всех.
+          {/* Header section, centered and responsive */}
+          <div className="w-full max-w-4xl text-center mb-8">
+            <h1 className="text-5xl font-extrabold text-green-400 mb-2 drop-shadow-lg">KADRA Сонграйтер</h1>
+            <p className="text-xl text-gray-300">
+              Ваш персональный помощник по созданию лирики в стиле KADRA.
+            </p>
+          </div>
+          
+          {/* AI generation buttons, centered and wrapped */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8 w-full max-w-2xl">
+            <Button onClick={() => handleButtonClick('intro')} active={activeRequest === 'intro'}>
+              Интро
+            </Button>
+            <Button onClick={() => handleButtonClick('chorus')} active={activeRequest === 'chorus'}>
+              Припев
+            </Button>
+            <Button onClick={() => handleButtonClick('verse')} active={activeRequest === 'verse'}>
+              Куплет
+            </Button>
+            <Button onClick={() => handleButtonClick('outro')} active={activeRequest === 'outro'}>
+              Аутро
+            </Button>
+            <Button onClick={() => handleButtonClick('full_track')} active={activeRequest === 'full_track'}>
+              Полный Трек
+            </Button>
+          </div>
 
-**ЗАДАЧА:** **Всегда проверяй рифмы и их точность!** Чередуй припевы (мантра с не-мантрой), **делай их короткими и запоминающимися (4-6 строк)**, не повторяйся в припевах (используй разные варианты мантры/не-мантры), **строго** сохраняй структуру стиха с чередованием. **ОБЯЗАТЕЛЬНО создавай осмысленные концовки.**`;
-            
-            function loadSystemPrompt() {
-                if (promptInput) {
-                    const savedPrompt = localStorage.getItem('customSystemPrompt');
-                    if (savedPrompt) {
-                        promptInput.value = savedPrompt;
-                    } else {
-                        promptInput.value = DEFAULT_SYSTEM_PROMPT;
-                    }
-                }
-            }
+          {/* AI output area, responsive and with error/loading states */}
+          <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            {loading && (
+              <div className="flex justify-center items-center h-48">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
+                <p className="ml-4 text-lg text-green-300">Генерируем шедевр...</p>
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-700 p-4 rounded-lg text-red-100 text-center">
+                {error}
+              </div>
+            )}
+            {generatedText && (
+              <div className="whitespace-pre-wrap text-lg leading-relaxed text-gray-200">
+                {generatedText}
+              </div>
+            )}
+            {!loading && !error && !generatedText && (
+              <div className="text-center text-gray-500 text-lg py-12">
+                Нажмите на кнопку, чтобы начать творить!
+              </div>
+            )}
+          </div>
 
-            function saveSystemPrompt() {
-                if (promptInput && promptStatusMessage) {
-                    const promptText = promptInput.value;
-                    localStorage.setItem('customSystemPrompt', promptText);
-                    promptStatusMessage.textContent = 'Промпт сохранен!';
-                    setTimeout(() => {
-                        promptStatusMessage.textContent = '';
-                    }, 3000);
-                }
-            }
-        
-            if (savePromptButton) {
-                savePromptButton.addEventListener('click', saveSystemPrompt);
-            }
-            // loadSystemPrompt() будет вызван после успешного ввода пароля
+          {/* Notes section, now permanently on the main screen */}
+          <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-200 mb-4">Ваши заметки</h2>
+            {notesLoading ? (
+              <div className="text-center text-gray-500 py-12">
+                Загрузка заметок...
+              </div>
+            ) : (
+              <textarea
+                value={notesContent}
+                onChange={(e) => {
+                  setNotesContent(e.target.value);
+                  saveNotes(e.target.value);
+                }}
+                className="w-full h-48 p-3 rounded-lg bg-gray-900 text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Пишите здесь ваши заметки, идеи, или черновики..."
+              ></textarea>
+            )}
+            <p className="mt-2 text-sm text-gray-500">
+              Ваши заметки автоматически сохраняются. User ID: {userId || '...'}
+            </p>
+          </div>
 
-            // --- Функции для API-ключа ---
-            function loadApiKey() {
-                if (apiKeyInput) {
-                    const savedApiKey = localStorage.getItem('geminiApiKey');
-                    if (savedApiKey) {
-                        apiKeyInput.value = savedApiKey;
-                    } else {
-                        apiKeyInput.value = DEFAULT_API_KEY; // Устанавливаем дефолтный ключ
-                    }
-                }
-            }
+          {/* Player section 1 that slides out from the right to be a full-screen modal */}
+          <div className={`
+            fixed top-0 right-0 h-full w-full bg-gray-900 border-l border-gray-700
+            transform transition-transform duration-500 z-40
+            ${showPlayer ? 'translate-x-0' : 'translate-x-full'}
+          `}>
+            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+              <h2 className="text-2xl font-bold text-gray-200">Плеер Beatstars #1 (Trap)</h2>
+              <button onClick={() => setShowPlayer(false)} className="text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="w-full h-[calc(100%-80px)] flex justify-center items-center p-4">
+              <iframe
+                src="https://beatstars.com/embed/collection/188442"
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                className="rounded-lg shadow-xl"
+                title="Beatstars Player 1"
+              >
+                Ваш браузер не поддерживает iframes.
+              </iframe>
+            </div>
+          </div>
 
-            function saveApiKey() {
-                if (apiKeyInput && apiKeyStatusMessage) {
-                    const apiKey = apiKeyInput.value;
-                    localStorage.setItem('geminiApiKey', apiKey);
-                    apiKeyStatusMessage.textContent = 'API ключ сохранен!';
-                    setTimeout(() => {
-                        apiKeyStatusMessage.textContent = '';
-                    }, 3000);
-                }
-            }
+          {/* Player section 2 for the new playlist */}
+          <div className={`
+            fixed top-0 right-0 h-full w-full bg-gray-900 border-l border-gray-700
+            transform transition-transform duration-500 z-40
+            ${showPlayer2 ? 'translate-x-0' : 'translate-x-full'}
+          `}>
+            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+              <h2 className="text-2xl font-bold text-gray-200">Плеер Beatstars #2 (G-House)</h2>
+              <button onClick={() => setShowPlayer2(false)} className="text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="w-full h-[calc(100%-80px)] flex justify-center items-center p-4">
+              <iframe
+                src="https://www.beatstars.com/playlists/4854014"
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                className="rounded-lg shadow-xl"
+                title="Beatstars Player 2"
+              >
+                Ваш браузер не поддерживает iframes.
+              </iframe>
+            </div>
+          </div>
+          
+          {/* Footer */}
+          <div className="mt-12 text-center text-gray-500 text-sm">
+            <p>Создано с Gemini API</p>
+          </div>
 
-            if (saveApiKeyButton) {
-                saveApiKeyButton.addEventListener('click', saveApiKey);
-            }
-            // loadApiKey() будет вызван после успешного ввода пароля
-            
-            const conversationHistory = []; // История чата начинается пустой
-        
-            function addChatMessage(text, className, role) {
-                if (chatHistory) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.classList.add('chat-message', className);
-                    messageDiv.textContent = text;
-                    chatHistory.appendChild(messageDiv);
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-            
-                    conversationHistory.push({
-                        role: role,
-                        parts: [{ text: text }]
-                    });
-                }
-            }
-            
-            if (chatForm) {
-                chatForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const message = userInput ? userInput.value.trim() : '';
-                    if (!message) return;
-            
-                    addChatMessage(message, 'user-message', 'user');
-                    if (userInput) userInput.value = '';
-                    if (chatErrorMessage) chatErrorMessage.textContent = '';
-            
-                    try {
-                        const currentSystemPrompt = localStorage.getItem('customSystemPrompt') || DEFAULT_SYSTEM_PROMPT;
-                        const currentApiKey = localStorage.getItem('geminiApiKey') || DEFAULT_API_KEY; // Используем сохраненный или дефолтный ключ
+        </div>
+      );
+    }
+    
+    // Custom button component
+    const Button = ({ children, onClick, active }) => (
+      <button
+        onClick={onClick}
+        className={`
+          px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300
+          shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2
+          ${active
+            ? 'bg-green-600 text-white transform scale-105 ring-green-500 ring-offset-gray-950'
+            : 'bg-gray-700 text-gray-200 hover:bg-gray-600 ring-gray-600 ring-offset-gray-950'}
+        `}
+      >
+        {children}
+      </button>
+    );
 
-                        if (!currentApiKey || currentApiKey === 'YOUR_GEMINI_API_KEY_HERE') { // Проверка, что ключ не пустой или не дефолтный заполнитель
-                            if (chatErrorMessage) chatErrorMessage.textContent = 'Пожалуйста, введите ваш API-ключ Gemini в настройках.';
-                            addChatMessage('Ошибка: API-ключ не настроен. Пожалуйста, введите его в настройках.', 'bot-message', 'model');
-                            return; // Прерываем выполнение, если ключ недействителен
-                        }
+    // Custom small, round player button component
+    const SmallPlayerButton = ({ children, onClick, title }) => (
+      <button
+        onClick={onClick}
+        title={title}
+        className="
+          w-20 h-20 text-sm font-bold rounded-full flex items-center justify-center text-center
+          bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors duration-300
+          shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ring-gray-600 ring-offset-gray-950
+        "
+      >
+        {children}
+      </button>
+    );
 
-                        const contentsToSend = [
-                            { role: "user", parts: [{ text: currentSystemPrompt }] },
-                            { role: "model", parts: [{ text: "ОК" }] }, 
-                            ...conversationHistory 
-                        ];
+    // Render the root component into the DOM
+    const rootElement = document.getElementById('root');
+    ReactDOM.createRoot(rootElement).render(<App />);
 
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${currentApiKey}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                contents: contentsToSend
-                            })
-                        });
-            
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(`API error: ${response.statusText}. Details: ${JSON.stringify(errorData)}`);
-                        }
-            
-                        const data = await response.json();
-                        const botMessage = data.candidates[0].content.parts[0].text;
-                        addChatMessage(botMessage, 'bot-message', 'model');
-            
-                    } catch (error) {
-                        console.error('Error fetching from Gemini API:', error);
-                        if (chatErrorMessage) chatErrorMessage.textContent = 'Произошла ошибка. Пожалуйста, попробуйте позже. Проверьте ваш API-ключ.';
-                        addChatMessage('Произошла ошибка. Пожалуйста, попробуйте позже. Возможно, ваш API-ключ недействителен.', 'bot-message', 'model');
-                    }
-                });
-            }
-
-            // --- Логика для открытия модального окна настроек промпта ---
-            if (settingsToggleBtn && settingsPasswordModal && body && settingsPasswordInput && settingsPasswordErrorMessage && settingsPasswordForm) {
-                settingsToggleBtn.addEventListener('click', () => {
-                    settingsPasswordModal.classList.add('active');
-                    body.classList.add('modal-open');
-                    settingsPasswordInput.focus();
-                    settingsPasswordErrorMessage.textContent = '';
-                    settingsPasswordInput.value = '';
-                });
-            }
-
-            if (settingsPasswordForm && settingsPasswordInput && settingsPasswordErrorMessage && settingsPasswordModal && promptSettingsModal && body && promptInput && apiKeyInput) {
-                settingsPasswordForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    if (settingsPasswordInput.value === CORRECT_SETTINGS_PASSWORD) {
-                        settingsPasswordModal.classList.remove('active');
-                        promptSettingsModal.classList.add('active');
-                        loadSystemPrompt(); // Загружаем промпт
-                        loadApiKey();       // Загружаем API-ключ
-                        promptInput.focus(); 
-                    } else {
-                        settingsPasswordErrorMessage.textContent = 'Неверный пароль. Попробуйте снова.';
-                    }
-                });
-            }
-
-            if (closePromptSettingsModal && promptSettingsModal && body) {
-                closePromptSettingsModal.addEventListener('click', () => {
-                    promptSettingsModal.classList.remove('active');
-                    body.classList.remove('modal-open');
-                });
-            }
-
-            if (closeSettingsPasswordModal && settingsPasswordModal && body) {
-                closeSettingsPasswordModal.addEventListener('click', () => {
-                    settingsPasswordModal.classList.remove('active');
-                    body.classList.remove('modal-open');
-                });
-            }
-
-            window.addEventListener('click', (event) => {
-                if (event.target === promptSettingsModal && promptSettingsModal && body) {
-                    promptSettingsModal.classList.remove('active');
-                    body.classList.remove('modal-open');
-                }
-                 if (event.target === settingsPasswordModal && settingsPasswordModal && body) { // Добавлено закрытие парольного модала по клику вне
-                    settingsPasswordModal.classList.remove('active');
-                    body.classList.remove('modal-open');
-                }
-            });
-
-            // Инициализация промпта и API-ключа при первой загрузке, если их нет
-            if (!localStorage.getItem('customSystemPrompt')) {
-                localStorage.setItem('customSystemPrompt', DEFAULT_SYSTEM_PROMPT);
-            }
-            if (!localStorage.getItem('geminiApiKey')) {
-                localStorage.setItem('geminiApiKey', DEFAULT_API_KEY);
-            }
-        });
-    </script>
+  </script>
 </body>
 </html>
