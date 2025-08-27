@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Auth Example</title>
+    <!-- Подключаем Tailwind CSS для стилей -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Устанавливаем шрифт Inter -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            @apply bg-gray-100 text-gray-800;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Основной контейнер приложения -->
+    <div id="app-container" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center transition-all duration-300">
+
+        <!-- Секция для отображения статуса пользователя -->
+        <div id="user-info-section" class="space-y-4">
+            <h1 class="text-3xl font-bold mb-4">Авторизация</h1>
+            <p id="auth-status" class="text-lg text-gray-600">Загрузка...</p>
+            <div id="user-profile" class="hidden flex flex-col items-center space-y-4">
+                <img id="user-photo" class="w-24 h-24 rounded-full border-4 border-white shadow-md transition-transform duration-300 hover:scale-110" src="https://placehold.co/100x100?text=User" alt="User Photo">
+                <p class="text-xl font-semibold break-words" id="user-name">Имя</p>
+                <p class="text-sm text-gray-500 break-words" id="user-email">Email</p>
+                <p class="text-xs text-gray-400 break-words" id="user-uid">ID пользователя</p>
+                <button id="sign-out-btn" class="w-full px-6 py-3 bg-red-600 text-white rounded-xl shadow-md hover:bg-red-700 transition-colors duration-200">Выйти</button>
+            </div>
+        </div>
+
+        <!-- Секция для кнопок входа -->
+        <div id="auth-buttons-section" class="mt-8 space-y-4 hidden">
+            <button id="google-sign-in-btn" class="w-full px-6 py-3 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M44.5 20H24V28.5H35.25C34.223 32.558 31.056 35.888 27 37.892L27 44.594C34.908 42.617 40.5 35.044 40.5 26C40.5 24.225 40.236 22.488 39.736 20.844L44.5 20Z" fill="#4285F4"/>
+                    <path d="M24 44.5C31.523 44.5 37.969 41.677 42.665 36.974L36.216 30.525C34.61 32.747 32.074 34.35 29.13 35.066L29.13 41.768C30.738 42.144 32.4 42.348 34.13 42.348C36.907 42.348 39.528 41.528 41.71 40.04L41.71 44.5H24V44.5Z" fill="#34A853"/>
+                    <path d="M12.5 35.875C15.636 35.875 18.423 34.872 20.662 33.155L27.136 39.63C24.363 41.802 20.806 43.125 17 43.125C13.235 43.125 9.771 41.812 7.02 39.539L12.5 35.875Z" fill="#FBBC04"/>
+                    <path d="M7.02 39.539C4.269 37.266 2.5 34.125 2.5 30.5C2.5 27.288 3.513 24.28 5.341 21.844L10.088 24.264C8.752 26.237 8 28.324 8 30.5C8 33.156 9.172 35.539 11.096 37.156L7.02 39.539Z" fill="#EA4335"/>
+                    <path d="M24 10.75C27.488 10.75 30.767 12.067 33.275 14.28L39.75 7.825C35.05 4.195 29.615 2 24 2C16.828 2 10.375 4.793 5.488 9.613L10.963 13.277C13.414 11.535 16.516 10.75 19.875 10.75L24 10.75Z" fill="#4285F4"/>
+                </svg>
+                <span>Войти через Google</span>
+            </button>
+            <button id="anonymous-sign-in-btn" class="w-full px-6 py-3 bg-gray-500 text-white rounded-xl shadow-md hover:bg-gray-600 transition-colors duration-200">
+                Войти анонимно
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Импортируем необходимые модули Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyClLqWpPTEqEHiK8zSnmnZxGgGaBfUjJUI",
+  authDomain: "chatkadra.firebaseapp.com",
+  projectId: "chatkadra",
+  storageBucket: "chatkadra.firebasestorage.app",
+  messagingSenderId: "718721620513",
+  appId: "1:718721620513:web:3852fea7977815f3022160",
+  measurementId: "G-VNCBVRD753"
+};
+        // *************************************************
+
+        // Инициализируем Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Получаем ссылки на элементы DOM
+        const authStatusEl = document.getElementById('auth-status');
+        const authButtonsSection = document.getElementById('auth-buttons-section');
+        const userInfoSection = document.getElementById('user-info-section');
+        const userProfileEl = document.getElementById('user-profile');
+        const userPhotoEl = document.getElementById('user-photo');
+        const userNameEl = document.getElementById('user-name');
+        const userEmailEl = document.getElementById('user-email');
+        const userUidEl = document.getElementById('user-uid');
+        const googleSignInBtn = document.getElementById('google-sign-in-btn');
+        const anonymousSignInBtn = document.getElementById('anonymous-sign-in-btn');
+        const signOutBtn = document.getElementById('sign-out-btn');
+
+        // Обработчик входа через Google
+        const handleGoogleSignIn = async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithRedirect(auth, provider);
+            } catch (error) {
+                console.error("Ошибка входа через Google:", error);
+            }
+        };
+
+        // Обработчик анонимного входа
+        const handleAnonymousSignIn = async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Ошибка анонимного входа:", error);
+            }
+        };
+
+        // Обработчик выхода
+        const handleSignOut = async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Ошибка выхода:", error);
+            }
+        };
+
+        // Навешиваем обработчики событий на кнопки
+        googleSignInBtn.addEventListener('click', handleGoogleSignIn);
+        anonymousSignInBtn.addEventListener('click', handleAnonymousSignIn);
+        signOutBtn.addEventListener('click', handleSignOut);
+
+        // Слушатель изменения состояния авторизации
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Пользователь вошел в систему
+                authStatusEl.textContent = 'Вы вошли в систему!';
+                userProfileEl.classList.remove('hidden');
+                authButtonsSection.classList.add('hidden');
+
+                userNameEl.textContent = user.displayName || 'Анонимный пользователь';
+                userEmailEl.textContent = user.email || 'Нет данных';
+                userUidEl.textContent = `UID: ${user.uid}`;
+                userPhotoEl.src = user.photoURL || 'https://placehold.co/100x100?text=User';
+
+            } else {
+                // Пользователь вышел из системы
+                authStatusEl.textContent = 'Войдите в свой аккаунт';
+                userProfileEl.classList.add('hidden');
+                authButtonsSection.classList.remove('hidden');
+            }
+        });
+
+        // Обрабатываем результат перенаправления при загрузке страницы
+        window.addEventListener('DOMContentLoaded', async () => {
+            const result = await getRedirectResult(auth);
+            if (result) {
+                // Пользователь успешно вошел в систему
+                console.log("Успешный вход через перенаправление.");
+            }
+            // Показываем кнопки, когда все готово
+            authButtonsSection.classList.remove('hidden');
+        });
+
+    </script>
+</body>
+</html>
