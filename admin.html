@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Админка — Kadra Records</title>
+    <!-- Подключение Tailwind CSS для стилей -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Подключение Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Подключение Firebase SDK -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+    <style>
+        /* Базовые стили для всего документа */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #b3b3b3;
+            min-height: 100vh;
+            padding: 1rem;
+            width: 100%;
+            display: flex; /* Flexbox для двух колонок */
+            flex-direction: column; /* По умолчанию колонки располагаются вертикально */
+            gap: 1.5rem; /* Отступ между колонками */
+        }
+
+        /* Стили для десктопов: располагаем колонки горизонтально */
+        @media (min-width: 1024px) {
+            body {
+                flex-direction: row;
+            }
+        }
+
+        /* Общий стиль для блоков контента */
+        .container,
+        .content-block,
+        .links-block,
+        .player-block,
+        .calendar-block,
+        .chat-block {
+            background-color: #181818;
+            border-radius: 12px;
+            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        /* Стили для левой колонки */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* На десктопах фиксируем ширину левого столбца */
+        @media (min-width: 1024px) {
+            .left-column {
+                max-width: 600px;
+            }
+        }
+
+        /* Стили для правой колонки (календарь и чат) */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%; /* Занимает всю ширину на мобильных устройствах */
+        }
+
+        /* На десктопах фиксируем ширину правого столбца */
+        @media (min-width: 1024px) {
+            .right-column {
+                width: 600px;
+                max-width: 600px;
+            }
+        }
+
+        /* Контейнер для адаптивного календаря */
+        .responsive-calendar-container {
+            position: relative;
+            padding-bottom: 75%; /* Соотношение сторон 4:3 (75% от ширины) */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .responsive-calendar-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-width: 0;
+        }
+
+        /* Стили для форм */
+        form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        form input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #282828;
+            background-color: #282828;
+            color: #fff;
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+
+        form input:focus {
+            outline: none;
+            border-color: #1DB954;
+        }
+
+        /* Стили для кнопок */
+        .styled-button,
+        .link-button {
+            background-color: #1DB954;
+            color: #fff;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .styled-button:hover,
+        .link-button:hover {
+            background-color: #1ed760;
+            transform: scale(1.02);
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        /* Стили для ссылок */
+        .styled-link {
+            color: #b3b3b3;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .styled-link:hover {
+            color: #fff;
+        }
+
+        .form-description {
+            font-size: 0.875rem;
+            color: #a7a7a7;
+            margin-top: -1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Стили для сообщений об успехе */
+        #msg-success {
+            background-color: #1DB954;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Стили для блоков */
+        .content-block {
+            margin-bottom: 2rem;
+        }
+
+        .button-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .links-block h2,
+        .calendar-block h2,
+        .chat-block h2 {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Адаптивные стили для панели управления */
+        .admin-panel-title {
+            font-size: 1.875rem; /* text-3xl на десктопе */
+        }
+
+        @media (min-width: 1024px) {
+            .admin-panel-title {
+                font-size: 2.25rem; /* text-3xl на десктопе */
+            }
+        }
+
+        /* Стили для чата */
+        .chat-message {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            background-color: #282828;
+            color: #fff;
+        }
+
+        .chat-message-from-user {
+            background-color: #1DB954;
+            color: #fff;
+        }
+
+        .chat-message-from-other {
+            background-color: #4a4a4a;
+            color: #fff;
+        }
+
+        .message-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message-meta {
+            font-size: 0.75rem;
+            color: #a7a7a7;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Левая колонка для плеера, ссылок и админки -->
+    <div class="left-column">
+        <!-- Блок Spotify Embed -->
+        <div class="player-block">
+            <h2 class="text-2xl font-bold text-white mb-4">Плеер</h2>
+            <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7mdZ3K5u0nQv6GR7yXsdAX?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+
+        <!-- Блок с полезными ссылками -->
+        <div class="links-block">
+            <h2 class="text-2xl font-bold text-white mb-4">Полезные ссылки</h2>
+            <div class="button-list">
+                <a href="https://docs.google.com/spreadsheets/d/1wKI349DI_oJMimm04lAX7z7c_vR-r6FVWkj3kbuFWew/edit?usp=sharing" target="_blank">
+                    <button class="styled-button full-width">Редактировать таблицу</button>
+                </a>
+                <a href="chatgemini/swkr.html">
+                    <button class="styled-button full-width">Открыть чат с Gemini</button>
+                </a>
+                <a href="/topcheck/index.html">
+                    <button class="styled-button full-width">Перейти к Топ-чартам</button>
+                </a>
+                <a href="Songapp/songapp.html">
+                    <button class="styled-button full-width">Songapp</button>
+                </a>
+                <a href="#">
+                    <button class="styled-button full-width">Ссылка 5</button>
+                </a>
+                <a href="#">
+                    <button class="styled-button full-width">Ссылка 6</button>
+                </a>
+                <a href="#">
+                    <button class="styled-button full-width">Ссылка 7</button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Панель администратора -->
+        <div id="adminPanel" class="container" role="main" aria-label="Панель редактирования">
+            <!-- Заголовок адаптируется под размер экрана -->
+            <h1 class="text-2xl lg:text-3xl font-bold text-white mb-8">Панель управления</h1>
+
+            <div class="content-block">
+                <form id="release-form">
+                    <label for="release-date">Дата и время релиза (UTC):</label>
+                    <input type="datetime-local" id="release-date" name="release-date" required aria-describedby="release-date-desc" />
+                    <div id="release-date-desc" class="form-description">
+                    </div>
+
+                    <label for="timer-title">Название:</label>
+                    <input type="text" id="timer-title" name="timer-title" maxlength="40" placeholder="Например: Релиз через" aria-describedby="timer-title-desc" />
+                    <div id="timer-title-desc" class="form-description">
+                    </div>
+
+                    <button type="submit" class="styled-button full-width">Сохранить дату и название</button>
+                </form>
+            </div>
+
+            <div class="message-block">
+                <div class="message" id="msg-success" role="alert" aria-live="polite" style="display: none;">Данные успешно сохранены!</div>
+            </div>
+
+            <div class="content-block">
+                <form id="link-form">
+                    <p class="mb-2">Ссылка:</p>
+                    <input type="url" id="track-link-input" placeholder="https://ссылка-на-ваш-трек.com" required/>
+                    <div class="form-description">
+                        Эту ссылку будет использовать кнопка "Слушать!"
+                    </div>
+                    <button type="submit" class="styled-button full-width">Сохранить ссылку</button>
+                </form>
+            </div>
+
+            <div class="navigation-block flex justify-start items-center mb-4">
+                <a href="index.html" class="styled-link font-semibold">← Вернуться на главную</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая колонка для чата и Google Календаря -->
+    <div class="right-column">
+        <!-- Блок для чата -->
+        <div class="chat-block container">
+            <!-- Отображаем полный ID пользователя рядом с заголовком -->
+            <h2 class="text-2xl font-bold text-white mb-2">Чат <span id="user-id-display" class="text-lg font-normal text-gray-400"></span></h2>
+            <div class="chat-window h-96 overflow-y-auto border border-[#282828] bg-black p-4 rounded-lg flex flex-col gap-2" id="chat-window">
+                <!-- Сообщения будут добавляться сюда -->
+            </div>
+            <form id="chat-form" class="mt-4 flex gap-2">
+                <input type="text" id="chat-input" class="w-full p-2 border border-[#282828] bg-[#282828] rounded-lg text-white" placeholder="Напишите сообщение..." />
+                <button type="submit" class="bg-[#1DB954] text-white p-2 rounded-lg font-bold">Отправить</button>
+            </form>
+        </div>
+
+        <!-- Блок для Google Календаря -->
+        <div class="calendar-block">
+            <h2 class="text-2xl font-bold text-white mb-4">Календарь</h2>
+            <div class="responsive-calendar-container">
+                <!-- ВСТАВЬТЕ СЮДА СВОЙ URL-АДРЕС ДЛЯ ВСТРАИВАНИЯ КАЛЕНДАРЯ -->
+                <!-- Вы можете получить его в Google Calendar в разделе "Настройки и доступ" -> "Интегрировать календарь" -->
+                <iframe src="https://calendar.google.com/calendar/embed?src=en.usa%23holiday%40group.v.calendar.google.com&ctz=America%2FNew_York"
+                    frameborder="0"
+                    scrolling="no">
+                </iframe>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Глобальные переменные, предоставленные средой Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Инициализация Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let userId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const releaseForm = document.getElementById('release-form');
+            const linkForm = document.getElementById('link-form');
+            const successMessage = document.getElementById('msg-success');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatWindow = document.getElementById('chat-window');
+            const userIdDisplay = document.getElementById('user-id-display');
+
+            // Авторизация пользователя
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                userId = auth.currentUser.uid;
+                // Теперь отображается полный ID пользователя
+                userIdDisplay.textContent = `(ID: ${userId})`;
+                console.log(`User signed in with ID: ${userId}`);
+            } catch (error) {
+                console.error("Firebase auth error:", error);
+            }
+
+            // Обработчик сохранения даты и названия
+            releaseForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const releaseDate = document.getElementById('release-date').value;
+                const timerTitle = document.getElementById('timer-title').value;
+
+                localStorage.setItem('releaseDate', releaseDate);
+                localStorage.setItem('timerTitle', timerTitle);
+
+                showSuccessMessage();
+            });
+
+            // Обработчик сохранения ссылки
+            linkForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const trackLink = document.getElementById('track-link-input').value;
+                localStorage.setItem('releaseTrackLink', trackLink);
+                showSuccessMessage();
+            });
+
+            // Загрузка сохраненных данных
+            function loadSavedData() {
+                const savedDate = localStorage.getItem('releaseDate');
+                const savedTitle = localStorage.getItem('timerTitle');
+                const savedLink = localStorage.getItem('releaseTrackLink');
+
+                if (savedDate) {
+                    document.getElementById('release-date').value = savedDate;
+                }
+                if (savedTitle) {
+                    document.getElementById('timer-title').value = savedTitle;
+                }
+                if (savedLink) {
+                    document.getElementById('track-link-input').value = savedLink;
+                }
+            }
+
+            // Функция для показа сообщения об успехе
+            function showSuccessMessage() {
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+            }
+
+            // ---- Функциональность чата ----
+
+            // Отправка сообщения в Firestore
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const messageText = chatInput.value.trim();
+                if (messageText === "") return;
+
+                const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/chat_messages`);
+                try {
+                    await addDoc(messagesCollectionRef, {
+                        userId: userId,
+                        text: messageText,
+                        timestamp: serverTimestamp(),
+                    });
+                    chatInput.value = '';
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                }
+            });
+
+            // Слушатель для получения сообщений в реальном времени
+            const q = query(
+                collection(db, `artifacts/${appId}/public/data/chat_messages`),
+                orderBy("timestamp", "asc"),
+                limit(50) // Ограничиваем количество сообщений
+            );
+
+            onSnapshot(q, (querySnapshot) => {
+                chatWindow.innerHTML = ''; // Очищаем окно чата
+                querySnapshot.forEach((doc) => {
+                    const msg = doc.data();
+                    const isCurrentUser = msg.userId === userId;
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `chat-message ${isCurrentUser ? 'chat-message-from-user' : 'chat-message-from-other'}`;
+
+                    const meta = document.createElement('div');
+                    meta.className = 'message-meta text-xs opacity-75';
+                    // Улучшена обработка даты, чтобы избежать ошибок, если timestamp отсутствует
+                    const date = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString() : 'N/A';
+                    meta.textContent = `${isCurrentUser ? 'Вы' : `ID: ${msg.userId}`} (${date})`;
+
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
+                    content.textContent = msg.text;
+
+                    messageElement.appendChild(meta);
+                    messageElement.appendChild(content);
+
+                    // ИСПРАВЛЕНИЕ: Добавляем созданный элемент в окно чата
+                    chatWindow.appendChild(messageElement);
+                });
+                // Прокрутка вниз к новым сообщениям
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }, (error) => {
+                console.error("Error listening for messages: ", error);
+            });
+
+            // Загружаем данные при загрузке страницы
+            loadSavedData();
+        });
+    </script>
+</body>
+
+</html>
