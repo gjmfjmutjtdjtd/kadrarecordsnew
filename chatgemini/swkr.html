@@ -11,12 +11,8 @@
   <!-- React и ReactDOM CDNs -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel для преобразование JSX в браузере -->
+  <!-- Babel для преобразования JSX в браузере -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Firebase CDN (версия 8.10.1 для совместимости) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <style>
     /* Кастомные стили для шрифта Inter */
     body {
@@ -31,7 +27,10 @@
   </div>
 
   <script type="text/babel">
-    // Instructions for the AI model, defining the KADRA style
+    // Импорт хуков useState, useEffect и useCallback
+    const { useState, useEffect, useCallback } = React;
+
+    // Инструкции для AI-модели, определяющие стиль KADRA
     const KADRA_SYSTEM_INSTRUCTION = `
 РОЛЬ: KADRA-помощник
 ЗАДАЧА: Ты — эксперт по лирике в стиле KADRA. Твоя задача — писать тексты по запросу пользователя.
@@ -64,123 +63,54 @@
       };
     }
     
-    // Main App component
+    // Главный компонент приложения
     function App() {
-      // Import useState and useEffect hooks from React
-      const { useState, useEffect, useCallback } = React;
-
-      // State for AI functionality
+      // Состояние для функционала AI
       const [loading, setLoading] = useState(false);
       const [generatedText, setGeneratedText] = useState("");
       const [error, setError] = useState("");
       const [activeRequest, setActiveRequest] = useState('');
 
-      // State for new blocks
+      // Состояние для новых блоков
       const [showPlayer, setShowPlayer] = useState(false);
       const [showPlayer2, setShowPlayer2] = useState(false); 
       const [notesContent, setNotesContent] = useState('');
-      const [notesLoading, setNotesLoading] = useState(true);
+      const [showSettingsModal, setShowSettingsModal] = useState(false);
+      const [showPasswordModal, setShowPasswordModal] = useState(false); // Новый стейт для модального окна пароля
 
-      // State for Firebase
-      const [db, setDb] = useState(null);
-      const [auth, setAuth] = useState(null);
-      const [userId, setUserId] = useState(null);
+      // Состояние для настроек API. Ключ теперь задан в коде.
+      const [apiKey, setApiKey] = useState('AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo');
 
-      // State for API settings
-      const [api_key, setApiKey] = useState('AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo');
-
-      // Firebase Initialization and Authentication
+      // Эффект для загрузки заметок из Local Storage при загрузке страницы
       useEffect(() => {
-        let unsubscribeAuth = () => {};
-        let unsubscribeNotes = () => {};
-        
-        try {
-          // Get variables from the external environment
-          const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-          const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-          
-          if (firebaseConfig) {
-            // Initialize Firebase with V8 SDK
-            const app = firebase.initializeApp(firebaseConfig);
-            const authInstance = firebase.auth();
-            const firestoreDb = firebase.firestore();
-            setDb(firestoreDb);
-            setAuth(authInstance);
-
-            const signIn = async () => {
-              try {
-                if (initialAuthToken) {
-                  await authInstance.signInWithCustomToken(initialAuthToken);
-                } else {
-                  await authInstance.signInAnonymously();
-                }
-              } catch (e) {
-                console.error("Firebase auth error:", e);
-                setError("Ошибка авторизации. Попробуйте перезагрузить страницу.");
-              }
-            };
-            signIn();
-
-            // onAuthStateChanged - V8 syntax
-            unsubscribeAuth = authInstance.onAuthStateChanged((user) => {
-              if (user) {
-                setUserId(user.uid);
-                // Load notes only after successful authentication
-                const notesRef = firestoreDb.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('notes').doc('user_notes');
-                
-                // onSnapshot - V8 syntax
-                unsubscribeNotes = notesRef.onSnapshot((docSnap) => {
-                  if (docSnap.exists) {
-                    setNotesContent(docSnap.data().content);
-                  } else {
-                    setNotesContent(""); 
-                  }
-                  setNotesLoading(false);
-                }, (error) => {
-                  console.error("Error fetching notes:", error);
-                  setError("Ошибка загрузки заметок. Пожалуйста, попробуйте еще раз.");
-                  setNotesLoading(false);
-                });
-              } else {
-                setUserId(null);
-                setNotesLoading(false);
-              }
-            });
-          }
-        } catch (e) {
-          console.error("Firebase initialization error:", e);
-          setError("Ошибка инициализации Firebase. Заметки могут не сохраняться.");
-          setNotesLoading(false);
+        const savedNotes = localStorage.getItem('kadra_songwriter_notes');
+        if (savedNotes) {
+          setNotesContent(savedNotes);
         }
-
-        return () => {
-          unsubscribeAuth();
-          if (unsubscribeNotes) {
-            unsubscribeNotes();
-          }
-        };
       }, []);
 
-      // Function to save notes to Firestore (with debounce)
-      const saveNotes = useCallback(debounce(async (content) => {
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        if (db && userId && appId) {
-          try {
-            // V8 syntax for setting document data
-            const notesRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('notes').doc('user_notes');
-            await notesRef.set({ content: content || '' }, { merge: true });
-            console.log("Notes saved successfully!");
-          } catch (e) {
-            console.error("Error saving notes:", e);
-          }
-        }
-      }, 500), [db, userId]);
+      // Эффект для сохранения заметок в Local Storage при каждом изменении
+      // Используем debounce, чтобы не записывать данные слишком часто
+      useEffect(() => {
+        const saveNotes = debounce(() => {
+          localStorage.setItem('kadra_songwriter_notes', notesContent);
+        }, 500);
 
-      // Function to call the API and generate text
+        if (notesContent !== null) {
+          saveNotes();
+        }
+
+        // Функция очистки для отмены таймера, если компонент размонтируется
+        return () => {
+          clearTimeout(saveNotes);
+        };
+      }, [notesContent]);
+
+      // Функция для вызова API и генерации текста
       const generateLyrics = useCallback(async (prompt) => {
-        const apiKey = api_key;
-        if (!apiKey) {
+        const key = apiKey || ''; // Ключ будет взят из состояния
+        
+        if (!key) {
           setError("API-ключ не задан. Пожалуйста, откройте настройки и вставьте ваш ключ.");
           return;
         }
@@ -202,7 +132,7 @@
             generationConfig: generation_config
           };
 
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model_name}:generateContent?key=${apiKey}`;
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model_name}:generateContent?key=${key}`;
 
           const response = await fetch(apiUrl, {
             method: 'POST',
@@ -229,15 +159,15 @@
         } finally {
           setLoading(false);
         }
-      }, [api_key]); // Dependency array: regenerate this function if api_key changes
+      }, [apiKey]); 
 
-      // Handler for AI generation button clicks
+      // Обработчик нажатий на кнопки
       const handleButtonClick = (type) => {
         let prompt = '';
         setActiveRequest(type);
         switch (type) {
           case 'intro':
-            prompt = 'Напиши интро для трека в стиле KADRA.';
+            prompt = 'Напиши интро для трека в стиле KADRA. Отвечай на русском языке.';
             break;
           case 'chorus':
             prompt = 'Напиши припев для трека в стиле KADRA.';
@@ -246,7 +176,7 @@
             prompt = 'Напиши куплет для трека в стиле KADRA.';
             break;
           case 'outro':
-            prompt = 'Напиши аутро для трека в стиле KADRA.';
+            prompt = 'Напиши аутро для трека в стиле KADRA. Отвечай на русском языке.';
             break;
           case 'full_track':
             prompt = 'Напиши полный трек (интро, припев, куплет, аутро) в стиле KADRA.';
@@ -257,14 +187,14 @@
         generateLyrics(prompt);
       };
 
-      // Render the main component
+      // Рендер главного компонента
       return (
         <div className="min-h-screen bg-gray-950 text-gray-100 font-inter flex flex-col items-center p-4 relative overflow-hidden">
           
-          {/* Settings button in the top-left corner */}
+          {/* Кнопка настроек */}
           <div className="fixed top-4 left-4 z-50">
             <button
-              onClick={() => setShowSettingsModal(true)}
+              onClick={() => setShowPasswordModal(true)} // Теперь открывает модальное окно пароля
               className="
                 p-2 rounded-full text-gray-400 hover:text-gray-200 transition-colors duration-300
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 ring-offset-gray-950
@@ -278,16 +208,14 @@
             </button>
           </div>
 
-          {/* Floating player buttons in the bottom-right corner */}
+          {/* Плавающие кнопки плееров */}
           <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-50">
-            {/* Player button 1 (Trap) */}
             <SmallPlayerButton 
               onClick={() => { setShowPlayer(!showPlayer); setShowPlayer2(false); }} 
               title="Открыть плейлист Trap"
             >
               Trap
             </SmallPlayerButton>
-            {/* Player button 2 (G-House) */}
             <SmallPlayerButton 
               onClick={() => { setShowPlayer2(!showPlayer2); setShowPlayer(false); }} 
               title="Открыть плейлист G-House"
@@ -296,7 +224,7 @@
             </SmallPlayerButton>
           </div>
 
-          {/* Header section, centered and responsive */}
+          {/* Заголовок */}
           <div className="w-full max-w-4xl text-center mb-8">
             <h1 className="text-5xl font-extrabold text-green-400 mb-2 drop-shadow-lg">KADRA Сонграйтер</h1>
             <p className="text-xl text-gray-300">
@@ -304,7 +232,7 @@
             </p>
           </div>
           
-          {/* AI generation buttons, centered and wrapped */}
+          {/* Кнопки генерации AI */}
           <div className="flex flex-wrap justify-center gap-4 mb-8 w-full max-w-2xl">
             <Button onClick={() => handleButtonClick('intro')} active={activeRequest === 'intro'}>
               Интро
@@ -323,7 +251,7 @@
             </Button>
           </div>
 
-          {/* AI output area, responsive and with error/loading states */}
+          {/* Область вывода AI */}
           <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
             {loading && (
               <div className="flex justify-center items-center h-48">
@@ -348,30 +276,21 @@
             )}
           </div>
 
-          {/* Notes section, now permanently on the main screen */}
+          {/* Секция заметок */}
           <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-200 mb-4">Ваши заметки</h2>
-            {notesLoading ? (
-              <div className="text-center text-gray-500 py-12">
-                Загрузка заметок...
-              </div>
-            ) : (
-              <textarea
-                value={notesContent}
-                onChange={(e) => {
-                  setNotesContent(e.target.value);
-                  saveNotes(e.target.value);
-                }}
-                className="w-full h-48 p-3 rounded-lg bg-gray-900 text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Пишите здесь ваши заметки, идеи, или черновики..."
-              ></textarea>
-            )}
+            <textarea
+              value={notesContent}
+              onChange={(e) => setNotesContent(e.target.value)}
+              className="w-full h-48 p-3 rounded-lg bg-gray-900 text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Пишите здесь ваши заметки, идеи, или черновики..."
+            ></textarea>
             <p className="mt-2 text-sm text-gray-500">
-              Ваши заметки автоматически сохраняются. User ID: {userId || '...'}
+              Заметки автоматически сохраняются в вашем браузере.
             </p>
           </div>
 
-          {/* Player section 1 that slides out from the right to be a full-screen modal */}
+          {/* Плеер 1 */}
           <div className={`
             fixed top-0 right-0 h-full w-full bg-gray-900 border-l border-gray-700
             transform transition-transform duration-500 z-40
@@ -399,7 +318,7 @@
             </div>
           </div>
 
-          {/* Player section 2 for the new playlist */}
+          {/* Плеер 2 */}
           <div className={`
             fixed top-0 right-0 h-full w-full bg-gray-900 border-l border-gray-700
             transform transition-transform duration-500 z-40
@@ -427,16 +346,36 @@
             </div>
           </div>
           
-          {/* Footer */}
+          {/* Футер */}
           <div className="mt-12 text-center text-gray-500 text-sm">
             <p>Создано с Gemini API</p>
           </div>
+
+          {/* Модальное окно пароля */}
+          {showPasswordModal && (
+            <PasswordModal
+              onSuccess={() => {
+                setShowPasswordModal(false);
+                setShowSettingsModal(true);
+              }}
+              onClose={() => setShowPasswordModal(false)}
+            />
+          )}
+
+          {/* Модальное окно настроек */}
+          {showSettingsModal && (
+            <SettingsModal 
+              onClose={() => setShowSettingsModal(false)} 
+              apiKey={apiKey} 
+              setApiKey={setApiKey}
+            />
+          )}
 
         </div>
       );
     }
     
-    // Custom button component
+    // Кастомный компонент кнопки
     const Button = ({ children, onClick, active }) => (
       <button
         onClick={onClick}
@@ -452,7 +391,7 @@
       </button>
     );
 
-    // Custom small, round player button component
+    // Кастомный компонент маленькой кнопки плеера
     const SmallPlayerButton = ({ children, onClick, title }) => (
       <button
         onClick={onClick}
@@ -467,7 +406,84 @@
       </button>
     );
 
-    // Render the root component into the DOM
+    // Кастомный компонент модального окна настроек
+    const SettingsModal = ({ onClose, apiKey, setApiKey }) => (
+      <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-50">
+        <div className="bg-gray-800 rounded-xl shadow-2xl p-8 max-w-2xl w-full">
+          <h2 className="text-3xl font-bold text-gray-200 mb-4">Настройки</h2>
+          <div className="mb-4">
+            <label htmlFor="api-key" className="block text-gray-400 font-medium mb-2">API Key (уже задан)</label>
+            <input 
+              type="text" 
+              id="api-key" 
+              value={apiKey} 
+              onChange={(e) => setApiKey(e.target.value)} 
+              className="w-full p-3 rounded-lg bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="API-ключ уже задан"
+            />
+          </div>
+          <div className="flex justify-end gap-4">
+            <Button onClick={onClose}>
+              Закрыть
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+    
+    // Кастомный компонент модального окна пароля
+    const PasswordModal = ({ onSuccess, onClose }) => {
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+      const correctPassword = 'Ioioiohyadfg';
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (password === correctPassword) {
+          onSuccess();
+        } else {
+          setError('Неверный пароль. Попробуйте еще раз.');
+          setPassword('');
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-50">
+          <div className="bg-gray-800 rounded-xl shadow-2xl p-8 max-w-sm w-full">
+            <h2 className="text-2xl font-bold text-gray-200 mb-4 text-center">Введите пароль</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <input 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Пароль"
+                />
+              </div>
+              {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
+              <div className="flex justify-center gap-4">
+                <button
+                  type="submit"
+                  className="px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 text-white hover:bg-green-500 ring-green-500 ring-offset-gray-950"
+                >
+                  Войти
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-700 text-gray-200 hover:bg-gray-600 ring-gray-600 ring-offset-gray-950"
+                >
+                  Отмена
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    };
+    
+    // Рендер компонента в DOM
     const rootElement = document.getElementById('root');
     ReactDOM.createRoot(rootElement).render(<App />);
 
