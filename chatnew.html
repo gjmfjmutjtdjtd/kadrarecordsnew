@@ -372,6 +372,7 @@
         // Firebase Authentication
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                console.log("onAuthStateChanged: Пользователь вошел в систему.", user.uid);
                 currentUserId = user.uid;
                 userName = `AnonUser_${currentUserId.substring(0, 8)}`; // Generate a simple username
                 userIdDisplay.textContent = `Ваш ID: ${currentUserId}`;
@@ -380,6 +381,7 @@
                 setupMessageListener(); // Start listening for messages once authenticated
                 showMessageBox('Вы вошли в чат как ' + userName, 'success');
             } else {
+                console.log("onAuthStateChanged: Пользователь не вошел в систему.");
                 // User is not logged in, show authentication options
                 authSection.classList.remove('hidden');
                 chatContainer.classList.add('hidden');
@@ -387,23 +389,15 @@
                 userName = null;
                 userIdDisplay.textContent = '';
                 showMessageBox('Пожалуйста, войдите в свой аккаунт.', 'info');
-
-                // If a custom auth token is available, try to sign in with it immediately
-                if (initialAuthToken) {
-                    try {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } catch (error) {
-                        console.error("Ошибка аутентификации с токеном:", error);
-                        showMessageBox("Ошибка аутентификации с токеном. Попробуйте войти анонимно.", "error");
-                    }
-                }
             }
         });
 
         // Event listeners for authentication buttons
         anonymousSignInBtn.addEventListener('click', async () => {
+            console.log("Нажата кнопка анонимного входа.");
             try {
                 await signInAnonymously(auth);
+                // onAuthStateChanged will handle UI update
             } catch (error) {
                 console.error("Ошибка анонимной аутентификации:", error);
                 showMessageBox("Ошибка анонимной аутентификации: " + error.message, "error");
@@ -411,14 +405,29 @@
         });
 
         googleSignInBtn.addEventListener('click', () => {
+            console.log("Нажата кнопка входа через Google.");
             showMessageBox("Вход через Google не реализован в этой версии чата.", "info");
             // In a real application, you would implement Google sign-in here.
             // Example: signInWithPopup(auth, new GoogleAuthProvider());
         });
 
-        // Initial setup
-        window.onload = function() {
-            // onAuthStateChanged handles showing/hiding UI and setting up listeners
+        // Initial setup to try custom token login if available
+        window.onload = async function() {
+            if (initialAuthToken) {
+                console.log("window.onload: Попытка входа с пользовательским токеном.");
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    // onAuthStateChanged will handle success
+                } catch (error) {
+                    console.error("window.onload: Ошибка аутентификации с токеном:", error);
+                    showMessageBox("Ошибка аутентификации с токеном. Пожалуйста, войдите анонимно.", "error");
+                    // onAuthStateChanged will then fire with user=null, showing authSection
+                }
+            } else {
+                console.log("window.onload: Пользовательский токен аутентификации недоступен.");
+                // If no initialAuthToken, onAuthStateChanged will eventually fire with null user
+                // and show the authSection, letting the user choose.
+            }
         };
     </script>
 </body>
