@@ -225,6 +225,8 @@
     <div id="messageBox" role="alert"></div>
 
     <script type="module">
+        console.log("Script start: Executing Firebase chat application.");
+
         // Firebase configuration (empty for now, will be populated by Canvas)
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -246,23 +248,27 @@
         // Display a message box instead of alert()
         function showMessageBox(message, type = 'error', duration = 3000) {
             const messageBox = document.getElementById('messageBox');
-            messageBox.textContent = message;
-            messageBox.style.display = 'block';
+            if (messageBox) { // Check if element exists before manipulating
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
 
-            if (type === 'error') {
-                messageBox.style.backgroundColor = '#f8d7da';
-                messageBox.style.color = '#721c24';
-            } else if (type === 'success') {
-                messageBox.style.backgroundColor = '#d4edda';
-                messageBox.style.color = '#155724';
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#f8d7da';
+                    messageBox.style.color = '#721c24';
+                } else if (type === 'success') {
+                    messageBox.style.backgroundColor = '#d4edda';
+                    messageBox.style.color = '#155724';
+                } else {
+                    messageBox.style.backgroundColor = '#d1ecf1';
+                    messageBox.style.color = '#0c5460';
+                }
+
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, duration);
             } else {
-                messageBox.style.backgroundColor = '#d1ecf1';
-                messageBox.style.color = '#0c5460';
+                console.warn("MessageBox element not found. Message:", message);
             }
-
-            setTimeout(() => {
-                messageBox.style.display = 'none';
-            }, duration);
         }
 
         // --- Frontend JavaScript ---
@@ -276,9 +282,21 @@
         const googleSignInBtn = document.getElementById('googleSignInBtn');
         const anonymousSignInBtn = document.getElementById('anonymousSignInBtn');
 
+        // Log to confirm element retrieval
+        console.log("DOM elements check:");
+        console.log("  authSection:", authSection);
+        console.log("  chatContainer:", chatContainer);
+        console.log("  googleSignInBtn:", googleSignInBtn);
+        console.log("  anonymousSignInBtn:", anonymousSignInBtn);
+        console.log("  sendBtn:", sendBtn);
+        console.log("  messageInput:", messageInput);
+        console.log("  userIdDisplay:", userIdDisplay);
+
 
         // Function to display messages in the chat interface
         function displayMessage(message, isSent) {
+            if (!chatMessages) return; // Ensure chatMessages element exists
+
             const messageBubble = document.createElement('div');
             messageBubble.classList.add('message-bubble');
             messageBubble.classList.add(isSent ? 'sent' : 'received');
@@ -306,15 +324,18 @@
         // Function to load messages from Firestore
         function setupMessageListener() {
             if (!currentUserId) {
-                console.warn("User not authenticated yet, cannot set up message listener.");
+                console.warn("setupMessageListener: Пользователь не аутентифицирован, не могу настроить слушатель сообщений.");
                 return;
             }
+            console.log("setupMessageListener: Настройка слушателя сообщений для пользователя", currentUserId);
 
             // Public chat collection path
             const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
             const q = query(messagesCollectionRef);
 
             onSnapshot(q, (snapshot) => {
+                if (!chatMessages) return; // Ensure chatMessages element exists
+
                 chatMessages.innerHTML = ''; // Clear existing messages
                 const messages = [];
                 snapshot.forEach(doc => {
@@ -329,7 +350,7 @@
                     displayMessage(msg, isSent);
                 });
             }, (error) => {
-                console.error('Ошибка при загрузке сообщений из Firestore:', error);
+                console.error('setupMessageListener: Ошибка при загрузке сообщений из Firestore:', error);
                 showMessageBox('Ошибка при загрузке сообщений: ' + error.message, 'error');
             });
         }
@@ -338,14 +359,17 @@
         async function sendMessage() {
             const messageText = messageInput.value.trim();
             if (messageText === '') {
+                console.log("sendMessage: Пустое сообщение, отправка отменена.");
                 return; // Don't send empty messages
             }
             if (!currentUserId) {
                 showMessageBox('Пользователь не аутентифицирован. Попробуйте еще раз.', 'error');
+                console.warn("sendMessage: Попытка отправить сообщение неаутентифицированным пользователем.");
                 return;
             }
 
             try {
+                console.log("sendMessage: Отправка сообщения в Firestore от пользователя", userName);
                 // Public chat collection path
                 const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
                 await addDoc(messagesCollectionRef, {
@@ -355,19 +379,31 @@
                     userId: currentUserId
                 });
                 messageInput.value = ''; // Clear input field
+                console.log("sendMessage: Сообщение успешно отправлено.");
             } catch (error) {
-                console.error('Ошибка при отправке сообщения в Firestore:', error);
+                console.error('sendMessage: Ошибка при отправке сообщения в Firestore:', error);
                 showMessageBox('Ошибка при отправке сообщения: ' + error.message, 'error');
             }
         }
 
         // Event listeners for chat input and send button
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        if (sendBtn) {
+            sendBtn.addEventListener('click', sendMessage);
+            console.log("Event listener attached to sendBtn.");
+        } else {
+            console.error("sendBtn not found in DOM.");
+        }
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            console.log("Event listener attached to messageInput for keypress.");
+        } else {
+            console.error("messageInput not found in DOM.");
+        }
+
 
         // Firebase Authentication
         onAuthStateChanged(auth, async (user) => {
@@ -375,48 +411,60 @@
                 console.log("onAuthStateChanged: Пользователь вошел в систему.", user.uid);
                 currentUserId = user.uid;
                 userName = `AnonUser_${currentUserId.substring(0, 8)}`; // Generate a simple username
-                userIdDisplay.textContent = `Ваш ID: ${currentUserId}`;
-                authSection.classList.add('hidden'); // Hide auth section
-                chatContainer.classList.remove('hidden'); // Show chat container
+                if (userIdDisplay) userIdDisplay.textContent = `Ваш ID: ${currentUserId}`;
+                if (authSection) authSection.classList.add('hidden'); // Hide auth section
+                if (chatContainer) chatContainer.classList.remove('hidden'); // Show chat container
                 setupMessageListener(); // Start listening for messages once authenticated
                 showMessageBox('Вы вошли в чат как ' + userName, 'success');
             } else {
                 console.log("onAuthStateChanged: Пользователь не вошел в систему.");
                 // User is not logged in, show authentication options
-                authSection.classList.remove('hidden');
-                chatContainer.classList.add('hidden');
+                if (authSection) authSection.classList.remove('hidden');
+                if (chatContainer) chatContainer.classList.add('hidden');
                 currentUserId = null;
                 userName = null;
-                userIdDisplay.textContent = '';
+                if (userIdDisplay) userIdDisplay.textContent = '';
                 showMessageBox('Пожалуйста, войдите в свой аккаунт.', 'info');
             }
         });
 
         // Event listeners for authentication buttons
-        anonymousSignInBtn.addEventListener('click', async () => {
-            console.log("Нажата кнопка анонимного входа.");
-            try {
-                await signInAnonymously(auth);
-                // onAuthStateChanged will handle UI update
-            } catch (error) {
-                console.error("Ошибка анонимной аутентификации:", error);
-                showMessageBox("Ошибка анонимной аутентификации: " + error.message, "error");
-            }
-        });
+        if (anonymousSignInBtn) {
+            anonymousSignInBtn.addEventListener('click', async () => {
+                console.log("Нажата кнопка анонимного входа.");
+                try {
+                    await signInAnonymously(auth);
+                    // onAuthStateChanged will handle UI update
+                } catch (error) {
+                    console.error("Ошибка анонимной аутентификации:", error);
+                    showMessageBox("Ошибка анонимной аутентификации: " + error.message, "error");
+                }
+            });
+            console.log("Event listener attached to anonymousSignInBtn.");
+        } else {
+            console.error("anonymousSignInBtn not found in DOM.");
+        }
 
-        googleSignInBtn.addEventListener('click', () => {
-            console.log("Нажата кнопка входа через Google.");
-            showMessageBox("Вход через Google не реализован в этой версии чата.", "info");
-            // In a real application, you would implement Google sign-in here.
-            // Example: signInWithPopup(auth, new GoogleAuthProvider());
-        });
+        if (googleSignInBtn) {
+            googleSignInBtn.addEventListener('click', () => {
+                console.log("Нажата кнопка входа через Google.");
+                showMessageBox("Вход через Google не реализован в этой версии чата.", "info");
+                // In a real application, you would implement Google sign-in here.
+                // Example: signInWithPopup(auth, new GoogleAuthProvider());
+            });
+            console.log("Event listener attached to googleSignInBtn.");
+        } else {
+            console.error("googleSignInBtn not found in DOM.");
+        }
 
         // Initial setup to try custom token login if available
         window.onload = async function() {
+            console.log("window.onload: Функция onload запущена.");
             if (initialAuthToken) {
                 console.log("window.onload: Попытка входа с пользовательским токеном.");
                 try {
                     await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("window.onload: Вход с токеном успешен.");
                     // onAuthStateChanged will handle success
                 } catch (error) {
                     console.error("window.onload: Ошибка аутентификации с токеном:", error);
@@ -424,7 +472,7 @@
                     // onAuthStateChanged will then fire with user=null, showing authSection
                 }
             } else {
-                console.log("window.onload: Пользовательский токен аутентификации недоступен.");
+                console.log("window.onload: Пользовательский токен аутентификации недоступен. Ожидание выбора пользователя.");
                 // If no initialAuthToken, onAuthStateChanged will eventually fire with null user
                 // and show the authSection, letting the user choose.
             }
