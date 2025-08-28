@@ -11,10 +11,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Подключение Firebase SDK -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
     <style>
         /* Базовые стили для всего документа */
         body {
@@ -24,12 +20,11 @@
             min-height: 100vh;
             padding: 1rem;
             width: 100%;
-            display: flex; /* Flexbox для двух колонок */
-            flex-direction: column; /* По умолчанию колонки располагаются вертикально */
-            gap: 1.5rem; /* Отступ между колонками */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
-        /* Стили для десктопов: располагаем колонки горизонтально */
         @media (min-width: 1024px) {
             body {
                 flex-direction: row;
@@ -57,7 +52,6 @@
             gap: 1.5rem;
         }
 
-        /* На десктопах фиксируем ширину левого столбца */
         @media (min-width: 1024px) {
             .left-column {
                 max-width: 600px;
@@ -69,10 +63,9 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            width: 100%; /* Занимает всю ширину на мобильных устройствах */
+            width: 100%;
         }
 
-        /* На десктопах фиксируем ширину правого столбца */
         @media (min-width: 1024px) {
             .right-column {
                 width: 600px;
@@ -83,7 +76,7 @@
         /* Контейнер для адаптивного календаря */
         .responsive-calendar-container {
             position: relative;
-            padding-bottom: 75%; /* Соотношение сторон 4:3 (75% от ширины) */
+            padding-bottom: 75%;
             height: 0;
             overflow: hidden;
             border-radius: 12px;
@@ -124,7 +117,8 @@
 
         /* Стили для кнопок */
         .styled-button,
-        .link-button {
+        .link-button,
+        .auth-button {
             background-color: #1DB954;
             color: #fff;
             font-weight: 600;
@@ -136,7 +130,8 @@
         }
 
         .styled-button:hover,
-        .link-button:hover {
+        .link-button:hover,
+        .auth-button:hover {
             background-color: #1ed760;
             transform: scale(1.02);
         }
@@ -163,15 +158,22 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Стили для сообщений об успехе */
-        #msg-success {
-            background-color: #1DB954;
-            color: #fff;
+        /* Стили для сообщений об успехе/ошибке */
+        .message {
             padding: 0.5rem 1rem;
             border-radius: 8px;
             text-align: center;
             margin-bottom: 1.5rem;
         }
+        #msg-success {
+            background-color: #1DB954;
+            color: #fff;
+        }
+        #msg-error {
+            background-color: #ef4444; /* Красный для ошибок */
+            color: #fff;
+        }
+
 
         /* Стили для блоков */
         .content-block {
@@ -195,170 +197,402 @@
 
         /* Адаптивные стили для панели управления */
         .admin-panel-title {
-            font-size: 1.875rem; /* text-3xl на десктопе */
+            font-size: 1.875rem;
         }
 
         @media (min-width: 1024px) {
             .admin-panel-title {
-                font-size: 2.25rem; /* text-3xl на десктопе */
+                font-size: 2.25rem;
             }
         }
 
-        /* Стили для чата */
-        .chat-message {
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            border-radius: 8px;
-            background-color: #282828;
+        /* Новые стили для чата в стиле Spotify */
+        .chat-block {
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Убедитесь, что блок чата может расти, если нужно */
+        }
+
+        .chat-header {
             color: #fff;
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-window {
+            flex-grow: 1; /* Позволяет окну чата занимать всё доступное пространство */
+            overflow-y: auto;
+            border: none;
+            background-color: #121212;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* Сообщения */
+        .chat-message {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.95rem;
+            color: #fff; /* Явно устанавливаем белый цвет текста для всех сообщений */
         }
 
         .chat-message-from-user {
-            background-color: #1DB954;
-            color: #fff;
+            align-self: flex-end;
+            text-align: right;
         }
 
         .chat-message-from-other {
-            background-color: #4a4a4a;
-            color: #fff;
+            align-self: flex-start;
+            text-align: left;
         }
 
         .message-content {
-            white-space: pre-wrap;
+            background-color: #282828;
+            color: #fff; /* Явно устанавливаем белый цвет текста */
+            padding: 0.6rem 1rem;
+            border-radius: 12px;
+            max-width: 80%;
             word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .chat-message-from-user .message-content {
+            background-color: #1DB954;
+            color: #fff; /* Явно устанавливаем белый цвет текста */
         }
 
         .message-meta {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #a7a7a7;
+            margin-top: 0.25rem;
+        }
+
+        .chat-message-from-user .message-meta {
+            text-align: right;
+        }
+
+        /* Поле ввода и кнопка */
+        .chat-form {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            border: none;
+            background-color: #282828;
+            color: #fff; /* Явно устанавливаем белый цвет текста */
+            padding: 0.75rem 1rem;
+            border-radius: 9999px;
+            outline: none;
+            transition: background-color 0.2s;
+        }
+
+        .chat-input:focus {
+            background-color: #333333;
+        }
+
+        .chat-send-button {
+            background-color: #1DB954;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .chat-send-button:hover {
+            background-color: #1ed760;
+            transform: scale(1.05);
         }
     </style>
 </head>
 
 <body>
-    <!-- Левая колонка для плеера, ссылок и админки -->
-    <div class="left-column">
-        <!-- Блок Spotify Embed -->
-        <div class="player-block">
-            <h2 class="text-2xl font-bold text-white mb-4">Плеер</h2>
-            <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7mdZ3K5u0nQv6GR7yXsdAX?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-        </div>
+    <!-- Секция аутентификации -->
+    <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4" style="background-color: #121212;">
+        <div class="bg-gradient-to-br from-gray-800 to-black p-8 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
+            <h1 class="text-3xl font-bold text-center mb-6 text-white">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">Kadra Records</span>
+            </h1>
+            <h2 class="text-xl font-semibold text-center mb-6 text-gray-300">Вход / Регистрация</h2>
 
-        <!-- Блок с полезными ссылками -->
-        <div class="links-block">
-            <h2 class="text-2xl font-bold text-white mb-4">Полезные ссылки</h2>
-            <div class="button-list">
-                <a href="https://docs.google.com/spreadsheets/d/1wKI349DI_oJMimm04lAX7z7c_vR-r6FVWkj3kbuFWew/edit?usp=sharing" target="_blank">
-                    <button class="styled-button full-width">Редактировать таблицу</button>
-                </a>
-                <a href="chatgemini/swkr.html">
-                    <button class="styled-button full-width">Открыть чат с Gemini</button>
-                </a>
-                <a href="/topcheck/index.html">
-                    <button class="styled-button full-width">Перейти к Топ-чартам</button>
-                </a>
-                <a href="Songapp/songapp.html">
-                    <button class="styled-button full-width">Songapp</button>
-                </a>
-                <a href="#">
-                    <button class="styled-button full-width">Ссылка 5</button>
-                </a>
-                <a href="#">
-                    <button class="styled-button full-width">Ссылка 6</button>
-                </a>
-                <a href="#">
-                    <button class="styled-button full-width">Ссылка 7</button>
-                </a>
-            </div>
-        </div>
+            <div id="auth-message-box" class="message hidden mb-4"></div>
 
-        <!-- Панель администратора -->
-        <div id="adminPanel" class="container" role="main" aria-label="Панель редактирования">
-            <!-- Заголовок адаптируется под размер экрана -->
-            <h1 class="text-2xl lg:text-3xl font-bold text-white mb-8">Панель управления</h1>
-
-            <div class="content-block">
-                <form id="release-form">
-                    <label for="release-date">Дата и время релиза (UTC):</label>
-                    <input type="datetime-local" id="release-date" name="release-date" required aria-describedby="release-date-desc" />
-                    <div id="release-date-desc" class="form-description">
-                    </div>
-
-                    <label for="timer-title">Название:</label>
-                    <input type="text" id="timer-title" name="timer-title" maxlength="40" placeholder="Например: Релиз через" aria-describedby="timer-title-desc" />
-                    <div id="timer-title-desc" class="form-description">
-                    </div>
-
-                    <button type="submit" class="styled-button full-width">Сохранить дату и название</button>
-                </form>
-            </div>
-
-            <div class="message-block">
-                <div class="message" id="msg-success" role="alert" aria-live="polite" style="display: none;">Данные успешно сохранены!</div>
-            </div>
-
-            <div class="content-block">
-                <form id="link-form">
-                    <p class="mb-2">Ссылка:</p>
-                    <input type="url" id="track-link-input" placeholder="https://ссылка-на-ваш-трек.com" required/>
-                    <div class="form-description">
-                        Эту ссылку будет использовать кнопка "Слушать!"
-                    </div>
-                    <button type="submit" class="styled-button full-width">Сохранить ссылку</button>
-                </form>
-            </div>
-
-            <div class="navigation-block flex justify-start items-center mb-4">
-                <a href="index.html" class="styled-link font-semibold">← Вернуться на главную</a>
+            <div class="space-y-4">
+                <div>
+                    <label for="auth-phone-number" class="block text-sm font-medium text-gray-400 mb-1">Номер телефона</label>
+                    <input type="text" id="auth-phone-number" class="w-full px-4 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-green-500 focus:border-green-500" placeholder="+7 (XXX) XXX-XX-XX">
+                </div>
+                <div>
+                    <label for="auth-password" class="block text-sm font-medium text-gray-400 mb-1">Пароль</label>
+                    <input type="password" id="auth-password" class="w-full px-4 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-green-500 focus:border-green-500" placeholder="Пароль">
+                </div>
+                <button id="login-button" class="auth-button full-width py-2.5">Войти</button>
+                <button id="register-button" class="auth-button full-width py-2.5 bg-gray-600 hover:bg-gray-500">Зарегистрироваться</button>
             </div>
         </div>
     </div>
 
-    <!-- Правая колонка для чата и Google Календаря -->
-    <div class="right-column">
-        <!-- Блок для чата -->
-        <div class="chat-block container">
-            <!-- Отображаем полный ID пользователя рядом с заголовком -->
-            <h2 class="text-2xl font-bold text-white mb-2">Чат <span id="user-id-display" class="text-lg font-normal text-gray-400"></span></h2>
-            <div class="chat-window h-96 overflow-y-auto border border-[#282828] bg-black p-4 rounded-lg flex flex-col gap-2" id="chat-window">
-                <!-- Сообщения будут добавляться сюда -->
+    <!-- Основное содержимое приложения (скрыто до аутентификации) -->
+    <div id="app-content" class="hidden w-full flex flex-col lg:flex-row gap-6">
+        <div class="left-column">
+            <div class="player-block">
+                <h2 class="text-2xl font-bold text-white mb-4">Плеер</h2>
+                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7mdZ3K5u0nQv6GR7yXsdAX?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
             </div>
-            <form id="chat-form" class="mt-4 flex gap-2">
-                <input type="text" id="chat-input" class="w-full p-2 border border-[#282828] bg-[#282828] rounded-lg text-white" placeholder="Напишите сообщение..." />
-                <button type="submit" class="bg-[#1DB954] text-white p-2 rounded-lg font-bold">Отправить</button>
-            </form>
+
+            <div class="links-block">
+                <h2 class="text-2xl font-bold text-white mb-4">Полезные ссылки</h2>
+                <div class="button-list">
+                    <a href="https://docs.google.com/spreadsheets/d/1wKI349DI_oJMimm04lAX7z7c_vR-r6FVWkj3kbuFWew/edit?usp=sharing" target="_blank">
+                        <button class="styled-button full-width">Редактировать таблицу</button>
+                    </a>
+                    <a href="chatgemini/swkr.html">
+                        <button class="styled-button full-width">Открыть чат с Gemini</button>
+                    </a>
+                    <a href="/topcheck/index.html">
+                        <button class="styled-button full-width">Перейти к Топ-чартам</button>
+                    </a>
+                    <a href="Songapp/songapp.html">
+                        <button class="styled-button full-width">Songapp</button>
+                    </a>
+                    <a href="#">
+                        <button class="styled-button full-width">Ссылка 5</button>
+                    </a>
+                    <a href="#">
+                        <button class="styled-button full-width">Ссылка 6</button>
+                    </a>
+                    <a href="#">
+                        <button class="styled-button full-width">Ссылка 7</button>
+                    </a>
+                </div>
+            </div>
+
+            <div id="adminPanel" class="container" role="main" aria-label="Панель редактирования">
+                <h1 class="text-2xl lg:text-3xl font-bold text-white mb-8">Панель управления</h1>
+
+                <div class="content-block">
+                    <form id="release-form">
+                        <label for="release-date">Дата и время релиза (UTC):</label>
+                        <input type="datetime-local" id="release-date" name="release-date" required aria-describedby="release-date-desc" />
+                        <div id="release-date-desc" class="form-description">
+                        </div>
+
+                        <label for="timer-title">Название:</label>
+                        <input type="text" id="timer-title" name="timer-title" maxlength="40" placeholder="Например: Релиз через" aria-describedby="timer-title-desc" />
+                        <div id="timer-title-desc" class="form-description">
+                        </div>
+
+                        <button type="submit" class="styled-button full-width">Сохранить дату и название</button>
+                    </form>
+                </div>
+
+                <div class="message-block">
+                    <div class="message" id="msg-success" role="alert" aria-live="polite" style="display: none;">Данные успешно сохранены!</div>
+                </div>
+
+                <div class="content-block">
+                    <form id="link-form">
+                        <p class="mb-2">Ссылка:</p>
+                        <input type="url" id="track-link-input" placeholder="https://ссылка-на-ваш-трек.com" required />
+                        <div class="form-description">
+                            Эту ссылку будет использовать кнопка "Слушать!"
+                        </div>
+                        <button type="submit" class="styled-button full-width">Сохранить ссылку</button>
+                    </form>
+                </div>
+
+                <div class="navigation-block flex justify-start items-center mb-4">
+                    <a href="index.html" class="styled-link font-semibold">← Вернуться на главную</a>
+                </div>
+            </div>
         </div>
 
-        <!-- Блок для Google Календаря -->
-        <div class="calendar-block">
-            <h2 class="text-2xl font-bold text-white mb-4">Календарь</h2>
-            <div class="responsive-calendar-container">
-                <!-- ВСТАВЬТЕ СЮДА СВОЙ URL-АДРЕС ДЛЯ ВСТРАИВАНИЯ КАЛЕНДАРЯ -->
-                <!-- Вы можете получить его в Google Calendar в разделе "Настройки и доступ" -> "Интегрировать календарь" -->
-                <iframe src="https://calendar.google.com/calendar/embed?src=en.usa%23holiday%40group.v.calendar.google.com&ctz=America%2FNew_York"
-                    frameborder="0"
-                    scrolling="no">
-                </iframe>
+        <div class="right-column">
+            <div class="chat-block container">
+                <div class="chat-header">
+                    <h2>Чат</h2>
+                    <div class="flex items-center space-x-2">
+                        <span id="user-id-display" class="text-sm font-normal text-gray-400"></span>
+                        <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-full transition-colors duration-200">Выйти</button>
+                    </div>
+                </div>
+                <div class="chat-window" id="chat-window">
+                </div>
+                <form id="chat-form" class="chat-form">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Напишите сообщение..." />
+                    <button type="button" id="chat-send-button" class="chat-send-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <div class="calendar-block">
+                <h2 class="text-2xl font-bold text-white mb-4">Календарь</h2>
+                <div class="responsive-calendar-container">
+                    <iframe src="https://calendar.google.com/calendar/embed?src=en.usa%23holiday%40group.v.calendar.google.com&ctz=America%2FNew_York" frameborder="0" scrolling="no">
+                    </iframe>
+                </div>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // =============================================================================================
+        // Локальная система аутентификации
+        // =============================================================================================
 
-        // Глобальные переменные, предоставленные средой Canvas
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // Элементы UI для аутентификации
+        const authScreen = document.getElementById('auth-screen');
+        const appContent = document.getElementById('app-content');
+        const authPhoneNumberInput = document.getElementById('auth-phone-number');
+        const authPasswordInput = document.getElementById('auth-password');
+        const loginButton = document.getElementById('login-button');
+        const registerButton = document.getElementById('register-button');
+        const logoutButton = document.getElementById('logout-button');
+        const authMessageBox = document.getElementById('auth-message-box');
 
-        // Инициализация Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let userId = null;
+        // Глобальная переменная для текущего пользователя
+        let currentUserId = null; // Будет хранить номер телефона пользователя
 
+        // Утилита для отображения сообщений (успех/ошибка)
+        function showMessage(element, type, text) {
+            element.classList.remove('hidden');
+            element.textContent = text;
+            if (type === 'success') {
+                element.classList.remove('bg-red-500');
+                element.classList.add('bg-green-500');
+            } else {
+                element.classList.remove('bg-green-500');
+                element.classList.add('bg-red-500');
+            }
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Простая функция для хэширования пароля (для локального хранения)
+        // В реальных приложениях используйте более надежные методы!
+        function hashPassword(password) {
+            return btoa(password); // Простое Base64 кодирование
+        }
+
+        // Получение списка всех пользователей из localStorage
+        function getUsers() {
+            const users = localStorage.getItem('localUsers');
+            return users ? JSON.parse(users) : {};
+        }
+
+        // Сохранение списка пользователей в localStorage
+        function saveUsers(users) {
+            localStorage.setItem('localUsers', JSON.stringify(users));
+        }
+
+        // Регистрация нового пользователя
+        function registerUser(phoneNumber, password) {
+            const users = getUsers();
+            if (users[phoneNumber]) {
+                showMessage(authMessageBox, 'error', 'Пользователь с таким номером уже существует!');
+                return false;
+            }
+            users[phoneNumber] = hashPassword(password);
+            saveUsers(users);
+            showMessage(authMessageBox, 'success', 'Регистрация успешна! Теперь войдите.');
+            return true;
+        }
+
+        // Аутентификация пользователя
+        function authenticateUser(phoneNumber, password) {
+            const users = getUsers();
+            const storedPasswordHash = users[phoneNumber];
+            if (storedPasswordHash && storedPasswordHash === hashPassword(password)) {
+                return true;
+            }
+            return false;
+        }
+
+        // Вход пользователя
+        function login(phoneNumber) {
+            localStorage.setItem('currentUser', phoneNumber);
+            currentUserId = phoneNumber;
+            showAppContent();
+            renderLocalMessages(); // Обновляем чат после входа
+            const userIdDisplay = document.getElementById('user-id-display');
+            if (userIdDisplay) {
+                userIdDisplay.textContent = `Вы: ${currentUserId}`;
+            }
+        }
+
+        // Выход пользователя
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUserId = null;
+            showAuthScreen();
+            location.reload(); // Перезагружаем страницу для полной очистки состояния
+        }
+
+        // Показать экран аутентификации
+        function showAuthScreen() {
+            authScreen.classList.remove('hidden');
+            appContent.classList.add('hidden');
+        }
+
+        // Показать содержимое приложения
+        function showAppContent() {
+            authScreen.classList.add('hidden');
+            appContent.classList.remove('hidden');
+        }
+
+        // Обработчики кнопок аутентификации
+        loginButton.addEventListener('click', () => {
+            const phoneNumber = authPhoneNumberInput.value.trim();
+            const password = authPasswordInput.value.trim();
+
+            if (!phoneNumber || !password) {
+                showMessage(authMessageBox, 'error', 'Пожалуйста, введите номер телефона и пароль.');
+                return;
+            }
+
+            if (authenticateUser(phoneNumber, password)) {
+                login(phoneNumber);
+            } else {
+                showMessage(authMessageBox, 'error', 'Неверный номер телефона или пароль.');
+            }
+        });
+
+        registerButton.addEventListener('click', () => {
+            const phoneNumber = authPhoneNumberInput.value.trim();
+            const password = authPasswordInput.value.trim();
+
+            if (!phoneNumber || !password) {
+                showMessage(authMessageBox, 'error', 'Пожалуйста, введите номер телефона и пароль для регистрации.');
+                return;
+            }
+            if (registerUser(phoneNumber, password)) {
+                // После регистрации можно автоматически войти
+                login(phoneNumber);
+            }
+        });
+
+        logoutButton.addEventListener('click', logout);
+
+
+        // =============================================================================================
+        // Основная логика приложения
+        // =============================================================================================
         document.addEventListener('DOMContentLoaded', async () => {
             const releaseForm = document.getElementById('release-form');
             const linkForm = document.getElementById('link-form');
@@ -367,41 +601,49 @@
             const chatInput = document.getElementById('chat-input');
             const chatWindow = document.getElementById('chat-window');
             const userIdDisplay = document.getElementById('user-id-display');
+            const chatSendButton = document.getElementById('chat-send-button');
 
-            // Авторизация пользователя
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
+            // Проверяем, есть ли активная сессия пользователя
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                currentUserId = storedUser;
+                showAppContent();
+                if (userIdDisplay) {
+                    userIdDisplay.textContent = `Вы: ${currentUserId}`;
+                    console.log(`Текущий пользователь: ${currentUserId}`);
                 }
-                userId = auth.currentUser.uid;
-                // Теперь отображается полный ID пользователя
-                userIdDisplay.textContent = `(ID: ${userId})`;
-                console.log(`User signed in with ID: ${userId}`);
-            } catch (error) {
-                console.error("Firebase auth error:", error);
+            } else {
+                showAuthScreen();
             }
 
+
             // Обработчик сохранения даты и названия
-            releaseForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const releaseDate = document.getElementById('release-date').value;
-                const timerTitle = document.getElementById('timer-title').value;
+            if (releaseForm) {
+                releaseForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const releaseDate = document.getElementById('release-date').value;
+                    const timerTitle = document.getElementById('timer-title').value;
 
-                localStorage.setItem('releaseDate', releaseDate);
-                localStorage.setItem('timerTitle', timerTitle);
+                    localStorage.setItem('releaseDate', releaseDate);
+                    localStorage.setItem('timerTitle', timerTitle);
 
-                showSuccessMessage();
-            });
+                    showSuccessMessage();
+                });
+            } else {
+                console.warn("Форма 'release-form' не найдена.");
+            }
 
             // Обработчик сохранения ссылки
-            linkForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const trackLink = document.getElementById('track-link-input').value;
-                localStorage.setItem('releaseTrackLink', trackLink);
-                showSuccessMessage();
-            });
+            if (linkForm) {
+                linkForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const trackLink = document.getElementById('track-link-input').value;
+                    localStorage.setItem('releaseTrackLink', trackLink);
+                    showSuccessMessage();
+                });
+            } else {
+                console.warn("Форма 'link-form' не найдена.");
+            }
 
             // Загрузка сохраненных данных
             function loadSavedData() {
@@ -410,83 +652,114 @@
                 const savedLink = localStorage.getItem('releaseTrackLink');
 
                 if (savedDate) {
-                    document.getElementById('release-date').value = savedDate;
+                    const releaseDateInput = document.getElementById('release-date');
+                    if (releaseDateInput) releaseDateInput.value = savedDate;
                 }
                 if (savedTitle) {
-                    document.getElementById('timer-title').value = savedTitle;
+                    const timerTitleInput = document.getElementById('timer-title');
+                    if (timerTitleInput) timerTitleInput.value = savedTitle;
                 }
                 if (savedLink) {
-                    document.getElementById('track-link-input').value = savedLink;
+                    const trackLinkInput = document.getElementById('track-link-input');
+                    if (trackLinkInput) trackLinkInput.value = savedLink;
                 }
             }
 
             // Функция для показа сообщения об успехе
             function showSuccessMessage() {
-                successMessage.style.display = 'block';
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 3000);
+                if (successMessage) {
+                    successMessage.style.display = 'block';
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 3000);
+                }
             }
 
-            // ---- Функциональность чата ----
+            // ---- Функциональность локального чата ----
 
-            // Отправка сообщения в Firestore
-            chatForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const messageText = chatInput.value.trim();
-                if (messageText === "") return;
-
-                const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/chat_messages`);
-                try {
-                    await addDoc(messagesCollectionRef, {
-                        userId: userId,
-                        text: messageText,
-                        timestamp: serverTimestamp(),
-                    });
-                    chatInput.value = '';
-                } catch (e) {
-                    console.error("Error adding document: ", e);
+            // Функция для рендеринга сообщений
+            function renderLocalMessages() {
+                if (!chatWindow) {
+                    console.error("Ошибка: Окно чата ('chat-window') не найдено.");
+                    return;
                 }
-            });
+                chatWindow.innerHTML = ''; // Очищаем окно чата перед рендерингом
+                const messages = JSON.parse(localStorage.getItem('localChatMessages') || '[]');
 
-            // Слушатель для получения сообщений в реальном времени
-            const q = query(
-                collection(db, `artifacts/${appId}/public/data/chat_messages`),
-                orderBy("timestamp", "asc"),
-                limit(50) // Ограничиваем количество сообщений
-            );
-
-            onSnapshot(q, (querySnapshot) => {
-                chatWindow.innerHTML = ''; // Очищаем окно чата
-                querySnapshot.forEach((doc) => {
-                    const msg = doc.data();
-                    const isCurrentUser = msg.userId === userId;
+                messages.forEach((msg) => {
+                    const isCurrentUser = msg.userId === currentUserId;
                     const messageElement = document.createElement('div');
                     messageElement.className = `chat-message ${isCurrentUser ? 'chat-message-from-user' : 'chat-message-from-other'}`;
-
-                    const meta = document.createElement('div');
-                    meta.className = 'message-meta text-xs opacity-75';
-                    // Улучшена обработка даты, чтобы избежать ошибок, если timestamp отсутствует
-                    const date = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString() : 'N/A';
-                    meta.textContent = `${isCurrentUser ? 'Вы' : `ID: ${msg.userId}`} (${date})`;
 
                     const content = document.createElement('div');
                     content.className = 'message-content';
                     content.textContent = msg.text;
 
-                    messageElement.appendChild(meta);
-                    messageElement.appendChild(content);
+                    const meta = document.createElement('div');
+                    meta.className = 'message-meta';
+                    const date = new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                    meta.textContent = `${isCurrentUser ? 'Вы' : msg.userId} • ${date}`; // Отображаем полный номер телефона
 
-                    // ИСПРАВЛЕНИЕ: Добавляем созданный элемент в окно чата
+                    messageElement.appendChild(content);
+                    messageElement.appendChild(meta);
                     chatWindow.appendChild(messageElement);
                 });
-                // Прокрутка вниз к новым сообщениям
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            }, (error) => {
-                console.error("Error listening for messages: ", error);
-            });
+                chatWindow.scrollTop = chatWindow.scrollHeight; // Прокручиваем вниз
+            }
 
-            // Загружаем данные при загрузке страницы
+            // Добавлена проверка, что chatSendButton существует перед добавлением слушателя
+            if (chatSendButton && chatInput && chatWindow) {
+                chatSendButton.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    console.log("Кнопка отправки чата нажата.");
+
+                    const messageText = chatInput.value.trim();
+                    if (messageText === "") {
+                        console.warn("Попытка отправить пустое сообщение.");
+                        return;
+                    }
+                    if (!currentUserId) {
+                        showMessage(authMessageBox, 'error', 'Для отправки сообщений необходимо войти.');
+                        return;
+                    }
+
+                    // Получаем текущие сообщения из localStorage
+                    const messages = JSON.parse(localStorage.getItem('localChatMessages') || '[]');
+                    const newMessage = {
+                        userId: currentUserId, // Используем текущий ID пользователя (номер телефона)
+                        text: messageText,
+                        timestamp: new Date().toISOString(), // Используем ISO-строку для даты
+                    };
+                    messages.push(newMessage);
+
+                    // Сохраняем обновленные сообщения в localStorage
+                    localStorage.setItem('localChatMessages', JSON.stringify(messages));
+
+                    console.log("Сообщение успешно добавлено в localStorage. Поле ввода очищено.");
+                    chatInput.value = ''; // Очищаем поле ввода
+                    renderLocalMessages(); // Обновляем отображение сообщений
+                });
+            } else {
+                console.error("Ошибка: Один или несколько элементов чата (кнопка отправки, поле ввода, окно чата) не найдены в DOM.");
+                if (chatInput) chatInput.disabled = true;
+                if (chatSendButton) chatSendButton.disabled = true;
+            }
+
+            if (chatInput && chatSendButton) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        chatSendButton.click();
+                    }
+                });
+            }
+
+            // При загрузке страницы, если пользователь вошел, рендерим существующие локальные сообщения
+            if (currentUserId) {
+                renderLocalMessages();
+            }
             loadSavedData();
         });
     </script>
