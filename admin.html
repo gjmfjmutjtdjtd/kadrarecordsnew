@@ -78,24 +78,6 @@
             }
         }
 
-        /* Контейнер для адаптивного календаря */
-        .responsive-calendar-container {
-            position: relative;
-            padding-bottom: 75%;
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-        }
-
-        .responsive-calendar-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-width: 0;
-        }
-
         /* Стили для форм */
         form label {
             display: block;
@@ -235,6 +217,22 @@
             border-radius: 8px;
             background-color: #121212; /* Цвет фона, как у остального чата */
         }
+
+        /* Стили для iframe календаря */
+        .calendar-block iframe {
+            width: 100%;
+            height: 600px; /* Фиксированная высота для десктопа */
+            border-width: 0;
+            border-radius: 12px; /* Применяем border-radius напрямую к iframe */
+            display: block; /* Убедимся, что iframe ведет себя как блочный элемент */
+        }
+
+        /* Возможно, для мобильных устройств захочется другую высоту */
+        @media (max-width: 768px) {
+            .calendar-block iframe {
+                height: 400px; /* Меньшая высота для мобильных устройств */
+            }
+        }
     </style>
 </head>
 
@@ -286,8 +284,8 @@
                     <a href="Songapp/songapp.html">
                         <button class="styled-button full-width">Songapp</button>
                     </a>
-                    <a href="/kadrachat.html">
-                        <button class="styled-button full-width">Чат новый</button>
+                    <a href="#">
+                        <button class="styled-button full-width">Ссылка 5</button>
                     </a>
                     <a href="#">
                         <button class="styled-button full-width">Ссылка 6</button>
@@ -348,15 +346,14 @@
                     </div>
                 </div>
                 <!-- Вместо div с чатом и формы, теперь iframe с Telegram Web -->
-                <iframe src="https://web.telegram.org/a/" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                <iframe src="https://dashboard.tawk.to/#/chat" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             </div>
 
             <div class="calendar-block">
                 <h2 class="text-2xl font-bold text-white mb-4">Календарь</h2>
-                <div class="responsive-calendar-container">
-                    <iframe src="https://calendar.google.com/calendar/embed?src=thekadrainfo%40gmail.com&ctz=Asia%2FMakassar" frameborder="0" scrolling="no">
-                    </iframe>
-                </div>
+                <!-- Убран div.responsive-calendar-container, iframe теперь напрямую в calendar-block -->
+                <iframe src="https://calendar.google.com/calendar/embed?src=thekadrainfo%40gmail.com&ctz=Asia%2FMakassar" frameborder="0" scrolling="no">
+                </iframe>
             </div>
         </div>
     </div>
@@ -372,7 +369,6 @@
             appId: "1:718721620513:web:3852fea7977815f3022160",
             measurementId: "G-VNCBVRD753"
         };
-        
 
         // Import Firebase services
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -663,9 +659,6 @@
                     }, 3000);
                 }
             }
-
-            // ---- Chat functionality via Firebase Firestore (удалено, теперь это Telegram Web) ----
-            // renderMessages, setupFirestoreChatListener, chatSendButton event listeners больше не нужны
         });
     </script>
     <!--Start of Tawk.to Script-->
