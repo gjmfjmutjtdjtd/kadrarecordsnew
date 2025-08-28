@@ -37,6 +37,7 @@
             border-top-right-radius: 1rem;
             font-size: 1.25rem;
             font-weight: 600;
+            position: relative; /* For userIdDisplay positioning */
         }
         .chat-messages {
             flex-grow: 1;
@@ -149,12 +150,65 @@
             margin-top: 0.5rem;
             word-break: break-all; /* Allow long user IDs to break to new line */
             padding: 0 1rem;
+            text-align: left; /* Align to left within header */
+        }
+        #authSection {
+            width: 100%;
+            max-width: 480px;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #authSection button {
+            width: 100%;
+            max-width: 250px;
+            padding: 0.75rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.75rem;
+        }
+        #authSection button:last-child {
+            margin-bottom: 0;
+        }
+        #authSection button.google-btn {
+            background-color: #db4437; /* Google Red */
+            color: #ffffff;
+        }
+        #authSection button.google-btn:hover {
+            background-color: #c23321;
+            transform: scale(1.02);
+        }
+        #authSection button.anon-btn {
+            background-color: #4f46e5; /* Indigo Blue */
+            color: #ffffff;
+        }
+        #authSection button.anon-btn:hover {
+            background-color: #4338ca;
+            transform: scale(1.02);
         }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
+    <div id="authSection" class="flex flex-col items-center justify-center hidden">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Авторизация</h2>
+        <button id="googleSignInBtn" class="google-btn">
+            Войти через Google
+        </button>
+        <button id="anonymousSignInBtn" class="anon-btn">
+            Войти анонимно
+        </button>
+    </div>
+
+    <div class="chat-container hidden" id="chatContainer">
         <div class="chat-header">
             Простой Чат
             <div id="userIdDisplay"></div>
@@ -216,6 +270,12 @@
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
         const userIdDisplay = document.getElementById('userIdDisplay');
+
+        const authSection = document.getElementById('authSection');
+        const chatContainer = document.getElementById('chatContainer');
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const anonymousSignInBtn = document.getElementById('anonymousSignInBtn');
+
 
         // Function to display messages in the chat interface
         function displayMessage(message, isSent) {
@@ -301,7 +361,7 @@
             }
         }
 
-        // Event listeners
+        // Event listeners for chat input and send button
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -315,26 +375,50 @@
                 currentUserId = user.uid;
                 userName = `AnonUser_${currentUserId.substring(0, 8)}`; // Generate a simple username
                 userIdDisplay.textContent = `Ваш ID: ${currentUserId}`;
+                authSection.classList.add('hidden'); // Hide auth section
+                chatContainer.classList.remove('hidden'); // Show chat container
                 setupMessageListener(); // Start listening for messages once authenticated
                 showMessageBox('Вы вошли в чат как ' + userName, 'success');
             } else {
-                try {
-                    if (initialAuthToken) {
+                // User is not logged in, show authentication options
+                authSection.classList.remove('hidden');
+                chatContainer.classList.add('hidden');
+                currentUserId = null;
+                userName = null;
+                userIdDisplay.textContent = '';
+                showMessageBox('Пожалуйста, войдите в свой аккаунт.', 'info');
+
+                // If a custom auth token is available, try to sign in with it immediately
+                if (initialAuthToken) {
+                    try {
                         await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
+                    } catch (error) {
+                        console.error("Ошибка аутентификации с токеном:", error);
+                        showMessageBox("Ошибка аутентификации с токеном. Попробуйте войти анонимно.", "error");
                     }
-                } catch (error) {
-                    console.error("Ошибка анонимной аутентификации:", error);
-                    showMessageBox("Ошибка аутентификации. Попробуйте обновить страницу.", "error");
                 }
             }
         });
 
+        // Event listeners for authentication buttons
+        anonymousSignInBtn.addEventListener('click', async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Ошибка анонимной аутентификации:", error);
+                showMessageBox("Ошибка анонимной аутентификации: " + error.message, "error");
+            }
+        });
+
+        googleSignInBtn.addEventListener('click', () => {
+            showMessageBox("Вход через Google не реализован в этой версии чата.", "info");
+            // In a real application, you would implement Google sign-in here.
+            // Example: signInWithPopup(auth, new GoogleAuthProvider());
+        });
+
         // Initial setup
         window.onload = function() {
-            // No need for setInterval here, onSnapshot provides real-time updates.
-            // setupMessageListener() is called after authentication.
+            // onAuthStateChanged handles showing/hiding UI and setting up listeners
         };
     </script>
 </body>
