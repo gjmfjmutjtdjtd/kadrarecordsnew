@@ -11,6 +11,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
     <style>
         /* Базовые стили для всего документа */
         body {
@@ -324,21 +328,20 @@
             <h1 class="text-3xl font-bold text-center mb-6 text-white">
                 <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">Kadra Records</span>
             </h1>
-            <h2 class="text-xl font-semibold text-center mb-6 text-gray-300">Вход / Регистрация</h2>
+            <h2 class="text-xl font-semibold text-center mb-6 text-gray-300">Вход</h2>
 
             <div id="auth-message-box" class="message hidden mb-4"></div>
 
             <div class="space-y-4">
                 <div>
-                    <label for="auth-phone-number" class="block text-sm font-medium text-gray-400 mb-1">Номер телефона</label>
-                    <input type="text" id="auth-phone-number" class="w-full px-4 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-green-500 focus:border-green-500" placeholder="+7 (XXX) XXX-XX-XX">
+                    <label for="auth-phone-number" class="block text-sm font-medium text-gray-400 mb-1">Логин</label>
+                    <input type="text" id="auth-phone-number" class="w-full px-4 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-green-500 focus:border-green-500" placeholder="Ваш логин">
                 </div>
                 <div>
                     <label for="auth-password" class="block text-sm font-medium text-gray-400 mb-1">Пароль</label>
                     <input type="password" id="auth-password" class="w-full px-4 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-green-500 focus:border-green-500" placeholder="Пароль">
                 </div>
                 <button id="login-button" class="auth-button full-width py-2.5">Войти</button>
-                <button id="register-button" class="auth-button full-width py-2.5 bg-gray-600 hover:bg-gray-500">Зарегистрироваться</button>
             </div>
         </div>
     </div>
@@ -428,6 +431,7 @@
                     </div>
                 </div>
                 <div class="chat-window" id="chat-window">
+                    <!-- Chat messages will be rendered here from Firestore -->
                 </div>
                 <form id="chat-form" class="chat-form">
                     <input type="text" id="chat-input" class="chat-input" placeholder="Напишите сообщение..." />
@@ -451,6 +455,27 @@
     </div>
 
     <script type="module">
+        // Firebase Configuration (ЗАМЕНЕНО ТВОИМИ ДАННЫМИ ИЗ КОНСОЛИ FIREBASE)
+        const firebaseConfig = {
+            apiKey: "AIzaSyClLqWpPTEqEHiK8zSnmnZxGgGaBfUjJUI",
+            authDomain: "chatkadra.firebaseapp.com",
+            projectId: "chatkadra",
+            storageBucket: "chatkadra.firebasestorage.app",
+            messagingSenderId: "718721620513",
+            appId: "1:718721620513:web:3852fea7977815f3022160",
+            measurementId: "G-VNCBVRD753"
+        };
+
+        // Import Firebase services
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
         // =============================================================================================
         // Локальная система аутентификации
         // =============================================================================================
@@ -461,14 +486,14 @@
         const authPhoneNumberInput = document.getElementById('auth-phone-number');
         const authPasswordInput = document.getElementById('auth-password');
         const loginButton = document.getElementById('login-button');
-        const registerButton = document.getElementById('register-button');
         const logoutButton = document.getElementById('logout-button');
         const authMessageBox = document.getElementById('auth-message-box');
+        const userIdDisplay = document.getElementById('user-id-display');
 
-        // Глобальная переменная для текущего пользователя
-        let currentUserId = null; // Будет хранить номер телефона пользователя
+        let currentLocalUserPhone = null; // Stores the phone number of the locally logged-in user
+        let currentFirebaseUserUid = null; // Stores the UID of the anonymous Firebase user
 
-        // Утилита для отображения сообщений (успех/ошибка)
+        // Utility for displaying messages (success/error)
         function showMessage(element, type, text) {
             element.classList.remove('hidden');
             element.textContent = text;
@@ -484,39 +509,38 @@
             }, 3000);
         }
 
-        // Простая функция для хэширования пароля (для локального хранения)
-        // В реальных приложениях используйте более надежные методы!
+        // Simple function for password hashing (for local storage)
+        // For real applications, use more robust methods!
         function hashPassword(password) {
-            return btoa(password); // Простое Base64 кодирование
+            return btoa(password); // Simple Base64 encoding
         }
 
-        // Получение списка всех пользователей из localStorage
-        function getUsers() {
+        // Get list of all users from localStorage
+        function getLocalUsers() {
             const users = localStorage.getItem('localUsers');
             return users ? JSON.parse(users) : {};
         }
 
-        // Сохранение списка пользователей в localStorage
-        function saveUsers(users) {
+        // Save list of users to localStorage
+        function saveLocalUsers(users) {
             localStorage.setItem('localUsers', JSON.stringify(users));
         }
 
-        // Регистрация нового пользователя
+        // Register new user (now only for automatic pre-registration)
         function registerUser(phoneNumber, password) {
-            const users = getUsers();
+            const users = getLocalUsers();
             if (users[phoneNumber]) {
-                showMessage(authMessageBox, 'error', 'Пользователь с таким номером уже существует!');
+                // User already exists, do nothing
                 return false;
             }
             users[phoneNumber] = hashPassword(password);
-            saveUsers(users);
-            showMessage(authMessageBox, 'success', 'Регистрация успешна! Теперь войдите.');
+            saveLocalUsers(users);
             return true;
         }
 
-        // Аутентификация пользователя
+        // Authenticate user
         function authenticateUser(phoneNumber, password) {
-            const users = getUsers();
+            const users = getLocalUsers();
             const storedPasswordHash = users[phoneNumber];
             if (storedPasswordHash && storedPasswordHash === hashPassword(password)) {
                 return true;
@@ -524,74 +548,76 @@
             return false;
         }
 
-        // Вход пользователя
-        function login(phoneNumber) {
+        // Log in user
+        async function login(phoneNumber) {
             localStorage.setItem('currentUser', phoneNumber);
-            currentUserId = phoneNumber;
-            showAppContent();
-            renderLocalMessages(); // Обновляем чат после входа
-            const userIdDisplay = document.getElementById('user-id-display');
-            if (userIdDisplay) {
-                userIdDisplay.textContent = `Вы: ${currentUserId}`;
+            currentLocalUserPhone = phoneNumber;
+            // Do NOT call showAppContent() here, onAuthStateChanged will handle it.
+
+            try {
+                // Attempt anonymous sign-in. onAuthStateChanged will pick this up.
+                await signInAnonymously(auth);
+                // Success handled by onAuthStateChanged
+            } catch (error) {
+                console.error("Ошибка анонимной авторизации Firebase после локального входа:", error);
+                showMessage(authMessageBox, 'error', 'Ошибка подключения к чату. Попробуйте снова.');
+                // If Firebase fails, we still want to log out the local user to keep states in sync
+                localStorage.removeItem('currentUser');
+                currentLocalUserPhone = null;
+                showAuthScreen(); // Stay on auth screen
+                // No reload here, as onAuthStateChanged handles the Firebase state change
             }
         }
 
-        // Выход пользователя
-        function logout() {
+        // Log out user
+        async function logout() {
+            try {
+                if (auth.currentUser) {
+                    await signOut(auth);
+                }
+            } catch (error) {
+                console.error("Ошибка выхода из Firebase:", error);
+            }
             localStorage.removeItem('currentUser');
-            currentUserId = null;
+            currentLocalUserPhone = null;
+            currentFirebaseUserUid = null;
             showAuthScreen();
-            location.reload(); // Перезагружаем страницу для полной очистки состояния
+            location.reload(); // Reload page for full state clear
         }
 
-        // Показать экран аутентификации
+        // Show authentication screen
         function showAuthScreen() {
             authScreen.classList.remove('hidden');
             appContent.classList.add('hidden');
         }
 
-        // Показать содержимое приложения
+        // Show application content
         function showAppContent() {
             authScreen.classList.add('hidden');
             appContent.classList.remove('hidden');
         }
 
-        // Обработчики кнопок аутентификации
+        // Handlers for authentication buttons
         loginButton.addEventListener('click', () => {
             const phoneNumber = authPhoneNumberInput.value.trim();
             const password = authPasswordInput.value.trim();
 
             if (!phoneNumber || !password) {
-                showMessage(authMessageBox, 'error', 'Пожалуйста, введите номер телефона и пароль.');
+                showMessage(authMessageBox, 'error', 'Пожалуйста, введите логин и пароль.');
                 return;
             }
 
             if (authenticateUser(phoneNumber, password)) {
                 login(phoneNumber);
             } else {
-                showMessage(authMessageBox, 'error', 'Неверный номер телефона или пароль.');
-            }
-        });
-
-        registerButton.addEventListener('click', () => {
-            const phoneNumber = authPhoneNumberInput.value.trim();
-            const password = authPasswordInput.value.trim();
-
-            if (!phoneNumber || !password) {
-                showMessage(authMessageBox, 'error', 'Пожалуйста, введите номер телефона и пароль для регистрации.');
-                return;
-            }
-            if (registerUser(phoneNumber, password)) {
-                // После регистрации можно автоматически войти
-                login(phoneNumber);
+                showMessage(authMessageBox, 'error', 'Неверный логин или пароль.');
             }
         });
 
         logoutButton.addEventListener('click', logout);
 
-
         // =============================================================================================
-        // Основная логика приложения
+        // Main application logic
         // =============================================================================================
         document.addEventListener('DOMContentLoaded', async () => {
             const releaseForm = document.getElementById('release-form');
@@ -600,24 +626,76 @@
             const chatForm = document.getElementById('chat-form');
             const chatInput = document.getElementById('chat-input');
             const chatWindow = document.getElementById('chat-window');
-            const userIdDisplay = document.getElementById('user-id-display');
             const chatSendButton = document.getElementById('chat-send-button');
 
-            // Проверяем, есть ли активная сессия пользователя
-            const storedUser = localStorage.getItem('currentUser');
-            if (storedUser) {
-                currentUserId = storedUser;
-                showAppContent();
-                if (userIdDisplay) {
-                    userIdDisplay.textContent = `Вы: ${currentUserId}`;
-                    console.log(`Текущий пользователь: ${currentUserId}`);
+            // === Pre-registration of user thekadrainfo ===
+            const preRegisteredPhone = "thekadrainfo"; 
+            const preRegisteredPassword = "Ioioiohyadfg";
+            if (registerUser(preRegisteredPhone, preRegisteredPassword)) {
+                console.log(`User ${preRegisteredPhone} added.`);
+            } else {
+                console.log(`User ${preRegisteredPhone} already exists.`);
+            }
+            // ==========================================================
+
+            // Listener for Firebase Auth state changes
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // User is signed in to Firebase
+                    currentFirebaseUserUid = user.uid;
+                    console.log("Firebase Auth State Changed: User is logged in, UID:", currentFirebaseUserUid);
+                    // Only show app content and set up chat listener if local user is also logged in
+                    if (currentLocalUserPhone) {
+                        showAppContent();
+                        if (userIdDisplay) {
+                            userIdDisplay.textContent = `Вы: ${currentLocalUserPhone}`;
+                        }
+                        setupFirestoreChatListener();
+                    } else {
+                        // Firebase user exists, but no local user. This might happen if localStorage was cleared.
+                        // Force logout to align states.
+                        console.warn("Firebase user exists, but no local user. Forcing logout.");
+                        await logout();
+                    }
+                } else {
+                    // User is signed out from Firebase
+                    currentFirebaseUserUid = null;
+                    console.log("Firebase Auth State Changed: User is logged out.");
+                    // If local user was logged in but Firebase isn't, force a full logout
+                    if (currentLocalUserPhone) {
+                        console.warn("Local user exists, but Firebase user is logged out. Forcing local logout.");
+                        await logout();
+                    } else {
+                        // No local and no firebase user, show auth screen
+                        showAuthScreen();
+                    }
+                }
+            });
+
+            // Initial check for local user on DOMContentLoaded
+            const storedUserPhone = localStorage.getItem('currentUser');
+            if (storedUserPhone) {
+                currentLocalUserPhone = storedUserPhone;
+                // If there's a local user, attempt anonymous sign-in in Firebase.
+                // The onAuthStateChanged listener will then react to this sign-in attempt.
+                if (!auth.currentUser) { // Check if Firebase user is NOT already signed in
+                    try {
+                        console.log("Attempting anonymous Firebase sign-in for existing local user.");
+                        await signInAnonymously(auth);
+                    } catch (error) {
+                        console.error("Ошибка анонимной авторизации Firebase при старте для существующего локального пользователя:", error);
+                        showMessage(authMessageBox, 'error', 'Ошибка подключения к чату. Попробуйте войти снова.');
+                        // If this fails, onAuthStateChanged will be called with null user, leading to logout if local user exists.
+                        // We let onAuthStateChanged handle the final state.
+                    }
                 }
             } else {
-                showAuthScreen();
+                showAuthScreen(); // No local user, always show auth screen
             }
 
+            loadSavedData(); // Load saved data for admin panel forms
 
-            // Обработчик сохранения даты и названия
+            // Handler for saving date and title
             if (releaseForm) {
                 releaseForm.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -633,7 +711,7 @@
                 console.warn("Форма 'release-form' не найдена.");
             }
 
-            // Обработчик сохранения ссылки
+            // Handler for saving link
             if (linkForm) {
                 linkForm.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -645,7 +723,7 @@
                 console.warn("Форма 'link-form' не найдена.");
             }
 
-            // Загрузка сохраненных данных
+            // Load saved data
             function loadSavedData() {
                 const savedDate = localStorage.getItem('releaseDate');
                 const savedTitle = localStorage.getItem('timerTitle');
@@ -665,7 +743,7 @@
                 }
             }
 
-            // Функция для показа сообщения об успехе
+            // Function to show success message
             function showSuccessMessage() {
                 if (successMessage) {
                     successMessage.style.display = 'block';
@@ -675,19 +753,26 @@
                 }
             }
 
-            // ---- Функциональность локального чата ----
+            // ---- Chat functionality via Firebase Firestore ----
 
-            // Функция для рендеринга сообщений
-            function renderLocalMessages() {
+            // Function to render messages
+            function renderMessages(messages) {
                 if (!chatWindow) {
                     console.error("Ошибка: Окно чата ('chat-window') не найдено.");
                     return;
                 }
-                chatWindow.innerHTML = ''; // Очищаем окно чата перед рендерингом
-                const messages = JSON.parse(localStorage.getItem('localChatMessages') || '[]');
+                chatWindow.innerHTML = ''; // Clear chat window before rendering
+
+                if (messages.length === 0) {
+                    const infoMessageElement = document.createElement('p');
+                    infoMessageElement.className = 'text-center text-gray-500 text-sm mt-4';
+                    infoMessageElement.textContent = 'Здесь пока нет сообщений. Будьте первым, кто напишет!';
+                    chatWindow.appendChild(infoMessageElement);
+                }
 
                 messages.forEach((msg) => {
-                    const isCurrentUser = msg.userId === currentUserId;
+                    // Use currentFirebaseUserUid to determine if the message is from the current user
+                    const isCurrentUser = msg.senderUid === currentFirebaseUserUid;
                     const messageElement = document.createElement('div');
                     messageElement.className = `chat-message ${isCurrentUser ? 'chat-message-from-user' : 'chat-message-from-other'}`;
 
@@ -697,52 +782,70 @@
 
                     const meta = document.createElement('div');
                     meta.className = 'message-meta';
-                    const date = new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-                    meta.textContent = `${isCurrentUser ? 'Вы' : msg.userId} • ${date}`; // Отображаем полный номер телефона
+                    const date = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : 'сейчас';
+                    meta.textContent = `${isCurrentUser ? 'Вы' : msg.senderName} • ${date}`;
 
                     messageElement.appendChild(content);
                     messageElement.appendChild(meta);
                     chatWindow.appendChild(messageElement);
                 });
-                chatWindow.scrollTop = chatWindow.scrollHeight; // Прокручиваем вниз
+                chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to bottom
             }
 
-            // Добавлена проверка, что chatSendButton существует перед добавлением слушателя
+            // Set up Firestore listener for chat
+            let unsubscribeFromChat = null; // To store the unsubscribe function
+            function setupFirestoreChatListener() {
+                // Unsubscribe from previous listener if it exists
+                if (unsubscribeFromChat) {
+                    unsubscribeFromChat();
+                    console.log("Unsubscribed from previous Firestore chat listener.");
+                }
+
+                const q = query(collection(db, "chats"), orderBy("timestamp", "asc"));
+                unsubscribeFromChat = onSnapshot(q, (snapshot) => {
+                    const messages = [];
+                    snapshot.forEach((doc) => {
+                        messages.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderMessages(messages);
+                }, (error) => {
+                    console.error("Ошибка при получении сообщений чата из Firestore:", error);
+                    showMessage(authMessageBox, 'error', 'Ошибка получения сообщений чата.');
+                });
+                console.log("Subscribed to Firestore chat listener.");
+            }
+
+            // Handler for sending messages
             if (chatSendButton && chatInput && chatWindow) {
                 chatSendButton.addEventListener('click', async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    console.log("Кнопка отправки чата нажата.");
-
                     const messageText = chatInput.value.trim();
                     if (messageText === "") {
-                        console.warn("Попытка отправить пустое сообщение.");
+                        console.warn("Attempted to send empty message.");
                         return;
                     }
-                    if (!currentUserId) {
-                        showMessage(authMessageBox, 'error', 'Для отправки сообщений необходимо войти.');
+                    if (!currentLocalUserPhone || !currentFirebaseUserUid) {
+                        showMessage(authMessageBox, 'error', 'Для отправки сообщений необходимо войти и подключиться к чату.');
                         return;
                     }
 
-                    // Получаем текущие сообщения из localStorage
-                    const messages = JSON.parse(localStorage.getItem('localChatMessages') || '[]');
-                    const newMessage = {
-                        userId: currentUserId, // Используем текущий ID пользователя (номер телефона)
-                        text: messageText,
-                        timestamp: new Date().toISOString(), // Используем ISO-строку для даты
-                    };
-                    messages.push(newMessage);
-
-                    // Сохраняем обновленные сообщения в localStorage
-                    localStorage.setItem('localChatMessages', JSON.stringify(messages));
-
-                    console.log("Сообщение успешно добавлено в localStorage. Поле ввода очищено.");
-                    chatInput.value = ''; // Очищаем поле ввода
-                    renderLocalMessages(); // Обновляем отображение сообщений
+                    try {
+                        await addDoc(collection(db, "chats"), {
+                            text: messageText,
+                            senderName: currentLocalUserPhone, // Use local phone number as name
+                            senderUid: currentFirebaseUserUid, // UID of the anonymous Firebase user
+                            timestamp: serverTimestamp()
+                        });
+                        chatInput.value = ''; // Clear input field
+                    } catch (error) {
+                        console.error("Ошибка отправки сообщения в Firestore:", error);
+                        showMessage(authMessageBox, 'error', 'Ошибка отправки сообщения. Попробуйте снова.');
+                    }
                 });
             } else {
-                console.error("Ошибка: Один или несколько элементов чата (кнопка отправки, поле ввода, окно чата) не найдены в DOM.");
+                console.error("Error: One or more chat elements (send button, input field, chat window) not found in DOM.");
                 if (chatInput) chatInput.disabled = true;
                 if (chatSendButton) chatSendButton.disabled = true;
             }
@@ -755,12 +858,6 @@
                     }
                 });
             }
-
-            // При загрузке страницы, если пользователь вошел, рендерим существующие локальные сообщения
-            if (currentUserId) {
-                renderLocalMessages();
-            }
-            loadSavedData();
         });
     </script>
 </body>
