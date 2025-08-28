@@ -14,8 +14,6 @@
     <!-- Firebase SDKs -->
     <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-    <!-- Firebase Firestore SDK больше не нужен для чата Telegram Web -->
-    <!-- <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script> -->
     <style>
         /* Базовые стили для всего документа */
         body {
@@ -41,8 +39,7 @@
         .content-block,
         .links-block,
         .player-block,
-        .calendar-block,
-        .chat-block {
+        .calendar-block {
             background-color: #181818;
             border-radius: 12px;
             box-shadow: 0 4px 60px rgba(0, 0, 0, 0.5);
@@ -63,7 +60,7 @@
             }
         }
 
-        /* Стили для правой колонки (календарь и чат) */
+        /* Стили для правой колонки (календарь) */
         .right-column {
             display: flex;
             flex-direction: column;
@@ -76,6 +73,24 @@
                 width: 600px;
                 max-width: 600px;
             }
+        }
+
+        /* Контейнер для адаптивного календаря */
+        .responsive-calendar-container {
+            position: relative;
+            padding-bottom: 75%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .responsive-calendar-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-width: 0;
         }
 
         /* Стили для форм */
@@ -104,8 +119,7 @@
 
         /* Стили для кнопок */
         .styled-button,
-        .link-button,
-        .auth-button {
+        .auth-button { /* Добавлен auth-button */
             background-color: #1DB954;
             color: #fff;
             font-weight: 600;
@@ -117,8 +131,7 @@
         }
 
         .styled-button:hover,
-        .link-button:hover,
-        .auth-button:hover {
+        .auth-button:hover { /* Добавлен auth-button */
             background-color: #1ed760;
             transform: scale(1.02);
         }
@@ -152,12 +165,15 @@
             text-align: center;
             margin-bottom: 1.5rem;
         }
+
         #msg-success {
             background-color: #1DB954;
             color: #fff;
         }
+
         #msg-error {
-            background-color: #ef4444; /* Красный для ошибок */
+            background-color: #ef4444;
+            /* Красный для ошибок */
             color: #fff;
         }
 
@@ -174,8 +190,7 @@
         }
 
         .links-block h2,
-        .calendar-block h2,
-        .chat-block h2 {
+        .calendar-block h2 {
             color: #fff;
             font-weight: 600;
             font-size: 1.5rem;
@@ -192,47 +207,6 @@
                 font-size: 2.25rem;
             }
         }
-
-        /* Новые стили для чата в стиле Spotify */
-        .chat-block {
-            display: flex;
-            flex-direction: column;
-            height: 100%; /* Убедитесь, что блок чата может расти, если нужно */
-        }
-
-        .chat-header {
-            color: #fff;
-            font-weight: 600;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        /* Стили для iframe Telegram */
-        .chat-block iframe {
-            flex-grow: 1; /* Чтобы iframe занимал все доступное пространство */
-            border: none;
-            border-radius: 8px;
-            background-color: #121212; /* Цвет фона, как у остального чата */
-        }
-
-        /* Стили для iframe календаря */
-        .calendar-block iframe {
-            width: 100%;
-            height: 600px; /* Фиксированная высота для десктопа */
-            border-width: 0;
-            border-radius: 12px; /* Применяем border-radius напрямую к iframe */
-            display: block; /* Убедимся, что iframe ведет себя как блочный элемент */
-        }
-
-        /* Возможно, для мобильных устройств захочется другую высоту */
-        @media (max-width: 768px) {
-            .calendar-block iframe {
-                height: 400px; /* Меньшая высота для мобильных устройств */
-            }
-        }
     </style>
 </head>
 
@@ -241,7 +215,8 @@
     <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4" style="background-color: #121212;">
         <div class="bg-gradient-to-br from-gray-800 to-black p-8 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
             <h1 class="text-3xl font-bold text-center mb-6 text-white">
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">Kadra Records</span>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">Kadra
+                    Records</span>
             </h1>
             <h2 class="text-xl font-semibold text-center mb-6 text-gray-300">Вход</h2>
 
@@ -284,8 +259,8 @@
                     <a href="Songapp/songapp.html">
                         <button class="styled-button full-width">Songapp</button>
                     </a>
-                    <a href="#">
-                        <button class="styled-button full-width">Ссылка 5</button>
+                    <a href="/kadrachat.html">
+                        <button class="styled-button full-width">Чат новый</button>
                     </a>
                     <a href="#">
                         <button class="styled-button full-width">Ссылка 6</button>
@@ -316,7 +291,8 @@
                 </div>
 
                 <div class="message-block">
-                    <div class="message" id="msg-success" role="alert" aria-live="polite" style="display: none;">Данные успешно сохранены!</div>
+                    <div class="message" id="msg-success" role="alert" aria-live="polite" style="display: none;">Данные
+                        успешно сохранены!</div>
                 </div>
 
                 <div class="content-block">
@@ -337,29 +313,23 @@
         </div>
 
         <div class="right-column">
-            <div class="chat-block container">
-                <div class="chat-header">
-                    <h2>Telegram Web</h2> <!-- Изменено название чата на Telegram Web -->
-                    <div class="flex items-center space-x-2">
-                        <span id="user-id-display" class="text-sm font-normal text-gray-400"></span>
-                        <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-full transition-colors duration-200">Выйти</button>
-                    </div>
-                </div>
-                <!-- Вместо div с чатом и формы, теперь iframe с Telegram Web -->
-                <iframe src="https://dashboard.tawk.to/#/chat" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-            </div>
-
-            <div class="calendar-block">
+            <!-- Здесь теперь находится календарь -->
+            <div class="calendar-block container">
                 <h2 class="text-2xl font-bold text-white mb-4">Календарь</h2>
-                <!-- Убран div.responsive-calendar-container, iframe теперь напрямую в calendar-block -->
-                <iframe src="https://calendar.google.com/calendar/embed?src=thekadrainfo%40gmail.com&ctz=Asia%2FMakassar" frameborder="0" scrolling="no">
-                </iframe>
+                <div class="responsive-calendar-container">
+                    <iframe src="https://calendar.google.com/calendar/embed?src=thekadrainfo%40gmail.com&ctz=Asia%2FMakassar" frameborder="0" scrolling="no">
+                    </iframe>
+                </div>
+            </div>
+            <!-- Добавлена кнопка "Выйти" в правом верхнем углу -->
+            <div class="flex justify-end p-4">
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-full transition-colors duration-200">Выйти</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // Firebase Configuration (ЗАМЕНЕНО ТВОИМИ ДАННЫМИ ИЗ КОНСОЛИ FIREBASE)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyClLqWpPTEqEHiK8zSnmnZxGgGaBfUjJUI",
             authDomain: "chatkadra.firebaseapp.com",
@@ -371,16 +341,19 @@
         };
 
         // Import Firebase services
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Firebase Firestore SDK больше не нужен
-        // import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            signInAnonymously,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        // Firestore DB инициализация больше не нужна
-        // const db = getFirestore(app);
 
         // =============================================================================================
         // Локальная система аутентификации
@@ -394,7 +367,7 @@
         const loginButton = document.getElementById('login-button');
         const logoutButton = document.getElementById('logout-button');
         const authMessageBox = document.getElementById('auth-message-box');
-        const userIdDisplay = document.getElementById('user-id-display');
+        // const userIdDisplay = document.getElementById('user-id-display'); // Удален, так как не используется
 
         let currentLocalUserPhone = null; // Stores the phone number of the locally logged-in user
         let currentFirebaseUserUid = null; // Stores the UID of the anonymous Firebase user
@@ -529,80 +502,72 @@
             const releaseForm = document.getElementById('release-form');
             const linkForm = document.getElementById('link-form');
             const successMessage = document.getElementById('msg-success');
-            // Элементы чата больше не нужны для Telegram Web
-            // const chatForm = document.getElementById('chat-form');
-            // const chatInput = document.getElementById('chat-input');
-            // const chatWindow = document.getElementById('chat-window');
-            // const chatSendButton = document.getElementById('chat-send-button');
 
             // === Pre-registration of user thekadrainfo ===
-            const preRegisteredPhone = "thekadrainfo"; 
+            const preRegisteredPhone = "thekadrainfo";
             const preRegisteredPassword = "Ioioiohyadfg";
             if (registerUser(preRegisteredPhone, preRegisteredPassword)) {
-                console.log(`User ${preRegisteredPhone} added.`);
+                console.log(`Пользователь ${preRegisteredPhone} добавлен.`);
             } else {
-                console.log(`User ${preRegisteredPhone} already exists.`);
+                console.log(`Пользователь ${preRegisteredPhone} уже существует.`);
             }
             // ==========================================================
 
             // Listener for Firebase Auth state changes
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    // User is signed in to Firebase
+                    // Пользователь вошел в Firebase
                     currentFirebaseUserUid = user.uid;
-                    console.log("Firebase Auth State Changed: User is logged in, UID:", currentFirebaseUserUid);
-                    // Only show app content if local user is also logged in
+                    console.log("Firebase Auth State Changed: Пользователь вошел, UID:", currentFirebaseUserUid);
+                    // Показываем содержимое приложения только если локальный пользователь также вошел
                     if (currentLocalUserPhone) {
                         showAppContent();
-                        if (userIdDisplay) {
-                            userIdDisplay.textContent = `Вы: ${currentLocalUserPhone}`;
-                        }
-                        // setupFirestoreChatListener(); // Больше не нужно для Telegram Web
+                        // userIdDisplay.textContent = `Вы: ${currentLocalUserPhone}`; // Удален, так как не используется
                     } else {
-                        // Firebase user exists, but no local user. This might happen if localStorage was cleared.
-                        // Force logout to align states.
-                        console.warn("Firebase user exists, but no local user. Forcing logout.");
+                        // Пользователь Firebase существует, но локального пользователя нет. Возможно, локальное хранилище было очищено.
+                        // Принудительный выход для синхронизации состояний.
+                        console.warn("Пользователь Firebase существует, но локального пользователя нет. Принудительный выход.");
                         await logout();
                     }
                 } else {
-                    // User is signed out from Firebase
+                    // Пользователь вышел из Firebase
                     currentFirebaseUserUid = null;
-                    console.log("Firebase Auth State Changed: User is logged out.");
-                    // If local user was logged in but Firebase isn't, force a full logout
+                    console.log("Firebase Auth State Changed: Пользователь вышел.");
+                    // Если локальный пользователь был в системе, но Firebase нет, принудительный полный выход
                     if (currentLocalUserPhone) {
-                        console.warn("Local user exists, but Firebase user is logged out. Forcing local logout.");
+                        console.warn("Локальный пользователь существует, но пользователь Firebase вышел. Принудительный локальный выход.");
                         await logout();
                     } else {
-                        // No local and no firebase user, show auth screen
+                        // Нет локального пользователя и пользователя Firebase, показываем экран аутентификации
                         showAuthScreen();
                     }
                 }
             });
 
-            // Initial check for local user on DOMContentLoaded
+            // Изначальная проверка локального пользователя при загрузке DOM
             const storedUserPhone = localStorage.getItem('currentUser');
             if (storedUserPhone) {
                 currentLocalUserPhone = storedUserPhone;
-                // If there's a local user, attempt anonymous sign-in in Firebase.
-                // The onAuthStateChanged listener will then react to this sign-in attempt.
-                if (!auth.currentUser) { // Check if Firebase user is NOT already signed in
+                // Если есть локальный пользователь, пытаемся выполнить анонимный вход в Firebase.
+                // Слушатель onAuthStateChanged затем отреагирует на эту попытку входа.
+                if (!auth.currentUser) { // Проверяем, НЕ вошел ли уже пользователь Firebase
                     try {
-                        console.log("Attempting anonymous Firebase sign-in for existing local user.");
+                        console.log("Попытка анонимного входа в Firebase для существующего локального пользователя.");
                         await signInAnonymously(auth);
                     } catch (error) {
                         console.error("Ошибка анонимной авторизации Firebase при старте для существующего локального пользователя:", error);
                         showMessage(authMessageBox, 'error', 'Ошибка подключения к Firebase. Попробуйте войти снова.');
-                        // If this fails, onAuthStateChanged will be called with null user, leading to logout if local user exists.
-                        // We let onAuthStateChanged handle the final state.
+                        // Если это не удалось, onAuthStateChanged будет вызван с нулевым пользователем, что приведет к выходу, если локальный пользователь существует.
+                        // Мы позволяем onAuthStateChanged обрабатывать конечное состояние.
                     }
                 }
             } else {
-                showAuthScreen(); // No local user, always show auth screen
+                showAuthScreen(); // Нет локального пользователя, всегда показываем экран аутентификации
             }
 
-            loadSavedData(); // Load saved data for admin panel forms
+            loadSavedData(); // Загружаем сохраненные данные для форм
 
-            // Handler for saving date and title
+            // Обработчик для сохранения даты и названия
             if (releaseForm) {
                 releaseForm.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -618,7 +583,7 @@
                 console.warn("Форма 'release-form' не найдена.");
             }
 
-            // Handler for saving link
+            // Обработчик для сохранения ссылки
             if (linkForm) {
                 linkForm.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -630,7 +595,7 @@
                 console.warn("Форма 'link-form' не найдена.");
             }
 
-            // Load saved data
+            // Загрузка сохраненных данных
             function loadSavedData() {
                 const savedDate = localStorage.getItem('releaseDate');
                 const savedTitle = localStorage.getItem('timerTitle');
@@ -650,7 +615,7 @@
                 }
             }
 
-            // Function to show success message
+            // Функция для отображения сообщения об успехе
             function showSuccessMessage() {
                 if (successMessage) {
                     successMessage.style.display = 'block';
@@ -662,18 +627,20 @@
         });
     </script>
     <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/68b00fb55344dc1921047a89/1j3nrqns9';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {},
+            Tawk_LoadStart = new Date();
+        (function() {
+            var s1 = document.createElement("script"),
+                s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/68b00fb55344dc1921047a89/1j3nrqns9';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 
 </html>
