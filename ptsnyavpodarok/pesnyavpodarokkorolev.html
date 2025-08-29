@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Песня в Подарок - г. Королёв</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for social icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient-start: #E91E63; /* Ярко-розовый */
+            --primary-gradient-end: #F44336;   /* Ярко-оранжево-красный */
+            --accent-gold: #FFD700; /* Оставляем как запасной акцент, но используем реже */
+            --dark-bg: #0d0d0d; /* Еще более темный фон для контраста */
+            --medium-dark-bg: #1c1c1c;
+            --light-text: #f0f0f0;
+            --subtle-text: #b0b0b0;
+            --border-color: #3a3a3a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            overflow-x: hidden; /* Предотвращает горизонтальную прокрутку */
+        }
+        /* Пользовательский скроллбар для лучшей эстетики */
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #555;
+            border-radius: 4px;
+            border: 2px solid #2a2a2a;
+        }
+        .hero-section {
+            background-image: url('/ptsnyavpodarok/unnamed (1).png'); /* Используем загруженное изображение пользователя */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .overlay {
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.65)); /* Более выраженный градиентный оверлей */
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-gradient-start), var(--primary-gradient-end));
+            color: var(--dark-bg); /* Темный текст на яркой кнопке */
+            font-weight: 700; /* Более жирный шрифт */
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4); /* Эффект свечения */
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(45deg, var(--primary-gradient-end), var(--primary-gradient-start));
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.6);
+            transform: scale(1.08); /* Более заметное масштабирование */
+        }
+        .btn-secondary { /* Сохраняем как альтернативный стиль, если потребуется */
+            background-color: var(--medium-dark-bg);
+            color: var(--primary-gradient-end); /* Изменен цвет для соответствия новой палитре */
+            border: 1px solid var(--primary-gradient-end);
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: var(--primary-gradient-end);
+            color: var(--dark-bg);
+            transform: scale(1.05);
+        }
+        .icon-box {
+            background-color: var(--medium-dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem; /* Закругленные углы */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .icon-box:hover {
+            border-color: var(--primary-gradient-end); /* Акцентная рамка при наведении */
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+            transform: translateY(-5px); /* Легкий подъем при наведении */
+        }
+        .accent-text {
+            color: var(--primary-gradient-end); /* Используем яркий оранжево-красный для акцентов */
+        }
+        .faq-item {
+            background-color: var(--medium-dark-bg);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0.75rem; /* Закругленные углы */
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-question {
+            cursor: pointer;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: var(--light-text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            background-color: #1f1f1f;
+            padding: 0 1.5rem;
+            color: var(--subtle-text);
+        }
+        .faq-answer.open {
+            max-height: 500px; /* Увеличено для лучшей адаптации на мобильных устройствах */
+            padding: 1rem 1.5rem;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Соотношение сторон 16:9 */
+            height: 0;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.75rem; /* Соответствует rounded-lg */
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(13, 13, 13, 0.95); /* Используем новую темную базу */
+            backdrop-filter: blur(8px); /* Более сильное размытие */
+            border-bottom: 1px solid var(--border-color);
+        }
+        .social-icon {
+            color: var(--light-text);
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .social-icon:hover {
+            color: var(--primary-gradient-end); /* Новый акцентный цвет для иконок */
+            transform: translateY(-3px) scale(1.1); /* Легкий подъем и увеличение */
+        }
+        .price-table {
+            border-collapse: collapse;
+            width: 100%;
+            border-radius: 0.75rem;
+            overflow: hidden; /* Для применения border-radius к таблице */
+        }
+        .price-table th, .price-table td {
+            padding: 1.25rem 1rem; /* Увеличенный padding для лучшей читаемости */
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .price-table th {
+            background-color: var(--medium-dark-bg);
+            color: var(--primary-gradient-end); /* Акцент для заголовков таблицы */
+            font-weight: 700;
+            text-transform: uppercase; /* Верхний регистр для заголовков */
+            letter-spacing: 0.05em; /* Небольшой межбуквенный интервал */
+        }
+        .price-table tr:last-child td {
+            border-bottom: none;
+        }
+        .price-table td.text-white {
+            color: var(--primary-gradient-start); /* Акцент для названий услуг */
+            font-weight: 600;
+        }
+        /* Adjustments for headings */
+        h1, h2, h3 {
+            font-weight: 800; /* Более жирный шрифт для заголовков */
+            letter-spacing: -0.02em; /* Небольшой отрицательный кернинг */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Top Bar with Phone and Social Icons -->
+    <div class="bg-gray-950 text-gray-400 py-2 px-4 flex justify-between items-center sticky-header">
+        <div class="container mx-auto flex justify-between items-center flex-wrap">
+            <a href="tel:+79610777403" class="text-white hover:text-yellow-400 transition-colors mr-4 text-sm md:text-base">
+                <i class="fas fa-phone mr-2"></i>+7-961-07-77-403
+            </a>
+            <div class="flex space-x-4">
+                <a href="https://vk.com/kadrarecords" target="_blank" class="social-icon text-lg">
+                    <i class="fab fa-vk"></i>
+                </a>
+                <a href="https://t.me/kadrarec" target="_blank" class="social-icon text-lg">
+                    <i class="fab fa-telegram-plane"></i>
+                </a>
+                <a href="https://www.instagram.com/@kadrarecords" target="_blank" class="social-icon text-lg">
+                    <i class="fab fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="bg-gray-900 shadow-lg py-4 px-4 sticky-header">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#hero" class="text-2xl font-bold text-white hover:text-FFD700 transition-colors">KADRA records г. Королёв</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#contacts-section" class="text-white hover:text-FFD700 transition-colors text-lg font-medium">Контакты</a>
+                <a href="#studio-info-section" class="text-white hover:text-FFD700 transition-colors text-lg font-medium">Студия</a>
+                <a href="#pricing-section" class="text-white hover:text-FFD700 transition-colors text-lg font-medium">Цены</a>
+            </div>
+            <!-- Mobile Menu Toggle -->
+            <button class="md:hidden text-white text-2xl focus:outline-none" onclick="toggleMobileMenu()">
+                &#9776;
+            </button>
+        </div>
+        <!-- Mobile Menu (hidden by default) -->
+        <div id="mobile-menu" class="md:hidden mt-4 space-y-2 hidden">
+            <a href="#contacts-section" class="block text-white hover:text-FFD700 transition-colors py-2 px-4 rounded-md">Контакты</a>
+            <a href="#studio-info-section" class="block text-white hover:text-FFD700 transition-colors py-2 px-4 rounded-md">Работы</a>
+            <a href="#pricing-section" class="block text-white hover:text-FFD700 transition-colors py-2 px-4 rounded-md">Цены</a>
+        </div>
+    </nav>
+
+    <!-- Header (Hero Section) -->
+    <header class="hero-section h-screen flex items-center justify-center text-center px-4" id="hero">
+        <div class="overlay absolute inset-0"></div>
+        <div class="relative z-10 max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight text-white mb-6 animate-fade-in-down">
+                Песня в Подарок
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-8 animate-fade-in-up">
+                Создайте незабываемый музыкальный сюрприз для любого случая: от вашей идеи до студийного хита!
+            </p>
+            <a href="#certificate-section" class="btn-primary inline-block py-3 px-8 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out animate-bounce-in">
+                Купить подарочный сертификат
+            </a>
+        </div>
+    </header>
+
+    <!-- Value Proposition Section: Почему выбирают нас? -->
+    <section class="py-16 md:py-24 bg-gray-950 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Почему именно мы?</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="icon-box p-6 rounded-xl shadow-lg flex flex-col items-center">
+                    <div class="text-4xl mb-4 accent-text">✨</div>
+                    <h3 class="text-2xl font-semibold text-white mb-3">Уникальность</h3>
+                    <p class="text-gray-400 text-center">Ваша песня будет единственной в своем роде, созданной специально для дорогого вам человека и его истории.</p>
+                </div>
+                <div class="icon-box p-6 rounded-xl shadow-lg flex flex-col items-center">
+                    <div class="text-4xl mb-4 accent-text">⭐️</div>
+                    <h3 class="text-2xl font-semibold text-white mb-3">Профессионализм</h3>
+                    <p class="text-gray-400 text-center">Работаем на студийном оборудовании с опытными звукорежиссерами и аранжировщиками, гарантируя высочайшее качество звука.</p>
+                </div>
+                <div class="icon-box p-6 rounded-xl shadow-lg flex flex-col items-center">
+                    <div class="text-4xl mb-4 accent-text">💖</div>
+                    <h3 class="text-2xl font-semibold text-white mb-3">Эмоции</h3>
+                    <p class="text-gray-400 text-center">Подарите не просто песню, а незабываемые впечатления, которые останутся в памяти на долгие годы.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section: Ваш путь к уникальной песне -->
+    <section class="py-16 md:py-24 bg-gray-900 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Как создается ваша песня: Шаг за шагом к мечте</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Идея и текст -->
+                <div class="icon-box p-6 rounded-xl shadow-lg flex flex-col items-center">
+                    <div class="text-4xl mb-4 accent-text">💡</div> <!-- Idea icon -->
+                    <h3 class="text-2xl font-semibold text-white mb-3">1. Идея и текст</h3>
+                    <p class="text-gray-400 text-center">Мы вместе обсудим вашу задумку, поможем оформить мысли и чувства в уникальные, цепляющие строки. Хотите рэп? Создадим яркий и динамичный текст!</p>
+                </div>
+
+                <!-- Запись вокала -->
+                <div class="icon-box p-6 rounded-xl shadow-lg flex flex-col items-center">
+                    <div class="text-4xl mb-4 accent-text">🎤</div> <!-- Microphone icon -->
+                    <h3 class="text-2xl font-semibold text-white mb-3">2. Запись вокала</h3>
+                    <p class="text-gray-400 text-center">В нашей студии в г. Королёв даже новичок чувствует себя звездой! Опытный звукорежиссер поможет вам записать вокал или рэп уверенно и эмоционально, создавая комфортную атмосферу.</p>
+                </div>
+
+                <!-- Аранжировка и сведение -->
+                <div class="icon-box p-6 rounded-xl shadow-lg flex flex-col items-center">
+                    <div class="text-4xl mb-4 accent-text">🎧</div> <!-- Headphones/Mixing icon -->
+                    <h3 class="text-2xl font-semibold text-white mb-3">3. Аранжировка и сведение</h3>
+                    <p class="text-gray-400 text-center">Наши мастера создадут или подберут минус индивидуальное музыкальное сопровождение и сведут трек, чтобы каждая нота звучала идеально и передавала ваше сообщение.</p>
+                </div>
+
+                <!-- Готовый результат -->
+                <div class="icon-box p-6 rounded-xl shadow-lg flex flex-col items-center">
+                    <div class="text-4xl mb-4 accent-text">🎁</div> <!-- Gift/Finished product icon -->
+                    <h3 class="text-2xl font-semibold text-white mb-3">4. Готовый результат</h3>
+                    <p class="text-gray-400 text-center">Вы получите полностью готовую, профессионально сведенную и отмастеренную песню, которая готова покорять сердца! Возможно, даже с видео или фото.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Table Section -->
+    <section class="py-16 md:py-24 bg-gray-950 px-4" id="pricing-section">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Наши цены</h2>
+            <div class="overflow-x-auto rounded-xl shadow-lg">
+                <table class="price-table text-gray-300">
+                    <thead>
+                        <tr>
+                            <th>Услуга</th>
+                            <th>Описание</th>
+                            <th>Стоимость</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-white font-semibold">Песня в подарок "Экспресс"</td>
+                            <td>Запись вокала на готовый минус (до 2 часов), сведение и мастеринг.</td>
+                            <td>от 5 000 руб.</td>
+                        </tr>
+                        <tr>
+                            <td class="text-white font-semibold">Песня в подарок "Стандарт"</td>
+                            <td>Запись вокала + тюн вокала по нотам (до 3 часов), помощь в подборе минуса, сведение и мастеринг.</td>
+                            <td>от 7900 руб.</td>
+                        </tr>
+                        <tr>
+                            <td class="text-white font-semibold">Песня в подарок "Премиум"</td>
+                            <td> Написание текста, запись вокала (до 4 часов), уникальная аранжировка, сведение, мастеринг, фотосессия.</td>
+                            <td>от 25 000 руб.</td>
+                        </tr>
+                        <tr>
+                            <td class="text-white font-semibold">Написание текста песни</td>
+                            <td>Создание оригинального текста песни по вашим пожеланиям.</td>
+                            <td>от 3 000 руб.</td>
+                        </tr>
+                        <tr>
+                            <td class="text-white font-semibold">Подарочный сертификат</td>
+                            <td>На любую из услуг выше.</td>
+                            <td>по прайсу</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <a href="#certificate-section" class="btn-primary inline-block mt-10 py-3 px-8 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out">
+                забронируйте время на студии
+            </a>
+        </div>
+    </section>
+
+    <!-- Special Offer Section: Подарок на Свадьбу! -->
+    <section class="py-16 md:py-24 bg-gray-800 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Песня на свадьбу: Ваш особенный момент!</h2>
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div class="md:w-1/2">
+                    <img src="/ptsnyavpodarok/Gemini_Generated_Image_et78oket78oket78.png" alt="Подарки в студии" class="rounded-xl shadow-lg w-full h-auto object-cover">
+                </div>
+                <div class="md:w-1/2 text-left">
+                    <p class="text-lg text-gray-300 mb-6">
+                        Представьте восторг гостей, когда вы дарите любимым нечто по-настоящему уникальное. Трогательная баллада от жениха, зажигательный рэп от невесты или совместное послание, записанное в студии — мы поможем воплотить любую мечту и сделать день вашей свадьбы незабываемым!
+                    </p>
+                    <a href="#certificate-section" class="btn-primary inline-block py-3 px-8 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out">
+                        Заказать свадебную песню в Королёве
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visuals and Examples Section: Визуальный ряд и Примеры работ -->
+    <section class="py-16 md:py-24 bg-gray-900 px-4" id="studio-info-section">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Наши работы и отзывы: Вдохновитесь!</h2>
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <!-- Video Placeholder - Replaced with user's VK video iframe -->
+                <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-semibold text-white mb-4">Наше промо-видео</h3>
+                    <div class="video-container">
+                        <iframe src="https://vk.com/video_ext.php?oid=648967725&id=456239118&hd=2&autoplay=1" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+                <!-- Audio Examples Placeholder -->
+                <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-semibold text-white mb-4">Примеры песен</h3>
+                    <div id="vk_playlist_-52266038_83822989"></div>
+<script type="text/javascript" src="https://vk.com/js/api/openapi.js?173"></script>
+<script type="text/javascript">
+  (function() {
+    VK.Widgets.Playlist("vk_playlist_-52266038_83822989", -52266038, 83822989,'8e70a7778175fc4550');
+  }());
+</script>
+                </div>
+            </div>
+
+            <!-- Testimonials -->
+            <h3 class="text-3xl font-bold text-white mb-8">Что говорят наши клиенты: Реальные эмоции</h3>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="icon-box p-6 rounded-xl shadow-lg">
+                    <p class="text-gray-300 italic mb-4">"Это был самый оригинальный подарок, который я когда-либо делал! Невеста была в восторге от своей рэп-песни!"</p>
+                    <p class="font-semibold text-white">- Олег С.</p>
+                </div>
+                <div class="icon-box p-6 rounded-xl shadow-lg">
+                    <p class="text-gray-300 italic mb-4">"Спасибо за профессионализм и чуткость! Моя песня получилась именно такой, как я мечтала."</p>
+                    <p class="font-semibold text-white">- Анна К.</p>
+                </div>
+                <div class="icon-box p-6 rounded-xl shadow-lg">
+                    <p class="text-gray-300 italic mb-4">"Просто невероятно! Мы записали песню для родителей, и это был самый трогательный момент на юбилее."</p>
+                    <p class="font-semibold text-white">- Виктория М.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-16 md:py-24 bg-gray-950 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Часто задаваемые вопросы</h2>
+            <div class="space-y-4 text-left">
+                <!-- FAQ Item 1 -->
+                <div class="faq-item rounded-xl">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Я никогда не пел/не читал рэп. У меня получится?</span>
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Конечно! Большинство наших клиентов не являются профессиональными вокалистами. Наши звукорежиссеры помогут вам справиться с волнением, покажут технику записи и сделают всё возможное, чтобы ваш голос звучал уверенно и красиво. Мы поддержим вас на каждом этапе!</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 2 -->
+                <div class="faq-item rounded-xl">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Сколько времени занимает весь процесс?</span>
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Сроки зависят от сложности задачи и вашей загруженности. В среднем, от 2 до 3 часов запись, обработка 5-7 дней. Мы всегда согласуем удобное время для записи.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 3 -->
+                <div class="faq-item rounded-xl">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Могу ли я прийти со своим текстом/музыкой?</span>
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Да, безусловно! Мы приветствуем ваше творческое участие. Вы можете предоставить свой текст, наброски мелодии или даже готовую минусовку. Наши специалисты помогут доработать материал и интегрировать его в профессиональную аранжировку.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 4 -->
+                <div class="faq-item rounded-xl">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Что включено в стоимость подарочного сертификата?</span>
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>В стоимость сертификата обычно входит: разработка концепции песни, написание текста (при необходимости), запись вокала/рэпа в студии, профессиональная аранжировка, сведение и мастеринг готового трека. Детали пакетов услуг могут варьироваться – уточните при покупке.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificate Block -->
+    <section class="py-16 md:py-24 bg-gray-800 px-4 text-center" id="certificate-section">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-bold text-white mb-8">Подарите не просто подарок, а незабываемые эмоции!</h2>
+            <p class="text-lg text-gray-300 mb-10">
+                Подарочный сертификат на запись песни — это инвестиция в теплые воспоминания и по-настоящему уникальный жест внимания. Сделайте подарок, который будет цениться годами!
+            </p>
+            <a href="#hero" class="btn-primary inline-block py-4 px-10 rounded-full text-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ease-in-out">
+                напишите нам или позвоните!
+            </a>
+            <p class="text-gray-400 mt-6 text-sm">
+            
+            </p>
+        </div>
+    </section>
+
+    <!-- Contacts Section -->
+    <section class="py-16 md:py-24 bg-gray-900 px-4" id="contacts-section">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Контакты</h2>
+            <div class="space-y-6 mb-10 text-lg">
+                <p class="text-gray-300"><i class="fas fa-map-marker-alt accent-text mr-3"></i>г. Королёв, ул. Советская 49</p>
+                <p class="text-gray-300"><i class="fas fa-phone accent-text mr-3"></i><a href="tel:+79610777403" class="hover:text-FFD700 transition-colors">+7-961-07-77-403 (Телеграм/Вацап)</a></p>
+                <p class="text-gray-300"><i class="fas fa-envelope accent-text mr-3"></i><a href="mailto:thekadrainfo@gmail.com" class="hover:text-FFD700 transition-colors">thekadrainfo@gmail.com</a></p>
+            </div>
+            <div>
+                        <h3 class="text-xl font-semibold text-neutral-300 mb-4 text-center">Мы на карте</h3>
+                        <div style="position:relative;overflow:hidden;width:100%;height:400px;border-radius:8px;">
+                            <a href="https://yandex.com/maps/org/kadra_records/21240263204/?utm_medium=mapframe&utm_source=maps" style="color:#eee;font-size:12px;position:absolute;top:0px;left:0;z-index:1;">Kadra Records</a>
+                            <a href="https://yandex.com/maps/20728/korolev/category/recording_studio/184105594/?utm_medium=mapframe&utm_source=maps" style="color:#eee;font-size:12px;position:absolute;top:14px;left:0;z-index:1;">Студия звукозаписи в Королёве</a>
+                            <iframe src="https://yandex.com/map-widget/v1/org/kadra_records/21240263204/?ll=37.871643%2C55.941722&z=16" width="100%" height="100%" frameborder="1" allowfullscreen="true" style="position:relative;z-index:0;"></iframe>
+                        </div>
+                    </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 py-10 px-4 text-center text-gray-500 text-sm">
+        <div class="max-w-6xl mx-auto">
+            <p>&copy; 2025 KADRA records Звукозаписи. Москва, Московская область, Королёв, Ул Советская 49 Все права защищены.</p>
+            <p class="mt-2">г. Королёв, ул. Советская 49 | <a href="tel:+79610777403" class="hover:text-white transition-colors">+7-961-07-77-403 (Телеграм/Вацап)</a> | <a href="mailto:thekadrainfo@gmail.com" class="hover:text-white transition-colors">thekadrainfo@gmail.com</a></p>
+        </div>
+    </footer>
+
+    <!-- Simple JavaScript for scroll animations and FAQ toggles -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Scroll animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fade-in-up');
+                        entry.target.classList.remove('opacity-0');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.icon-box, .md\\:w-1\\/2 img, .md\\:w-1\\/2 .text-left, .faq-item, .price-table, #contacts-section .space-y-6, #contacts-section .rounded-xl').forEach(element => {
+                element.classList.add('opacity-0'); // Hide initially
+                observer.observe(element);
+            });
+
+            // Specific animation for hero elements to run once
+            const heroH1 = document.querySelector('.hero-section h1');
+            const heroP = document.querySelector('.hero-section p');
+            const heroBtn = document.querySelector('.hero-section a.btn-primary'); // Corrected selector for the anchor tag
+
+            if (heroH1) heroH1.classList.add('opacity-0');
+            if (heroP) heroP.classList.add('opacity-0');
+            if (heroBtn) heroBtn.classList.add('opacity-0');
+
+            setTimeout(() => {
+                if (heroH1) heroH1.classList.add('animate-fade-in-down', 'opacity-100');
+                if (heroP) heroP.classList.add('animate-fade-in-up', 'opacity-100');
+                if (heroBtn) heroBtn.classList.add('animate-bounce-in', 'opacity-100');
+            }, 100);
+
+            // FAQ functionality
+            window.toggleFaq = function(element) {
+                const answer = element.nextElementSibling;
+                const arrow = element.querySelector('.faq-arrow');
+                if (answer.classList.contains('open')) {
+                    answer.classList.remove('open');
+                    arrow.textContent = '▼';
+                } else {
+                    answer.classList.add('open');
+                    arrow.textContent = '▲';
+                }
+            };
+
+            // Mobile menu toggle functionality
+            window.toggleMobileMenu = function() {
+                const mobileMenu = document.getElementById('mobile-menu');
+                mobileMenu.classList.toggle('hidden');
+            };
+        });
+    </script>
+</body>
+</html>
