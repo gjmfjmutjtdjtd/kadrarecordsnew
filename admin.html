@@ -1,646 +1,350 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Админка — Kadra Records</title>
-    <!-- Подключение Tailwind CSS для стилей -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Подключение Google Font Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-    <style>
-        /* Базовые стили для всего документа */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #121212;
-            color: #b3b3b3;
-            min-height: 100vh;
-            padding: 1rem;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 1024px) {
-            body {
-                flex-direction: row;
-            }
-        }
-
-        /* Общий стиль для блоков контента */
-        .container,
-        .content-block,
-        .links-block,
-        .player-block,
-        .calendar-block {
-            background-color: #181818;
-            border-radius: 12px;
-            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.5);
-            padding: 1.5rem;
-            width: 100%;
-        }
-
-        /* Стили для левой колонки */
-        .left-column {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 1024px) {
-            .left-column {
-                max-width: 600px;
-            }
-        }
-
-        /* Стили для правой колонки (календарь) */
-        .right-column {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            width: 100%;
-        }
-
-        @media (min-width: 1024px) {
-            .right-column {
-                width: 600px;
-                max-width: 600px;
-            }
-        }
-
-        /* Контейнер для адаптивного календаря */
-        .responsive-calendar-container {
-            position: relative;
-            padding-bottom: 75%;
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-        }
-
-        .responsive-calendar-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-width: 0;
-        }
-
-        /* Стили для форм */
-        form label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #fff;
-            font-weight: 500;
-        }
-
-        form input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #282828;
-            background-color: #282828;
-            color: #fff;
-            border-radius: 8px;
-            transition: border-color 0.2s;
-        }
-
-        form input:focus {
-            outline: none;
-            border-color: #1DB954;
-        }
-
-        /* Стили для кнопок */
-        .styled-button,
-        .auth-button { /* Добавлен auth-button */
-            background-color: #1DB954;
-            color: #fff;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-            cursor: pointer;
-            border: none;
-        }
-
-        .styled-button:hover,
-        .auth-button:hover { /* Добавлен auth-button */
-            background-color: #1ed760;
-            transform: scale(1.02);
-        }
-
-        .full-width {
-            width: 100%;
-        }
-
-        /* Стили для ссылок */
-        .styled-link {
-            color: #b3b3b3;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .styled-link:hover {
-            color: #fff;
-        }
-
-        .form-description {
-            font-size: 0.875rem;
-            color: #a7a7a7;
-            margin-top: -1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Стили для сообщений об успехе/ошибке */
-        .message {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        #msg-success {
-            background-color: #1DB954;
-            color: #fff;
-        }
-
-        #msg-error {
-            background-color: #ef4444;
-            /* Красный для ошибок */
-            color: #fff;
-        }
-
-
-        /* Стили для блоков */
-        .content-block {
-            margin-bottom: 2rem;
-        }
-
-        .button-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .links-block h2,
-        .calendar-block h2 {
-            color: #fff;
-            font-weight: 600;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Адаптивные стили для панели управления */
-        .admin-panel-title {
-            font-size: 1.875rem;
-        }
-
-        @media (min-width: 1024px) {
-            .admin-panel-title {
-                font-size: 2.25rem;
-            }
-        }
-    </style>
+    <link rel="icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KADRA Records — Профессиональная студия звукозаписи в Королёве (Москва),профессиональная запись сведение и мастеринг для вашего трека.</title>
+    <meta name="description" content="KADRA Records — команда с 15-летним опытом, создавшая более 30 треков, попавших в топ-чарты. Предлагаем полный цикл услуг: запись песни под ключ, сведение, мастеринг и аранжировки. Работаем с артистами и корпоративными клиентами.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
-
 <body>
-    <!-- Секция аутентификации -->
-    <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4" style="background-color: #121212;">
-        <div class="bg-gradient-to-br from-gray-800 to-black p-8 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
-            <h1 class="text-3xl font-bold text-center mb-6 text-white">
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">Kadra
-                    Records</span>
-            </h1>
-            <h2 class="text-xl font-semibold text-center mb-6 text-gray-300">Вход</h2>
+<header>
+    
+    <nav>
+    <img src="img/KADRA records Logo.jpg" alt="Логотип" class="header-logo">
+        <a href="#about" aria-label="О лейбле">О нас</a>
+        <a href="#contact" aria-label="Свяжитесь с нами">Контакты</a>
+        <a href="chatgemini/swkr.html" id="adminLoginBtn" aria-label="Открыть чат с Songwriter">Songwriter</a>
+        <a href="price-list.html" id="adminLoginBtn" aria-label="Прайс лист Студии звукозаписи в Королёве">Цены</a>
+        <a href="/ptsnyavpodarok/pesnyavpodarokkorolev" id="adminLoginBtn" aria-label="Песня в подарок">Песня в подарок</a>
+            </svg>
+        </a>
+    </nav>
+</header>
 
-            <div id="auth-message-box" class="message hidden mb-4"></div>
-
-            <div class="space-y-4">
-                <div>
-                    <label for="auth-phone-number" class="block text-sm font-medium text-gray-400 mb-1">Логин</label>
-                    <input type="text" id="auth-phone-number" class="w-full px-4 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-green-500 focus:border-green-500" placeholder="Ваш логин">
-                </div>
-                <div>
-                    <label for="auth-password" class="block text-sm font-medium text-gray-400 mb-1">Пароль</label>
-                    <input type="password" id="auth-password" class="w-full px-4 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-green-500 focus:border-green-500" placeholder="Пароль">
-                </div>
-                <button id="login-button" class="auth-button full-width py-2.5">Войти</button>
-            </div>
+<main>   
+      
+<section id="services-block">
+    <div class="social-icons-block">
+    <a href="https://www.instagram.com/kadrarecords/" target="_blank">
+        <i class="fa-brands fa-instagram social-icon"></i>
+    </a>
+    <a href="https://vk.com/kadrarecords?from=groups" target="_blank">
+        <i class="fa-brands fa-vk social-icon"></i>
+    </a>
+    <a href="https://t.me/kadrarec" target="_blank">
+        <i class="fa-brands fa-telegram social-icon"></i>
+    </a>
+</div>
+    <h3>НАШИ ОСНОВНЫЕ УСЛУГИ </h3>
+    <div class="header-services">
+        <div class="service-block">
+            <h3>Сонграйтинг / Аранжировки</h3>
+            <p>Напишем песню под ключ по всем стандартам хита.</p>
+            <a href="#soundcloud-players-block" class="transport-button">Выбрать песню</a>
+        </div>
+        <div class="service-block">
+            <h3>Сведение / мастеринг</h3>
+            <p>Сведение треков, мастеринг - для тех кто целится в ТОП чарты.</p>
+        </div>
+        <div class="service-block">
+            <h3>Запись вокала и инструментов (Локально)</h3>
+            <p>Профессиональный подход к записи.</p>
         </div>
     </div>
+    <div class="scroll-down-indicator">
+        <a href="#about" aria-label="Прокрутить вниз">
+            <span></span>
+            <span></span>
+            <span></span>
+        </a>
+    </div>
+</section>
+<section>
+  <h3>Прямые трансляции со студии на Twitch</h3>
+  <div class="stream-container">
+    <div id="twitch-embed"></div>
+  </div>
+</section>
 
-    <!-- Основное содержимое приложения (скрыто до аутентификации) -->
-    <div id="app-content" class="hidden w-full flex flex-col lg:flex-row gap-6">
-        <div class="left-column">
-            <div class="player-block">
-                <h2 class="text-2xl font-bold text-white mb-4">Плеер</h2>
-                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7mdZ3K5u0nQv6GR7yXsdAX?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-            </div>
+<script src="https://player.twitch.tv/js/embed/v1.js"></script>
+<script type="text/javascript">
+  new Twitch.Player("twitch-embed", {
+    channel: "kadra_records",
+    width: "100%",
+    height: "100%"
+  });
+</script>
 
-            <div class="links-block">
-                <h2 class="text-2xl font-bold text-white mb-4">Полезные ссылки</h2>
-                <div class="button-list">
-                    <a href="https://docs.google.com/spreadsheets/d/1wKI349DI_oJMimm04lAX7z7c_vR-r6FVWkj3kbuFWew/edit?usp=sharing" target="_blank">
-                        <button class="styled-button full-width">Редактировать таблицу</button>
-                    </a>
-                    <a href="chatgemini/swkr.html">
-                        <button class="styled-button full-width">Открыть чат с Gemini</button>
-                    </a>
-                    <a href="/topcheck/index.html">
-                        <button class="styled-button full-width">Перейти к Топ-чартам</button>
-                    </a>
-                    <a href="Songapp/songapp.html">
-                        <button class="styled-button full-width">Songapp</button>
-                    </a>
-                    <a href="/kadrachat.html">
-                        <button class="styled-button full-width">Чат новый</button>
-                    </a>
-                    <a href="#">
-                        <button class="styled-button full-width">Ссылка 6</button>
-                    </a>
-                    <a href="#">
-                        <button class="styled-button full-width">Ссылка 7</button>
-                    </a>
-                </div>
-            </div>
-
-            <div id="adminPanel" class="container" role="main" aria-label="Панель редактирования">
-                <h1 class="text-2xl lg:text-3xl font-bold text-white mb-8">Панель управления</h1>
-
-                <div class="content-block">
-                    <form id="release-form">
-                        <label for="release-date">Дата и время релиза (UTC):</label>
-                        <input type="datetime-local" id="release-date" name="release-date" required aria-describedby="release-date-desc" />
-                        <div id="release-date-desc" class="form-description">
-                        </div>
-
-                        <label for="timer-title">Название:</label>
-                        <input type="text" id="timer-title" name="timer-title" maxlength="40" placeholder="Например: Релиз через" aria-describedby="timer-title-desc" />
-                        <div id="timer-title-desc" class="form-description">
-                        </div>
-
-                        <button type="submit" class="styled-button full-width">Сохранить дату и название</button>
-                    </form>
-                </div>
-
-                <div class="message-block">
-                    <div class="message" id="msg-success" role="alert" aria-live="polite" style="display: none;">Данные
-                        успешно сохранены!</div>
-                </div>
-
-                <div class="content-block">
-                    <form id="link-form">
-                        <p class="mb-2">Ссылка:</p>
-                        <input type="url" id="track-link-input" placeholder="https://ссылка-на-ваш-трек.com" required />
-                        <div class="form-description">
-                            Эту ссылку будет использовать кнопка "Слушать!"
-                        </div>
-                        <button type="submit" class="styled-button full-width">Сохранить ссылку</button>
-                    </form>
-                </div>
-
-                <div class="navigation-block flex justify-start items-center mb-4">
-                    <a href="index.html" class="styled-link font-semibold">← Вернуться на главную</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="right-column">
-            <!-- Здесь теперь находится календарь -->
-            <div class="calendar-block container">
-                <h2 class="text-2xl font-bold text-white mb-4">Календарь</h2>
-                <div class="responsive-calendar-container">
-                    <iframe src="https://calendar.google.com/calendar/embed?src=thekadrainfo%40gmail.com&ctz=Asia%2FMakassar" frameborder="0" scrolling="no">
-                    </iframe>
-                </div>
-            </div>
-            <!-- Добавлена кнопка "Выйти" в правом верхнем углу -->
-            <div class="flex justify-end p-4">
-                <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-full transition-colors duration-200">Выйти</button>
-            </div>
-        </div>
+<h3>Каждый трек — потенциальный хит, наши работы и их награды:</h3>
+<div class="award-section">
+    <div class="award-block">
+        <img src="img/kopiapirats.png" alt="3х Платиновая награда" class="award-image">
+        <h3>Mekhman - Копия пиратская</h3>
+        <span class="award-subtitle">"3-x платиновый сингл"</span>
+        <span class="tiktok-link"><a href="https://tiktok.com/@mekhmanmusic" target="_blank">TikTok: @mekhmanmusic</a></span>
     </div>
 
-    <script type="module">
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyClLqWpPTEqEHiK8zSnmnZxGgGaBfUjJUI",
-            authDomain: "chatkadra.firebaseapp.com",
-            projectId: "chatkadra",
-            storageBucket: "chatkadra.firebasestorage.app",
-            messagingSenderId: "718721620513",
-            appId: "1:718721620513:web:3852fea7977815f3022160",
-            measurementId: "G-VNCBVRD753"
-        };
+    <div class="award-block">
+        <img src="img\AwN7nsefNMk.jpg" alt="Топ-чарт" class="award-image">
+        <h3>Tkimali & Lolita - Север</h3>
+        <span class="award-subtitle">"3-x платиновый сингл"</span>
+        <span class="tiktok-link"><a href="https://tiktok.com/@na_mne_nike" target="_blank">TikTok: @na_mne_nike</a></span>
+    </div>
+</div>
+    </div>
 
-        // Import Firebase services
-        import {
-            initializeApp
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import {
-            getAuth,
-            signInAnonymously,
-            signOut,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+<section id="release-timer" class="timer-section" aria-live="polite">
+    <div class="timer-content">
+        <p>Следующий релиз: </p>
+        <h2 id="release-title">Релиз через</h2>
+        <div id="release-countdown" class="countdown">Загрузка...</div>
+        <a id="presave-button" class="action-button disabled" href="#" target="_blank">Pre-save</a>
+    </div>
+</section>
+    <section id="about" class="about-section">
+    <div class="about-background-image"></div>
+    <div class="about-overlay"></div>
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
 
-        // =============================================================================================
-        // Локальная система аутентификации
-        // =============================================================================================
+    <div class="about-container">
+        <h2>О нас</h2>
 
-        // Элементы UI для аутентификации
-        const authScreen = document.getElementById('auth-screen');
-        const appContent = document.getElementById('app-content');
-        const authPhoneNumberInput = document.getElementById('auth-phone-number');
-        const authPasswordInput = document.getElementById('auth-password');
-        const loginButton = document.getElementById('login-button');
-        const logoutButton = document.getElementById('logout-button');
-        const authMessageBox = document.getElementById('auth-message-box');
-        // const userIdDisplay = document.getElementById('user-id-display'); // Удален, так как не используется
+            <div class="column-left">
+                <h3>KADRA Records</h3> это команда профессионалов, работающая в музыкальной индустрии уже более 15 лет. 
+Мы гордимся тем, что помогли более чем 30 трекам войти в топ-чарты, меняя звучание современной сцены.
+                </p>
+                <p>
+<h3>За годы работы мы сотрудничали</h3> с такими артистами, как Джиган, Artik & Asti, Ирина Тонева, Ирина Ортман, Ганвест, Mekhman, Tkimali, Kagramanov, KDK, Зомб и другие.
+                </p>
+            </div>
+            <div class="column-right">
+                <h3>Студии и сотрудничество</h3>
+Благодаря трём современным студиям в Москве, Волгограде и на Бали, мы предлагаем полный цикл продюсирования — от первого звука до релиза.
+                </p>
+                <p>
+<h3>Наши студии оснащены топовым оборудованием</h3>, что позволяет нам добиваться высококачественного звука. Мы ищем новые голоса и всегда готовы к сотрудничеству с молодыми талантами!
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
 
-        let currentLocalUserPhone = null; // Stores the phone number of the locally logged-in user
-        let currentFirebaseUserUid = null; // Stores the UID of the anonymous Firebase user
 
-        // Utility for displaying messages (success/error)
-        function showMessage(element, type, text) {
-            element.classList.remove('hidden');
-            element.textContent = text;
-            if (type === 'success') {
-                element.classList.remove('bg-red-500');
-                element.classList.add('bg-green-500');
-            } else {
-                element.classList.remove('bg-green-500');
-                element.classList.add('bg-red-500');
-            }
-            setTimeout(() => {
-                element.classList.add('hidden');
-            }, 3000);
-        }
+    
+</div>
+</div>
 
-        // Simple function for password hashing (for local storage)
-        // For real applications, use more robust methods!
-        function hashPassword(password) {
-            return btoa(password); // Simple Base64 encoding
-        }
+    <div class="header-services">
+    <div class="service-block">
+        <h3>Г. Волгоград</h3>
+        <p>Дымченко 8 Центральный р-он.</p>
+    </div>
+    <div class="service-block">
+        <h3>Бали (Kuta, Jalan Wana Gegara)</h3>
+        <p>Наша творческая лаборатория, где природа и вдохновение сливаются воедино.</p>
+    </div>
+    <div class="service-block">
+        <h3>Москва (г.Королёв)</h3>
+        <p>Ул. Советская 49 мрн. Юбилейный.</p>
+    </div>
+</div>
+        </ul>
+   
+    </div>
 
-        // Get list of all users from localStorage
-        function getLocalUsers() {
-            const users = localStorage.getItem('localUsers');
-            return users ? JSON.parse(users) : {};
-        }
+    <hr class="section-divider">
 
-        // Save list of users to localStorage
-        function saveLocalUsers(users) {
-            localStorage.setItem('localUsers', JSON.stringify(users));
-        }
+   
+   <div class="soundcloud-players" id="soundcloud-players-block">
+    <div class="player-container">
+        <h2>Mixing & Mastering</h2>
+        <div id="vk_playlist_-75977862_4"></div>
+    </div>
 
-        // Register new user (now only for automatic pre-registration)
-        function registerUser(phoneNumber, password) {
-            const users = getLocalUsers();
-            if (users[phoneNumber]) {
-                // User already exists, do nothing
-                return false;
-            }
-            users[phoneNumber] = hashPassword(password);
-            saveLocalUsers(users);
-            return true;
-        }
+    <div class="player-container">
+        <h2>Песни в продаже</h2>
+        <iframe scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/2064145701&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>
+    </div>
+</div>
 
-        // Authenticate user
-        function authenticateUser(phoneNumber, password) {
-            const users = getLocalUsers();
-            const storedPasswordHash = users[phoneNumber];
-            if (storedPasswordHash && storedPasswordHash === hashPassword(password)) {
-                return true;
-            }
-            return false;
-        }
+<script src="script.js"></script>
 
-        // Log in user
-        async function login(phoneNumber) {
-            localStorage.setItem('currentUser', phoneNumber);
-            currentLocalUserPhone = phoneNumber;
-            // Do NOT call showAppContent() here, onAuthStateChanged will handle it.
+<script type="text/javascript" src="https://vk.com/js/api/openapi.js?173"></script>
+<script type="text/javascript">
+  (function() {
+    VK.Widgets.Playlist("vk_playlist_-75977862_4", -75977862, 4,'a6444ffa528341cfbd');
+  }());
+</script>
 
-            try {
-                // Attempt anonymous sign-in. onAuthStateChanged will pick this up.
-                await signInAnonymously(auth);
-                // Success handled by onAuthStateChanged
-            } catch (error) {
-                console.error("Ошибка анонимной авторизации Firebase после локального входа:", error);
-                showMessage(authMessageBox, 'error', 'Ошибка подключения к Firebase. Проверьте консоль Firebase.');
-                // If Firebase fails, we still want to log out the local user to keep states in sync
-                localStorage.removeItem('currentUser');
-                currentLocalUserPhone = null;
-                showAuthScreen(); // Stay on auth screen
-                // No reload here, as onAuthStateChanged handles the Firebase state change
-            }
-        }
-
-        // Log out user
-        async function logout() {
-            try {
-                if (auth.currentUser) {
-                    await signOut(auth);
-                }
-            } catch (error) {
-                console.error("Ошибка выхода из Firebase:", error);
-            }
-            localStorage.removeItem('currentUser');
-            currentLocalUserPhone = null;
-            currentFirebaseUserUid = null;
-            showAuthScreen();
-            location.reload(); // Reload page for full state clear
-        }
-
-        // Show authentication screen
-        function showAuthScreen() {
-            authScreen.classList.remove('hidden');
-            appContent.classList.add('hidden');
-        }
-
-        // Show application content
-        function showAppContent() {
-            authScreen.classList.add('hidden');
-            appContent.classList.remove('hidden');
-        }
-
-        // Handlers for authentication buttons
-        loginButton.addEventListener('click', () => {
-            const phoneNumber = authPhoneNumberInput.value.trim();
-            const password = authPasswordInput.value.trim();
-
-            if (!phoneNumber || !password) {
-                showMessage(authMessageBox, 'error', 'Пожалуйста, введите логин и пароль.');
-                return;
-            }
-
-            if (authenticateUser(phoneNumber, password)) {
-                login(phoneNumber);
-            } else {
-                showMessage(authMessageBox, 'error', 'Неверный логин или пароль.');
-            }
-        });
-
-        logoutButton.addEventListener('click', logout);
-
-        // =============================================================================================
-        // Main application logic
-        // =============================================================================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            const releaseForm = document.getElementById('release-form');
-            const linkForm = document.getElementById('link-form');
-            const successMessage = document.getElementById('msg-success');
-
-            // === Pre-registration of user thekadrainfo ===
-            const preRegisteredPhone = "thekadrainfo";
-            const preRegisteredPassword = "Ioioiohyadfg";
-            if (registerUser(preRegisteredPhone, preRegisteredPassword)) {
-                console.log(`Пользователь ${preRegisteredPhone} добавлен.`);
-            } else {
-                console.log(`Пользователь ${preRegisteredPhone} уже существует.`);
-            }
-            // ==========================================================
-
-            // Listener for Firebase Auth state changes
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    // Пользователь вошел в Firebase
-                    currentFirebaseUserUid = user.uid;
-                    console.log("Firebase Auth State Changed: Пользователь вошел, UID:", currentFirebaseUserUid);
-                    // Показываем содержимое приложения только если локальный пользователь также вошел
-                    if (currentLocalUserPhone) {
-                        showAppContent();
-                        // userIdDisplay.textContent = `Вы: ${currentLocalUserPhone}`; // Удален, так как не используется
-                    } else {
-                        // Пользователь Firebase существует, но локального пользователя нет. Возможно, локальное хранилище было очищено.
-                        // Принудительный выход для синхронизации состояний.
-                        console.warn("Пользователь Firebase существует, но локального пользователя нет. Принудительный выход.");
-                        await logout();
-                    }
-                } else {
-                    // Пользователь вышел из Firebase
-                    currentFirebaseUserUid = null;
-                    console.log("Firebase Auth State Changed: Пользователь вышел.");
-                    // Если локальный пользователь был в системе, но Firebase нет, принудительный полный выход
-                    if (currentLocalUserPhone) {
-                        console.warn("Локальный пользователь существует, но пользователь Firebase вышел. Принудительный локальный выход.");
-                        await logout();
-                    } else {
-                        // Нет локального пользователя и пользователя Firebase, показываем экран аутентификации
-                        showAuthScreen();
-                    }
-                }
-            });
-
-            // Изначальная проверка локального пользователя при загрузке DOM
-            const storedUserPhone = localStorage.getItem('currentUser');
-            if (storedUserPhone) {
-                currentLocalUserPhone = storedUserPhone;
-                // Если есть локальный пользователь, пытаемся выполнить анонимный вход в Firebase.
-                // Слушатель onAuthStateChanged затем отреагирует на эту попытку входа.
-                if (!auth.currentUser) { // Проверяем, НЕ вошел ли уже пользователь Firebase
-                    try {
-                        console.log("Попытка анонимного входа в Firebase для существующего локального пользователя.");
-                        await signInAnonymously(auth);
-                    } catch (error) {
-                        console.error("Ошибка анонимной авторизации Firebase при старте для существующего локального пользователя:", error);
-                        showMessage(authMessageBox, 'error', 'Ошибка подключения к Firebase. Попробуйте войти снова.');
-                        // Если это не удалось, onAuthStateChanged будет вызван с нулевым пользователем, что приведет к выходу, если локальный пользователь существует.
-                        // Мы позволяем onAuthStateChanged обрабатывать конечное состояние.
-                    }
-                }
-            } else {
-                showAuthScreen(); // Нет локального пользователя, всегда показываем экран аутентификации
-            }
-
-            loadSavedData(); // Загружаем сохраненные данные для форм
-
-            // Обработчик для сохранения даты и названия
-            if (releaseForm) {
-                releaseForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const releaseDate = document.getElementById('release-date').value;
-                    const timerTitle = document.getElementById('timer-title').value;
-
-                    localStorage.setItem('releaseDate', releaseDate);
-                    localStorage.setItem('timerTitle', timerTitle);
-
-                    showSuccessMessage();
-                });
-            } else {
-                console.warn("Форма 'release-form' не найдена.");
-            }
-
-            // Обработчик для сохранения ссылки
-            if (linkForm) {
-                linkForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const trackLink = document.getElementById('track-link-input').value;
-                    localStorage.setItem('releaseTrackLink', trackLink);
-                    showSuccessMessage();
-                });
-            } else {
-                console.warn("Форма 'link-form' не найдена.");
-            }
-
-            // Загрузка сохраненных данных
-            function loadSavedData() {
-                const savedDate = localStorage.getItem('releaseDate');
-                const savedTitle = localStorage.getItem('timerTitle');
-                const savedLink = localStorage.getItem('releaseTrackLink');
-
-                if (savedDate) {
-                    const releaseDateInput = document.getElementById('release-date');
-                    if (releaseDateInput) releaseDateInput.value = savedDate;
-                }
-                if (savedTitle) {
-                    const timerTitleInput = document.getElementById('timer-title');
-                    if (timerTitleInput) timerTitleInput.value = savedTitle;
-                }
-                if (savedLink) {
-                    const trackLinkInput = document.getElementById('track-link-input');
-                    if (trackLinkInput) trackLinkInput.value = savedLink;
-                }
-            }
-
-            // Функция для отображения сообщения об успехе
-            function showSuccessMessage() {
-                if (successMessage) {
-                    successMessage.style.display = 'block';
-                    setTimeout(() => {
-                        successMessage.style.display = 'none';
-                    }, 3000);
-                }
-            }
-        });
-    </script>
-    <!--Start of Tawk.to Script-->
-    <script type="text/javascript">
-        var Tawk_API = Tawk_API || {},
-            Tawk_LoadStart = new Date();
-        (function() {
-            var s1 = document.createElement("script"),
-                s0 = document.getElementsByTagName("script")[0];
-            s1.async = true;
-            s1.src = 'https://embed.tawk.to/68b00fb55344dc1921047a89/1j3nrqns9';
-            s1.charset = 'UTF-8';
-            s1.setAttribute('crossorigin', '*');
-            s0.parentNode.insertBefore(s1, s0);
-        })();
-    </script>
-    <!--End of Tawk.to Script-->
 </body>
+</html>
 
+
+</section>
+
+    <section id="contact" class="contact-section">
+    <div class="contact-container">
+        <h2>Свяжитесь с нами</h2>
+        <p>Для сотрудничества или вопросов, оставьте свои данные:</p>
+        
+        <form id="contactForm" action="https://formspree.io/f/mldlywvb" method="POST">
+            <label for="name">Ваше имя:</label>
+            <input type="text" id="name" name="name" required />
+
+            <label for="phone">Ваш Номер телефона:</label>
+            <input type="tel" id="phone" name="phone" required />
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+    <div class="telegram-button-container">
+        <p>
+    &nbsp;&nbsp;&nbsp;
+</p>
+    <a href="https://t.me/kadкф " target="_blank" class="action-button telegram-button">
+       
+        <i class="fa-brands fa-telegram"></i> Перейти в Telegram
+    </a>
+</div>
+</section>
+
+         <h2></h2>
+        <div class="about-vertical-blocks">
+            <div class="info-block">
+                <h3>KADRA records
+                    <button class="expand-button" aria-expanded="false" aria-controls="records-content"></button>
+                </h3>
+                <div class="collapsible-content" id="records-content">
+                    <p>KADRA Records — это больше, чем просто студия звукозаписи. Это творческий дом, где ваши музыкальные идеи обретают профессиональное звучание. За более чем 15 лет работы мы помогли десяткам артистов воплотить их мечты в реальность, а наши треки получили признание, в том числе и 3-х платиновые синглы.</p>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Наши студии
+                    <button class="expand-button" aria-expanded="false" aria-controls="studios-content"></button>
+                </h3>
+                <div class="collapsible-content" id="studios-content">
+                    <p>Наши студии, расположенные в Москве (Королёв), Волгограде и на Бали (Kuta), оснащены топовым оборудованием, чтобы обеспечить идеальный звук независимо от того, где вы находитесь. Мы предлагаем полный спектр услуг — от записи первой демки до финального релиза, готового покорить чарты.</p>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Ключевые услуги
+                    <button class="expand-button" aria-expanded="false" aria-controls="services-content"></button>
+                </h3>
+                <div class="collapsible-content" id="services-content">
+                    <h4>Список всех услуг:</h4>
+                    <ul>
+                        <li>студия звукозаписи</li>
+                        <li>запись музыки</li>
+                        <li>сведение</li>
+                        <li>мастеринг</li>
+                        <li>запись вокала</li>
+                        <li>аренда студии</li>
+                        <li>услуги звукорежиссера</li>
+                        <li>профессиональная запись</li>
+                        <li>музыкальная студия</li>
+                        <li>звукозапись рядом со мной</li>
+                    </ul>
+                    <h4>Специфические услуги:</h4>
+                    <ul>
+                        <li>запись песни под ключ</li>
+                        <li>аранжировка</li>
+                        <li>написание музыки</li>
+                        <li>озвучка рекламы</li>
+                        <li>запись аудиокниги</li>
+                        <li>создание подкаста</li>
+                        <li>запись живых инструментов</li>
+                        <li>реставрация аудио</li>
+                        <li>запись музыкальных инструментов</li>
+                        <li>сведение трека</li>
+                        <li>мастеринг трека</li>
+                        <li>запись рэпа</li>
+                        <li>запись хип-хопа</li>
+                        <li>запись поп-музыки</li>
+                        <li>запись рок-музыки</li>
+                        <li>озвучка видео</li>
+                        <li>запись джинглов</li>
+                        <li>запись презентаций</li>
+                        <li>запись автоответчика</li>
+                    </ul>
+                    <p><strong>Запись вокала и инструментов:</strong> Мы обеспечим профессиональный подход к записи голоса, используя лучшее студийное оборудование. Наша цель — не просто записать, а раскрыть ваш уникальный стиль исполнения. Мы работаем с разными жанрами: от хип-хопа и рэпа до поп-музыки.</p>
+                    <p><strong>Сведение и мастеринг:</strong> Эти два ключевых процесса звукозаписывающей студии превращают набор звуковых дорожек в единую, мощную композицию. Сведение — это балансировка всех инструментов и вокала. Мастеринг — это финальная обработка, которая делает трек громким и сбалансированным для всех платформ. Наши звукорежиссёры используют такие техники, как эквализация, компрессия и панорамирование, чтобы ваш трек звучал максимально качественно.</p>
+                    <p><strong>Песня «под ключ»:</strong> Это наше комплексное решение для тех, кто хочет получить готовый результат. Мы создадим песню с нуля: напишем оригинальный текст и авторскую аранжировку, запишем вокал и проведем все этапы обработки до финального результата. Это идеальный вариант для создания «песни в подарок» или для тех, кто хочет получить готовый коммерческий продукт.</p>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Услуги для бизнеса
+                    <button class="expand-button" aria-expanded="false" aria-controls="business-content"></button>
+                </h3>
+                <div class="collapsible-content" id="business-content">
+                    <p>Помимо музыкальной индустрии, мы предлагаем специализированные услуги для создателей контента и корпоративных клиентов, помогая им достичь своих целей в сфере аудио.</p>
+                    <ul>
+                        <li><strong>Запись подкастов:</strong> Наши студии оснащены всем необходимым для записи подкастов и аудиокниг, что позволяет создавать чистый, профессиональный звук без посторонних шумов. Эта услуга включает в себя аренду студии и работу звукорежиссёра.</li>
+                        <li><strong>Озвучка аудиокниг и рекламы:</strong> Мы работаем с дикторами и предоставляем услуги по начитке текста и озвучиванию аудиокниг и видеороликов. Также мы создаём аудиорекламу и корпоративные гимны, которые помогут вашему бизнесу выделиться.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Локации где и как нас ищут
+                    <button class="expand-button" aria-expanded="false" aria-controls="locations-content"></button>
+                </h3>
+                <div class="collapsible-content" id="locations-content">
+                    <h4>Геозависимые и локальные запросы:</h4>
+                    <ul>
+                        <li>студия звукозаписи Москва</li>
+                        <li>студия звукозаписи Волгоград</li>
+                        <li>студия звукозаписи Бали</li>
+                        <li>студия звукозаписи рядом со мной</li>
+                        <li>студия звукозаписи у метро</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Свяжитесь с нами
+                    <button class="expand-button" aria-expanded="false" aria-controls="contact-content"></button>
+                </h3>
+                <div class="collapsible-content" id="contact-content">
+                    <p>Свяжитесь с нами чтобы узнать сколько стоит записать трек, если вас интересует недорогая и качественная студия, то это к нам, вы можете арендовать студию на час и более для любых задач ( запись вокала , запись песни, запись голоса, запись под минус, запись с педагогом по вокалу.</p>
+                    <p>Студия для подкастов и бизнеса:  для записи подкастов, запись подкаста под ключ, озвучка аудиокниги, услуги диктора, создание аудиорекламы , корпоративный гимн.</p>
+                    <p><strong>Сведение и мастеринг:</strong> сведение песни, мастеринг трека, сведение мультитрека, мастеринг для стриминговых площадок.</p>
+                    <p><strong>Аранжировка:</strong> аранжировка песни , написание музыки, битмейкинг , сочинение песни на заказ. Чтобы узнать больше о наших услугах, ценах или получить консультацию. Начните свой путь к успеху с KADRA Records.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+
+<footer>
+    <p>© 2024 Kadra Records. Все права защищены.</p>
+<p>8-961-077-74-03 WA / TG only</p>
+    <div class="footer-links">
+        <a href="admin.html" aria-label="Вход в админ-панель">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-shield-half">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M12 22V2"/>
+            </svg>
+        </a>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+   <div id="promo-banner-block" style="display: none;">
+    <div class="promo-text">Получите скидку 20% на любую песню!</div>
+    <a href="#soundcloud-players-block" class="buy-button">Из Каталога</a>
+    <div class="timer"></div>
+</div>
+</body>
 </html>
