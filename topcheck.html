@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Приложение с 8 квадратами</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      background-color: #1a202c; /* Соответствует bg-gray-800 в Tailwind */
+      color: #e2e8f0; /* Соответствует text-gray-100 в Tailwind */
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.3s ease-out forwards;
+    }
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .aspect-square {
+      aspect-ratio: 1 / 1;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 sm:p-8">
+
+  <!-- Контейнер для квадратов -->
+  <div id="squares-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-6xl justify-items-center">
+    <!-- Квадраты будут сгенерированы JavaScript -->
+  </div>
+
+  <!-- Контейнер для iframe модального окна -->
+  <div id="iframe-modal-container"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const squaresContainer = document.getElementById('squares-container');
+      const iframeModalContainer = document.getElementById('iframe-modal-container');
+      const spotifyContainer = document.getElementById('spotify-container');
+
+      // Определение данных для квадратов
+      const squaresData = [
+        { id: 1, title: 'Топ Shazam на Spotify', url: 'https://open.spotify.com/embed/playlist/1YvHZR6lwysBB6UNUa800r?utm_source=generator' },
+        { id: 2, title: 'Плейлист YouTube', url: 'https://www.youtube.com/embed/videoseries?list=PL4fGSI1pDJn5kI81J1fYWK5eZRl1zJ5kM' },
+        { id: 3, title: 'Evropa plus top', url: 'https://open.spotify.com/embed/playlist/5KVZwvYAtiXTjlQjttTrO9?utm_source=generator' },
+        { id: 4, title: 'Shazam Топ 200', url: 'https://www.shazam.com/charts/top-200/world', openInNewTab: true },
+        { id: 5, title: 'Trap', url: 'https://open.spotify.com/embed/playlist/77kBUalZyju2tXEuPF36e8?utm_source=generator' },
+        { id: 6, title: 'Тренды YouTube (RU)', url: 'https://charts.youtube.com/charts/TrendingVideos/ru/RightNow' },
+        { id: 7, title: 'Топ Shazam на Spotify', url: 'https://open.spotify.com/embed/playlist/1YvHZR6lwysBB6UNUa800r?utm_source=generator' },
+        { id: 8, title: 'TikTok Топ', url: 'https://open.spotify.com/embed/playlist/7jYMCARhi5WvrcLEAAuLSX?utm_source=generator' },
+      ];
+
+      // Функция для создания и отображения квадратов
+      function renderSquares() {
+        squaresData.forEach(square => {
+          const button = document.createElement('button');
+          button.className = "relative flex items-center justify-center p-4 m-2 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold text-lg sm:text-xl rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer overflow-hidden group focus:outline-none focus:ring-4 focus:ring-blue-300 aspect-square";
+          button.innerHTML = `
+            <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+            <span class="relative z-10 text-center drop-shadow-md">${square.title}</span>
+          `;
+          button.dataset.url = square.url;
+          
+          if (square.openInNewTab) {
+            button.onclick = () => window.open(square.url, '_blank');
+          } else {
+            button.onclick = () => handleSquareClick(square.url);
+          }
+          squaresContainer.appendChild(button);
+        });
+      }
+
+      // Функция для создания и отображения модального окна
+      function renderIframeModal(url) {
+        iframeModalContainer.innerHTML = `
+          <div class="fixed inset-0 z-50 flex flex-col bg-gray-900 bg-opacity-95 p-2 sm:p-4 animate-fade-in-up">
+            <div class="flex justify-end mb-2 sm:mb-4">
+              <button
+                id="close-button"
+                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-red-300 text-sm sm:text-base"
+                aria-label="Закрыть"
+              >
+                Закрыть X
+              </button>
+            </div>
+            <div class="flex-grow rounded-lg overflow-hidden shadow-2xl border-4 border-gray-700">
+              <iframe
+                src="${url}"
+                title="Встроенное приложение"
+                class="w-full h-full border-none"
+                allowFullScreen
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+              ></iframe>
+            </div>
+          </div>
+        `;
+        document.getElementById('close-button').onclick = handleCloseIframe;
+      }
+
+      // Обработчик открытия iframe
+      function handleSquareClick(url) {
+        renderIframeModal(url);
+      }
+
+      // Обработчик закрытия iframe
+      function handleCloseIframe() {
+        iframeModalContainer.innerHTML = '';
+      }
+
+      // Инициализация
+      renderSquares();
+    });
+  </script>
+</body>
+</html>
