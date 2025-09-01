@@ -141,13 +141,23 @@
 
         // Функции рендеринга
         function renderDashboard() {
-            document.getElementById('deals-in-progress').textContent = state.deals.length;
-            document.getElementById('tasks-for-today').textContent = state.tasks.filter(t => !t.isCompleted).length;
-            document.getElementById('new-clients').textContent = state.contacts.filter(c => c.segment === 'новый').length;
+            const dealsInProgressEl = document.getElementById('deals-in-progress');
+            if (dealsInProgressEl) {
+                dealsInProgressEl.textContent = state.deals.length;
+            }
+            const tasksForTodayEl = document.getElementById('tasks-for-today');
+            if (tasksForTodayEl) {
+                tasksForTodayEl.textContent = state.tasks.filter(t => !t.isCompleted).length;
+            }
+            const newClientsEl = document.getElementById('new-clients');
+            if (newClientsEl) {
+                newClientsEl.textContent = state.contacts.filter(c => c.segment === 'новый').length;
+            }
         }
 
         function renderContacts() {
             const container = document.getElementById('contacts-list-container');
+            if (!container) return;
             container.innerHTML = '';
             if (state.contacts.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 p-4">У вас еще нет клиентов.</p>';
@@ -173,6 +183,7 @@
         function renderDeals() {
             const stages = ['Новая', 'Квалификация', 'Предложение', 'Переговоры', 'Выиграна', 'Проиграна'];
             const container = document.getElementById('deals-kanban-board');
+            if (!container) return;
             container.innerHTML = '';
 
             // Создаем отдельный контейнер для каждой колонки
@@ -211,6 +222,7 @@
 
         function renderTasks() {
             const container = document.getElementById('tasks-list');
+            if (!container) return;
             container.innerHTML = '';
             if (state.tasks.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 p-4">У вас нет задач.</p>';
@@ -233,6 +245,7 @@
 
         function renderAnalytics() {
             const analyticsContainer = document.getElementById('analytics-content');
+            if (!analyticsContainer) return;
             analyticsContainer.innerHTML = '';
 
             const stages = ['Новая', 'Квалификация', 'Предложение', 'Переговоры', 'Выиграна', 'Проиграна'];
