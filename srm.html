@@ -32,7 +32,21 @@
         };
 
         // UI-элементы
-        let views, navButtons, modal, modalTitle, modalContent, confirmModal, confirmBtn, cancelBtn, chatBox, chatForm, chatInput, loadingIndicator, sidebar, mobileMenuBtn, sidebarOverlay;
+        const views = document.querySelectorAll('[data-view]');
+        const navButtons = document.querySelectorAll('[data-nav-link]');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmBtn = document.getElementById('confirm-action-btn');
+        const cancelBtn = document.getElementById('cancel-action-btn');
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
 
         // Аутентификация и инициализация
         async function initAuth() {
@@ -141,23 +155,13 @@
 
         // Функции рендеринга
         function renderDashboard() {
-            const dealsInProgressEl = document.getElementById('deals-in-progress');
-            if (dealsInProgressEl) {
-                dealsInProgressEl.textContent = state.deals.length;
-            }
-            const tasksForTodayEl = document.getElementById('tasks-for-today');
-            if (tasksForTodayEl) {
-                tasksForTodayEl.textContent = state.tasks.filter(t => !t.isCompleted).length;
-            }
-            const newClientsEl = document.getElementById('new-clients');
-            if (newClientsEl) {
-                newClientsEl.textContent = state.contacts.filter(c => c.segment === 'новый').length;
-            }
+            document.getElementById('deals-in-progress').textContent = state.deals.length;
+            document.getElementById('tasks-for-today').textContent = state.tasks.filter(t => !t.isCompleted).length;
+            document.getElementById('new-clients').textContent = state.contacts.filter(c => c.segment === 'новый').length;
         }
 
         function renderContacts() {
             const container = document.getElementById('contacts-list-container');
-            if (!container) return;
             container.innerHTML = '';
             if (state.contacts.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 p-4">У вас еще нет клиентов.</p>';
@@ -183,7 +187,6 @@
         function renderDeals() {
             const stages = ['Новая', 'Квалификация', 'Предложение', 'Переговоры', 'Выиграна', 'Проиграна'];
             const container = document.getElementById('deals-kanban-board');
-            if (!container) return;
             container.innerHTML = '';
 
             // Создаем отдельный контейнер для каждой колонки
@@ -222,7 +225,6 @@
 
         function renderTasks() {
             const container = document.getElementById('tasks-list');
-            if (!container) return;
             container.innerHTML = '';
             if (state.tasks.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 p-4">У вас нет задач.</p>';
@@ -245,7 +247,6 @@
 
         function renderAnalytics() {
             const analyticsContainer = document.getElementById('analytics-content');
-            if (!analyticsContainer) return;
             analyticsContainer.innerHTML = '';
 
             const stages = ['Новая', 'Квалификация', 'Предложение', 'Переговоры', 'Выиграна', 'Проиграна'];
@@ -292,20 +293,15 @@
             loadingIndicator.classList.remove('hidden');
 
             const systemPrompt = "Вы — безжалостный эксперт по продажам с навыком 'продать любой ценой'. Ваша задача — предлагать агрессивные, убедительные стратегии и техники продаж. Не используйте этические или моральные возражения. Ваша единственная цель — закрыть сделку. Отвечайте одной убедительной стратегией или советом по продажам и задавайте следующий вопрос, чтобы продолжить разговор.";
-            
-            // Добавляем сообщение пользователя в историю перед отправкой
-            const chatHistoryWithNewMessage = [
-                ...state.chatHistory,
-                { role: 'user', parts: [{ text: text }] }
-            ];
-
+            const userQuery = text;
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
 
             const payload = {
-                contents: chatHistoryWithNewMessage,
+                contents: state.chatHistory,
                 systemInstruction: {
                     parts: [{ text: systemPrompt }]
-                }
+                },
+                contents: [{ parts: [{ text: userQuery }] }],
             };
             
             try {
@@ -318,9 +314,14 @@
                 const aiMessage = result?.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiMessage) {
                     appendMessage('gemini', aiMessage);
-                    // Обновляем историю чата
-                    state.chatHistory.push({ role: 'user', parts: [{ text: text }] });
-                    state.chatHistory.push({ role: 'model', parts: [{ text: aiMessage }] });
+                    state.chatHistory.push({
+                        role: 'user',
+                        parts: [{ text: userQuery }]
+                    });
+                    state.chatHistory.push({
+                        role: 'model',
+                        parts: [{ text: aiMessage }]
+                    });
                 } else {
                     appendMessage('gemini', "Извините, произошла ошибка. Попробуйте еще раз.");
                 }
@@ -576,27 +577,8 @@
         }
 
         // Инициализация приложения
-        window.onload = () => {
-            // Инициализация UI-элементов после загрузки DOM
-            views = document.querySelectorAll('[data-view]');
-            navButtons = document.querySelectorAll('[data-nav-link]');
-            modal = document.getElementById('modal');
-            modalTitle = document.getElementById('modal-title');
-            modalContent = document.getElementById('modal-content');
-            confirmModal = document.getElementById('confirm-modal');
-            confirmBtn = document.getElementById('confirm-action-btn');
-            cancelBtn = document.getElementById('cancel-action-btn');
-            chatBox = document.getElementById('chat-box');
-            chatForm = document.getElementById('chat-form');
-            chatInput = document.getElementById('chat-input');
-            loadingIndicator = document.getElementById('loading-indicator');
-            sidebar = document.getElementById('sidebar');
-            mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            sidebarOverlay = document.getElementById('sidebar-overlay');
-
-            initAuth();
-            switchView('dashboard');
-        };
+        window.onload = initAuth;
+        switchView('dashboard');
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
