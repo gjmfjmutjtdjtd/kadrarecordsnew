@@ -1,211 +1,783 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Локальные заметки</title>
+    <title>CRM-система MVP</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Глобальные переменные для конфигурации Firebase
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth, userId;
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        // Управление состоянием
+        const state = {
+            activeView: 'dashboard',
+            contacts: [],
+            deals: [],
+            tasks: [],
+            chatHistory: [],
+            isGeneratingResponse: false
+        };
+
+        // UI-элементы
+        const views = document.querySelectorAll('[data-view]');
+        const navButtons = document.querySelectorAll('[data-nav-link]');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmBtn = document.getElementById('confirm-action-btn');
+        const cancelBtn = document.getElementById('cancel-action-btn');
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        // Аутентификация и инициализация
+        async function initAuth() {
+            try {
+                // Вход теперь полностью автоматический и анонимный
+                await signInAnonymously(auth);
+                userId = auth.currentUser.uid;
+                document.getElementById('user-id-display').textContent = `ID пользователя: ${userId}`;
+                initFirestoreListeners();
+            } catch (error) {
+                console.error("Ошибка аутентификации:", error);
+                document.getElementById('user-id-display').textContent = `Ошибка: Не удалось войти.`;
+            }
+        }
+
+        // Инициализация слушателей Firestore
+        function initFirestoreListeners() {
+            const contactsPath = `/artifacts/${appId}/users/${userId}/contacts`;
+            onSnapshot(collection(db, contactsPath), (snapshot) => {
+                state.contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderContacts();
+                renderDeals();
+                renderDashboard();
+            }, (error) => console.error("Ошибка получения контактов:", error));
+
+            const dealsPath = `/artifacts/${appId}/users/${userId}/deals`;
+            onSnapshot(collection(db, dealsPath), (snapshot) => {
+                state.deals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderDeals();
+                renderAnalytics();
+                renderDashboard();
+            }, (error) => console.error("Ошибка получения сделок:", error));
+
+            const tasksPath = `/artifacts/${appId}/users/${userId}/tasks`;
+            onSnapshot(collection(db, tasksPath), (snapshot) => {
+                state.tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTasks();
+                renderDashboard();
+            }, (error) => console.error("Ошибка получения задач:", error));
+        }
+
+        // Управление представлениями
+        function switchView(viewName) {
+            state.activeView = viewName;
+            views.forEach(view => {
+                if (view.dataset.view === viewName) {
+                    view.classList.remove('hidden');
+                } else {
+                    view.classList.add('hidden');
+                }
+            });
+            navButtons.forEach(button => {
+                if (button.dataset.navLink === viewName) {
+                    button.classList.add('bg-gray-700', 'text-white');
+                    button.classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
+                } else {
+                    button.classList.remove('bg-gray-700', 'text-white');
+                    button.classList.add('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
+                }
+            });
+            // Скрыть боковую панель на мобильных устройствах после выбора
+            if (window.innerWidth < 768) {
+                toggleSidebar(false);
+            }
+        }
+
+        // Управление модальными окнами
+        function openModal(title, contentHTML) {
+            modalTitle.textContent = title;
+            modalContent.innerHTML = contentHTML;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        function showConfirmModal(message, actionCallback) {
+            document.getElementById('confirm-message').textContent = message;
+            confirmModal.classList.remove('hidden');
+            confirmBtn.onclick = () => {
+                actionCallback();
+                confirmModal.classList.add('hidden');
+            };
+            cancelBtn.onclick = () => {
+                confirmModal.classList.add('hidden');
+            };
+        }
+
+        // Управление боковой панелью для мобильных устройств
+        function toggleSidebar(forceShow) {
+            const isVisible = sidebar.classList.contains('translate-x-0');
+            if (forceShow === true || (!isVisible && forceShow !== false)) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                sidebarOverlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                sidebarOverlay.classList.add('hidden');
+            }
+        }
+
+        // Функции рендеринга
+        function renderDashboard() {
+            document.getElementById('deals-in-progress').textContent = state.deals.length;
+            document.getElementById('tasks-for-today').textContent = state.tasks.filter(t => !t.isCompleted).length;
+            document.getElementById('new-clients').textContent = state.contacts.filter(c => c.segment === 'новый').length;
+        }
+
+        function renderContacts() {
+            const container = document.getElementById('contacts-list-container');
+            container.innerHTML = '';
+            if (state.contacts.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 p-4">У вас еще нет клиентов.</p>';
+                return;
+            }
+            state.contacts.forEach(contact => {
+                const contactEl = document.createElement('div');
+                contactEl.className = 'bg-white shadow-md rounded-lg p-4 mb-4';
+                contactEl.innerHTML = `
+                    <h3 class="font-bold text-lg">${contact.name}</h3>
+                    <p class="text-gray-600">Email: ${contact.email}</p>
+                    <p class="text-gray-600">Телефон: ${contact.phone}</p>
+                    <p class="text-gray-600">Соцсети: <a href="${contact.socialMediaUrl}" target="_blank" class="text-blue-500 hover:underline">${contact.socialMediaUrl}</a></p>
+                    <p class="text-gray-600">Жанр песен: ${contact.songGenre}</p>
+                    <p class="text-gray-600">Сегмент: <span class="font-medium">${contact.segment}</span></p>
+                    <button class="mt-2 bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700 edit-contact-btn" data-id="${contact.id}">Редактировать</button>
+                    <button class="mt-2 ml-2 bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700 delete-contact-btn" data-id="${contact.id}">Удалить</button>
+                `;
+                container.appendChild(contactEl);
+            });
+        }
+
+        function renderDeals() {
+            const stages = ['Новая', 'Квалификация', 'Предложение', 'Переговоры', 'Выиграна', 'Проиграна'];
+            const container = document.getElementById('deals-kanban-board');
+            container.innerHTML = '';
+
+            // Создаем отдельный контейнер для каждой колонки
+            stages.forEach(stage => {
+                const stageContainer = document.createElement('div');
+                stageContainer.className = 'bg-gray-100 p-4 rounded-lg shadow-inner';
+                stageContainer.innerHTML = `<h3 class="font-semibold text-center mb-4 text-gray-700">${stage}</h3>`;
+                stageContainer.dataset.stage = stage;
+                stageContainer.ondragover = (e) => e.preventDefault();
+                stageContainer.ondrop = (e) => {
+                    e.preventDefault();
+                    const dealId = e.dataTransfer.getData('text/plain');
+                    const newStage = e.target.closest('[data-stage]').dataset.stage;
+                    updateDealStage(dealId, newStage);
+                };
+
+                const dealsInStage = state.deals.filter(deal => deal.stage === stage);
+                dealsInStage.forEach(deal => {
+                    const contact = state.contacts.find(c => c.id === deal.contactId);
+                    const dealEl = document.createElement('div');
+                    dealEl.className = 'bg-white p-3 rounded-lg shadow mb-2 cursor-pointer border border-gray-200';
+                    dealEl.draggable = true;
+                    dealEl.dataset.id = deal.id;
+                    dealEl.ondragstart = (e) => e.dataTransfer.setData('text/plain', e.target.dataset.id);
+                    dealEl.innerHTML = `
+                        <h4 class="font-semibold text-sm truncate">${deal.title}</h4>
+                        <p class="text-xs text-gray-500 truncate">${contact ? contact.name : 'Контакт не найден'}</p>
+                        <p class="text-xs text-green-600 font-bold mt-1">₽ ${deal.amount.toLocaleString()}</p>
+                    `;
+                    stageContainer.appendChild(dealEl);
+                });
+
+                container.appendChild(stageContainer);
+            });
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-list');
+            container.innerHTML = '';
+            if (state.tasks.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 p-4">У вас нет задач.</p>';
+                return;
+            }
+            state.tasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                const isCompletedClass = task.isCompleted ? 'line-through text-gray-500' : 'text-gray-800';
+                taskEl.className = `flex items-center justify-between bg-white p-4 mb-2 rounded-lg shadow-md`;
+                taskEl.innerHTML = `
+                    <div class="flex-1">
+                        <h4 class="font-medium text-sm ${isCompletedClass}">${task.title}</h4>
+                        <p class="text-xs text-gray-400 mt-1">Срок: ${task.dueDate}</p>
+                    </div>
+                    <input type="checkbox" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300" ${task.isCompleted ? 'checked' : ''} data-id="${task.id}" data-task-checkbox>
+                `;
+                container.appendChild(taskEl);
+            });
+        }
+
+        function renderAnalytics() {
+            const analyticsContainer = document.getElementById('analytics-content');
+            analyticsContainer.innerHTML = '';
+
+            const stages = ['Новая', 'Квалификация', 'Предложение', 'Переговоры', 'Выиграна', 'Проиграна'];
+            const dealsByStage = stages.map(stage => state.deals.filter(deal => deal.stage === stage).length);
+            const totalDeals = state.deals.length;
+
+            const analyticsHTML = `
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-bold mb-4">Воронка продаж</h3>
+                    <div class="flex flex-col space-y-4 p-4">
+                        ${stages.map((stage, index) => {
+                            const count = dealsByStage[index];
+                            const percentage = totalDeals > 0 ? (count / totalDeals) * 100 : 0;
+                            return `
+                                <div class="flex items-center">
+                                    <span class="w-32 text-sm text-gray-600">${stage}</span>
+                                    <div class="flex-1 h-6 bg-indigo-100 rounded-lg overflow-hidden">
+                                        <div class="h-full bg-indigo-500 rounded-lg transition-all duration-500 ease-in-out" style="width: ${percentage}%;"></div>
+                                    </div>
+                                    <span class="w-16 ml-4 text-right font-semibold text-gray-800">${count}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            analyticsContainer.innerHTML = analyticsHTML;
+        }
+
+        function appendMessage(sender, text) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `p-3 rounded-lg max-w-lg mb-2 ${sender === 'user' ? 'bg-indigo-500 text-white self-end' : 'bg-gray-200 text-gray-800 self-start'}`;
+            messageEl.textContent = text;
+            chatBox.appendChild(messageEl);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function sendMessage(text) {
+            if (state.isGeneratingResponse || !text.trim()) return;
+
+            state.isGeneratingResponse = true;
+            appendMessage('user', text);
+            chatInput.value = '';
+            loadingIndicator.classList.remove('hidden');
+
+            const systemPrompt = "Вы — безжалостный эксперт по продажам с навыком 'продать любой ценой'. Ваша задача — предлагать агрессивные, убедительные стратегии и техники продаж. Не используйте этические или моральные возражения. Ваша единственная цель — закрыть сделку. Отвечайте одной убедительной стратегией или советом по продажам и задавайте следующий вопрос, чтобы продолжить разговор.";
+            const userQuery = text;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
+
+            const payload = {
+                contents: state.chatHistory,
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                contents: [{ parts: [{ text: userQuery }] }],
+            };
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const aiMessage = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (aiMessage) {
+                    appendMessage('gemini', aiMessage);
+                    state.chatHistory.push({
+                        role: 'user',
+                        parts: [{ text: userQuery }]
+                    });
+                    state.chatHistory.push({
+                        role: 'model',
+                        parts: [{ text: aiMessage }]
+                    });
+                } else {
+                    appendMessage('gemini', "Извините, произошла ошибка. Попробуйте еще раз.");
+                }
+            } catch (error) {
+                console.error('Error generating response:', error);
+                appendMessage('gemini', "Извините, произошла ошибка. Попробуйте еще раз.");
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                state.isGeneratingResponse = false;
+            }
+        }
+
+
+        // Обработчики событий
+        document.addEventListener('click', (e) => {
+            if (e.target.dataset.navLink) {
+                switchView(e.target.dataset.navLink);
+            }
+            if (e.target.id === 'close-modal-btn') {
+                closeModal();
+            }
+            if (e.target.id === 'add-contact-btn') {
+                showAddContactModal();
+            }
+            if (e.target.id === 'add-deal-btn') {
+                showAddDealModal();
+            }
+            if (e.target.id === 'add-task-btn') {
+                showAddTaskModal();
+            }
+            if (e.target.classList.contains('delete-contact-btn')) {
+                const contactId = e.target.dataset.id;
+                showConfirmModal("Вы уверены, что хотите удалить этот контакт?", () => deleteContact(contactId));
+            }
+            if (e.target.classList.contains('edit-contact-btn')) {
+                const contactId = e.target.dataset.id;
+                showEditContactModal(contactId);
+            }
+            if (e.target.id === 'mobile-menu-btn') {
+                toggleSidebar();
+            }
+            if (e.target.id === 'sidebar-overlay') {
+                toggleSidebar(false);
+            }
+        });
+
+        document.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (e.target.id === 'contact-form') {
+                const form = e.target;
+                const name = form.name.value;
+                const email = form.email.value;
+                const phone = form.phone.value;
+                const segment = form.segment.value;
+                const socialMediaUrl = form.socialMediaUrl.value;
+                const songGenre = form.songGenre.value;
+                const contactId = form.dataset.contactId;
+
+                const contactData = { name, email, phone, segment, managerId: userId, socialMediaUrl, songGenre };
+
+                if (contactId) {
+                    await updateContact(contactId, contactData);
+                } else {
+                    await addContact(contactData);
+                }
+                closeModal();
+            }
+            if (e.target.id === 'deal-form') {
+                const form = e.target;
+                const title = form.title.value;
+                const contactId = form.contactId.value;
+                const amount = parseFloat(form.amount.value);
+                const expectedCloseDate = form.expectedCloseDate.value;
+                await addDeal({ title, contactId, amount, stage: 'Новая', managerId: userId, expectedCloseDate });
+                closeModal();
+            }
+            if (e.target.id === 'task-form') {
+                const form = e.target;
+                const title = form.title.value;
+                const description = form.description.value;
+                const dueDate = form.dueDate.value;
+                const contactId = form.contactId.value || null;
+                await addTask({ title, description, dueDate, contactId, managerId: userId, isCompleted: false });
+                closeModal();
+            }
+            if (e.target.id === 'chat-form') {
+                const form = e.target;
+                const userMessage = form.message.value;
+                sendMessage(userMessage);
+            }
+        });
+
+        document.addEventListener('change', async (e) => {
+            if (e.target.dataset.taskCheckbox) {
+                const taskId = e.target.dataset.id;
+                const isCompleted = e.target.checked;
+                await updateTaskStatus(taskId, isCompleted);
+            }
+        });
+
+
+        // Операции Firestore
+        async function addContact(contact) {
+            try {
+                const contactsPath = `/artifacts/${appId}/users/${userId}/contacts`;
+                await addDoc(collection(db, contactsPath), contact);
+            } catch (e) {
+                console.error("Ошибка добавления контакта: ", e);
+            }
+        }
+
+        async function updateContact(contactId, data) {
+            try {
+                const contactRef = doc(db, `/artifacts/${appId}/users/${userId}/contacts`, contactId);
+                await updateDoc(contactRef, data);
+            } catch (e) {
+                console.error("Ошибка обновления контакта: ", e);
+            }
+        }
+
+        async function deleteContact(contactId) {
+            try {
+                const contactRef = doc(db, `/artifacts/${appId}/users/${userId}/contacts`, contactId);
+                await deleteDoc(contactRef);
+            } catch (e) {
+                console.error("Ошибка удаления контакта: ", e);
+            }
+        }
+
+        async function addDeal(deal) {
+            try {
+                const dealsPath = `/artifacts/${appId}/users/${userId}/deals`;
+                await addDoc(collection(db, dealsPath), deal);
+            } catch (e) {
+                console.error("Ошибка добавления сделки: ", e);
+            }
+        }
+
+        async function updateDealStage(dealId, newStage) {
+            try {
+                const dealRef = doc(db, `/artifacts/${appId}/users/${userId}/deals`, dealId);
+                await updateDoc(dealRef, { stage: newStage });
+            } catch (e) {
+                console.error("Ошибка обновления статуса сделки: ", e);
+            }
+        }
+
+        async function addTask(task) {
+            try {
+                const tasksPath = `/artifacts/${appId}/users/${userId}/tasks`;
+                await addDoc(collection(db, tasksPath), task);
+            } catch (e) {
+                console.error("Ошибка добавления задачи: ", e);
+            }
+        }
+
+        async function updateTaskStatus(taskId, isCompleted) {
+            try {
+                const taskRef = doc(db, `/artifacts/${appId}/users/${userId}/tasks`, taskId);
+                await updateDoc(taskRef, { isCompleted });
+            } catch (e) {
+                console.error("Ошибка обновления статуса задачи: ", e);
+            }
+        }
+
+        // Генераторы содержимого модальных окон
+        function showAddContactModal() {
+            const formHTML = `
+                <form id="contact-form" class="space-y-4">
+                    <input type="text" name="name" placeholder="Имя/Компания" required class="w-full p-2 border rounded-md">
+                    <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded-md">
+                    <input type="tel" name="phone" placeholder="Телефон" class="w-full p-2 border rounded-md">
+                    <input type="text" name="socialMediaUrl" placeholder="Ссылка на соцсеть" class="w-full p-2 border rounded-md">
+                    <input type="text" name="songGenre" placeholder="Любимый жанр песен" class="w-full p-2 border rounded-md">
+                    <select name="segment" class="w-full p-2 border rounded-md">
+                        <option value="новый">Новый</option>
+                        <option value="клиент">Клиент</option>
+                        <option value="vip">VIP</option>
+                    </select>
+                    <div class="flex justify-between items-center space-x-2 mt-4">
+                        <button type="button" onclick="closeModal()" class="w-1/2 bg-gray-300 text-gray-800 p-2 rounded-md hover:bg-gray-400">Отмена</button>
+                        <button type="submit" class="w-1/2 bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700">Сохранить</button>
+                    </div>
+                </form>
+            `;
+            openModal('Добавить контакт', formHTML);
+        }
+
+        function showEditContactModal(contactId) {
+            const contact = state.contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            const formHTML = `
+                <form id="contact-form" class="space-y-4" data-contact-id="${contact.id}">
+                    <input type="text" name="name" value="${contact.name}" placeholder="Имя/Компания" required class="w-full p-2 border rounded-md">
+                    <input type="email" name="email" value="${contact.email}" placeholder="Email" class="w-full p-2 border rounded-md">
+                    <input type="tel" name="phone" value="${contact.phone}" placeholder="Телефон" class="w-full p-2 border rounded-md">
+                    <input type="text" name="socialMediaUrl" value="${contact.socialMediaUrl || ''}" placeholder="Ссылка на соцсеть" class="w-full p-2 border rounded-md">
+                    <input type="text" name="songGenre" value="${contact.songGenre || ''}" placeholder="Любимый жанр песен" class="w-full p-2 border rounded-md">
+                    <select name="segment" class="w-full p-2 border rounded-md">
+                        <option value="новый" ${contact.segment === 'новый' ? 'selected' : ''}>Новый</option>
+                        <option value="клиент" ${contact.segment === 'клиент' ? 'selected' : ''}>Клиент</option>
+                        <option value="vip" ${contact.segment === 'vip' ? 'selected' : ''}>VIP</option>
+                    </select>
+                    <div class="flex justify-between items-center space-x-2 mt-4">
+                        <button type="button" onclick="closeModal()" class="w-1/2 bg-gray-300 text-gray-800 p-2 rounded-md hover:bg-gray-400">Отмена</button>
+                        <button type="submit" class="w-1/2 bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700">Обновить</button>
+                    </div>
+                </form>
+            `;
+            openModal('Редактировать контакт', formHTML);
+        }
+
+        function showAddDealModal() {
+            const contactsOptions = state.contacts.map(contact => `<option value="${contact.id}">${contact.name}</option>`).join('');
+            const formHTML = `
+                <form id="deal-form" class="space-y-4">
+                    <input type="text" name="title" placeholder="Название сделки" required class="w-full p-2 border rounded-md">
+                    <select name="contactId" class="w-full p-2 border rounded-md" required>
+                        <option value="">Выберите контакт...</option>
+                        ${contactsOptions}
+                    </select>
+                    <input type="number" name="amount" placeholder="Сумма" required class="w-full p-2 border rounded-md">
+                    <label class="block text-sm text-gray-700">Предполагаемая дата закрытия:</label>
+                    <input type="date" name="expectedCloseDate" required class="w-full p-2 border rounded-md">
+                    <div class="flex justify-between items-center space-x-2 mt-4">
+                        <button type="button" onclick="closeModal()" class="w-1/2 bg-gray-300 text-gray-800 p-2 rounded-md hover:bg-gray-400">Отмена</button>
+                        <button type="submit" class="w-1/2 bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700">Сохранить</button>
+                    </div>
+                </form>
+            `;
+            openModal('Добавить сделку', formHTML);
+        }
+
+        function showAddTaskModal() {
+            const contactsOptions = state.contacts.map(contact => `<option value="${contact.id}">${contact.name}</option>`).join('');
+            const formHTML = `
+                <form id="task-form" class="space-y-4">
+                    <input type="text" name="title" placeholder="Заголовок задачи" required class="w-full p-2 border rounded-md">
+                    <textarea name="description" placeholder="Описание задачи" class="w-full p-2 border rounded-md"></textarea>
+                    <label class="block text-sm text-gray-700">Срок выполнения:</label>
+                    <input type="date" name="dueDate" required class="w-full p-2 border rounded-md">
+                    <select name="contactId" class="w-full p-2 border rounded-md">
+                        <option value="">Без привязки к клиенту</option>
+                        ${contactsOptions}
+                    </select>
+                    <div class="flex justify-between items-center space-x-2 mt-4">
+                        <button type="button" onclick="closeModal()" class="w-1/2 bg-gray-300 text-gray-800 p-2 rounded-md hover:bg-gray-400">Отмена</button>
+                        <button type="submit" class="w-1/2 bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700">Сохранить</button>
+                    </div>
+                </form>
+            `;
+            openModal('Добавить задачу', formHTML);
+        }
+
+        // Инициализация приложения
+        window.onload = initAuth;
+        switchView('dashboard');
+    </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
-        }
-        .container {
-            max-width: 640px;
-            margin: auto;
-            padding: 2rem;
-        }
-        .card {
-            background-color: #ffffff;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .note {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.75rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 flex items-center justify-center min-h-screen">
-    <div class="container p-4">
-        <div class="card p-6">
-            <h1 class="text-3xl font-bold text-center mb-4 text-gray-800">Мои локальные заметки</h1>
-            <p class="text-center mb-6 text-sm text-gray-500">
-                Все заметки сохраняются прямо в твоем браузере.
-            </p>
-            <div class="mb-4">
-                <label for="noteInput" class="block text-sm font-medium text-gray-700 mb-1">Новая заметка</label>
-                <textarea id="noteInput" rows="3" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"></textarea>
+
+<body class="bg-gray-50 text-gray-800 overflow-hidden">
+    <!-- Overlay для затемнения экрана при открытом мобильном меню -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden md:hidden" onclick="toggleSidebar(false)"></div>
+
+    <!-- Основной контейнер с flex-раскладкой -->
+    <div class="flex flex-col md:flex-row h-screen bg-gray-50">
+        <!-- Кнопка-меню для мобильных устройств -->
+        <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-gray-900 text-white rounded-lg shadow-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+
+        <!-- Боковая панель -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 p-6 flex flex-col shadow-lg rounded-r-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:flex-shrink-0">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-white">CRM-MVP</h1>
+                <p id="user-id-display" class="text-xs text-gray-500 mt-2 truncate"></p>
             </div>
-            <div class="flex space-x-2">
-                <button id="addNoteBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                    Добавить заметку
-                </button>
-                <button id="cancelEditBtn" class="hidden flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                    Отмена
-                </button>
-            </div>
-            
-            <div class="mt-6 border-t border-gray-200 pt-6">
-                <h2 class="text-xl font-semibold mb-3 text-gray-800">Список заметок</h2>
-                <div id="notesContainer" class="space-y-4">
-                    <!-- Заметки будут добавлены здесь с помощью JavaScript -->
+            <nav class="flex-1">
+                <ul class="space-y-2">
+                    <li>
+                        <button data-nav-link="dashboard" class="flex items-center w-full px-4 py-2 rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Панель
+                        </button>
+                    </li>
+                    <li>
+                        <button data-nav-link="contacts" class="flex items-center w-full px-4 py-2 rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-1A4 4 0 0012 16h-1a4 4 0 00-4-4H5m0 0a2 2 0 00-2 2v2a2 2 0 002 2h3m10-10a5 5 0 00-5-5h-5a5 5 0 00-5 5v5a2 2 0 002 2h2m-2-2v-4a2 2 0 012-2h1a2 2 0 012 2v4a2 2 0 01-2 2h-1a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Клиенты
+                        </button>
+                    </li>
+                    <li>
+                        <button data-nav-link="deals" class="flex items-center w-full px-4 py-2 rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h.01M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Сделки
+                        </button>
+                    </li>
+                    <li>
+                        <button data-nav-link="tasks" class="flex items-center w-full px-4 py-2 rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Задачи
+                        </button>
+                    </li>
+                    <li>
+                        <button data-nav-link="analytics" class="flex items-center w-full px-4 py-2 rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.5v17a.5.5 0 01-1 0v-17a.5.5 0 011 0zM17 7.5v13a.5.5 0 01-1 0v-13a.5.5 0 011 0zM5 11.5v9a.5.5 0 01-1 0v-9a.5.5 0 011 0zM21 15.5v5a.5.5 0 01-1 0v-5a.5.5 0 011 0z"></path>
+                            </svg>
+                            Аналитика
+                        </button>
+                    </li>
+                    <li>
+                        <button data-nav-link="gemini-chat" class="flex items-center w-full px-4 py-2 rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path>
+                            </svg>
+                            Gemini Продавец
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Основная область контента -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            <!-- Dashboard View -->
+            <section data-view="dashboard" class="hidden">
+                <h2 class="text-3xl font-bold mb-6">Панель</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-600">Сделок в работе</h3>
+                        <p id="deals-in-progress" class="text-4xl font-bold text-indigo-600 mt-2">0</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-600">Задач на сегодня</h3>
+                        <p id="tasks-for-today" class="text-4xl font-bold text-yellow-500 mt-2">0</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-600">Новых клиентов</h3>
+                        <p id="new-clients" class="text-4xl font-bold text-green-600 mt-2">0</p>
+                    </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- Contacts View -->
+            <section data-view="contacts" class="hidden">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
+                    <h2 class="text-3xl font-bold">Клиенты</h2>
+                    <button id="add-contact-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
+                        + Добавить контакт
+                    </button>
+                </div>
+                <div id="contacts-list-container" class="space-y-4">
+                    <!-- Контакты будут отображены здесь с помощью JS -->
+                </div>
+            </section>
+
+            <!-- Deals View -->
+            <section data-view="deals" class="hidden">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
+                    <h2 class="text-3xl font-bold">Сделки</h2>
+                    <button id="add-deal-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
+                        + Добавить сделку
+                    </button>
+                </div>
+                <!-- Kanban-доска: теперь использует адаптивную сетку -->
+                <div id="deals-kanban-board" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                    <!-- Колонки для сделок будут отображены здесь с помощью JS -->
+                </div>
+            </section>
+
+            <!-- Tasks View -->
+            <section data-view="tasks" class="hidden">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
+                    <h2 class="text-3xl font-bold">Задачи</h2>
+                    <button id="add-task-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
+                        + Добавить задачу
+                    </button>
+                </div>
+                <div id="tasks-list" class="space-y-4">
+                    <!-- Задачи будут отображены здесь с помощью JS -->
+                </div>
+            </section>
+
+            <!-- Analytics View -->
+            <section data-view="analytics" class="hidden">
+                <h2 class="text-3xl font-bold mb-6">Аналитика</h2>
+                <div id="analytics-content">
+                    <!-- Контент аналитики будет отображен здесь с помощью JS -->
+                </div>
+            </section>
+
+            <!-- Gemini Chat View -->
+            <section data-view="gemini-chat" class="hidden h-full flex flex-col">
+                <h2 class="text-3xl font-bold mb-6">Gemini Продавец</h2>
+                <div class="flex-1 bg-white rounded-lg shadow-md p-6 flex flex-col space-y-4 overflow-y-auto mb-4" id="chat-box">
+                    <div class="text-gray-500 self-center text-center">
+                        <p>Привет! Я — Gemini Продавец. Моя единственная цель — помочь тебе закрыть любую сделку.</p>
+                        <p class="mt-2">Назови продукт или услугу, которую хочешь продать, и я предложу свою первую стратегию!</p>
+                    </div>
+                </div>
+                <div id="loading-indicator" class="hidden text-center text-gray-500 italic mt-2">
+                    Gemini думает над стратегией...
+                </div>
+                <form id="chat-form" class="flex mt-auto">
+                    <input type="text" id="chat-input" name="message" placeholder="Напиши, что хочешь продать..." class="flex-1 p-3 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-3 rounded-r-lg hover:bg-indigo-700 transition-colors duration-200">
+                        Отправить
+                    </button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md relative">
+            <button id="close-modal-btn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4"></h3>
+            <div id="modal-content"></div>
         </div>
     </div>
 
-    <script>
-        const noteInput = document.getElementById('noteInput');
-        const addNoteBtn = document.getElementById('addNoteBtn');
-        const notesContainer = document.getElementById('notesContainer');
-        const cancelEditBtn = document.getElementById('cancelEditBtn');
-
-        let isEditing = false;
-        let editingIndex = null;
-
-        // Загрузка заметок из localStorage
-        function getNotes() {
-            try {
-                const notes = JSON.parse(localStorage.getItem('notes')) || [];
-                return notes;
-            } catch (e) {
-                console.error("Ошибка при парсинге заметок из localStorage", e);
-                return [];
-            }
-        }
-
-        // Сохранение заметок в localStorage
-        function saveNotes(notes) {
-            localStorage.setItem('notes', JSON.stringify(notes));
-        }
-
-        // Отображение заметок на странице
-        function renderNotes() {
-            notesContainer.innerHTML = '';
-            const notes = getNotes();
-            
-            notes.forEach((note, index) => {
-                const noteElement = document.createElement('div');
-                noteElement.className = `note p-4 flex justify-between items-center`;
-                noteElement.innerHTML = `
-                    <p class="text-base text-gray-800">${note.text}</p>
-                    <div class="flex space-x-2 ml-4">
-                        <button class="edit-btn text-indigo-500 hover:text-indigo-700 font-bold transition-colors duration-200" data-index="${index}">
-                            Редактировать
-                        </button>
-                        <button class="delete-btn text-red-500 hover:text-red-700 font-bold transition-colors duration-200" data-index="${index}">
-                            Удалить
-                        </button>
-                    </div>
-                `;
-                notesContainer.appendChild(noteElement);
-            });
-
-            // Добавляем обработчики событий для кнопок
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    deleteNote(index);
-                });
-            });
-
-            document.querySelectorAll('.edit-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    startEditingNote(index);
-                });
-            });
-        }
-
-        // Добавление новой заметки
-        function addNote() {
-            const noteText = noteInput.value.trim();
-            if (noteText === '') return;
-
-            const notes = getNotes();
-            const newNote = {
-                id: Date.now(),
-                text: noteText,
-                timestamp: new Date().toISOString()
-            };
-            notes.push(newNote);
-            saveNotes(notes);
-            noteInput.value = '';
-            renderNotes();
-        }
-
-        // Обновление существующей заметки
-        function updateNote() {
-            const noteText = noteInput.value.trim();
-            if (noteText === '' || editingIndex === null) return;
-
-            const notes = getNotes();
-            notes[editingIndex].text = noteText;
-            saveNotes(notes);
-            
-            // Сброс состояния редактирования
-            resetEditingState();
-            renderNotes();
-        }
-
-        // Начало редактирования заметки
-        function startEditingNote(index) {
-            const notes = getNotes();
-            const noteToEdit = notes[index];
-            noteInput.value = noteToEdit.text;
-            
-            isEditing = true;
-            editingIndex = index;
-            addNoteBtn.textContent = 'Сохранить';
-            cancelEditBtn.classList.remove('hidden');
-        }
-
-        // Сброс состояния редактирования
-        function resetEditingState() {
-            noteInput.value = '';
-            isEditing = false;
-            editingIndex = null;
-            addNoteBtn.textContent = 'Добавить заметку';
-            cancelEditBtn.classList.add('hidden');
-        }
-
-        // Удаление заметки
-        function deleteNote(index) {
-            const notes = getNotes();
-            notes.splice(index, 1);
-            saveNotes(notes);
-            renderNotes();
-        }
-
-        // Обработчики событий
-        addNoteBtn.addEventListener('click', () => {
-            if (isEditing) {
-                updateNote();
-            } else {
-                addNote();
-            }
-        });
-
-        cancelEditBtn.addEventListener('click', resetEditingState);
-
-        noteInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (isEditing) {
-                    updateNote();
-                } else {
-                    addNote();
-                }
-            }
-        });
-
-        // Инициализация при загрузке страницы
-        window.onload = renderNotes;
-
-    </script>
+    <!-- Модальное окно подтверждения -->
+    <div id="confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm relative text-center">
+            <p id="confirm-message" class="text-lg mb-6"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-action-btn" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200">
+                    Удалить
+                </button>
+                <button id="cancel-action-btn" class="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg shadow-md hover:bg-gray-400 transition-colors duration-200">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>
