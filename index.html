@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KADRA Records — Профессиональная студия звукозаписи в Королёве (Москва),профессиональная запись сведение и мастеринг для вашего трека.</title>
+    <meta name="description" content="KADRA Records — команда с 15-летним опытом, создавшая более 30 треков, попавших в топ-чарты. Предлагаем полный цикл услуг: запись песни под ключ, сведение, мастеринг и аранжировки. Работаем с артистами и корпоративными клиентами.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+<header>
+    
+    <nav>
+    <img src="img/KADRA records Logo.jpg" alt="Логотип" class="header-logo">
+        <a href="chatgemini/swkr.html" id="adminLoginBtn" aria-label="Открыть чат с Songwriter">Songwriter</a>
+        <a href="price-list.html" id="adminLoginBtn" aria-label="Прайс лист Студии звукозаписи в Королёве">Цены и контакты</a>
+        <a href="/ptsnyavpodarok/pesnyavpodarokkorolev" aria-label="Песня в подарок">Песня в подарок</a>
+8-961-0777-403             
+        
+    </nav>
+</header>
+
+<main>   
+      
+<section id="services-block">
+    <div class="social-icons-block">
+    <a href="https://www.instagram.com/kadrarecords/" target="_blank">
+        <i class="fa-brands fa-instagram social-icon"></i>
+    </a>
+    <a href="https://vk.com/kadrarecords?from=groups" target="_blank">
+        <i class="fa-brands fa-vk social-icon"></i>
+    </a>
+    <a href="https://t.me/kadrarec" target="_blank">
+        <i class="fa-brands fa-telegram social-icon"></i>
+    </a>
+</div>
+    <h3>НАШИ ОСНОВНЫЕ УСЛУГИ </h3>
+    <div class="header-services">
+        <div class="service-block">
+            <h3>Сонграйтинг / Аранжировки</h3>
+            <p>Напишем песню под ключ по всем стандартам хита.</p>
+            <a href="#soundcloud-players-block" class="transport-button">Выбрать песню</a>
+        </div>
+        <div class="service-block">
+            <h3>Сведение / мастеринг</h3>
+            <p>Сведение треков, мастеринг - для тех кто целится в ТОП чарты.</p>
+        </div>
+        <div class="service-block">
+            <h3>Запись вокала и инструментов (Локально)</h3>
+            <p>Профессиональный подход к записи.</p>
+        </div>
+    </div>
+    <div class="scroll-down-indicator">
+        <a href="#about" aria-label="Прокрутить вниз">
+            <span></span>
+            <span></span>
+        <span></span>
+        </a>
+    </div>
+</section>
+<section>
+  <h3>Прямые трансляции со студии на Twitch</h3>
+  <div class="stream-container">
+    <div id="twitch-embed"></div>
+  </div>
+</section>
+
+<script src="https://player.twitch.tv/js/embed/v1.js"></script>
+<script type="text/javascript">
+  new Twitch.Player("twitch-embed", {
+    channel: "kadra_records",
+    width: "100%",
+    height: "100%"
+  });
+</script>
+
+<h3>Каждый трек — потенциальный хит, наши работы и их награды:</h3>
+<div class="award-section">
+  <div class="award-block">
+        <img src="img/kopiapirats.png" alt="3х Платиновая награда" class="award-image">
+        <h3>Mekhman - Копия пиратская</h3>
+        <span class="award-subtitle">"3-x платиновый сингл"</span>
+        <span class="tiktok-link"><a href="https://tiktok.com/@mekhmanmusic" target="_blank">TikTok: @mekhmanmusic</a></span>
+  </div>
+
+  <div class="award-block">
+        <img src="img\AwN7nsefNMk.jpg" alt="Топ-чарт" class="award-image">
+    <h3>Tkimali & Lolita - Север</h3>
+        <span class="award-subtitle">"3-x платиновый сингл"</span>
+        <span class="tiktok-link"><a href="https://tiktok.com/@na_mne_nike" target="_blank">TikTok: @na_mne_nike</a></span>
+  </div>
+    <div class="award-block"> <img src="img/ruslangudz.jpg" alt="Продюсер Руслан Гудзь" class="award-image">
+      <h3>Руслан Гудзь producer звукорежисер</h3>
+<span class="award-subtitle">"основатель студии KADRA"</span> <span class="tiktok-link"></span> </div>
+</div>
+    </div>
+
+<section id="release-timer" class="timer-section" aria-live="polite">
+    <div class="timer-content">
+        <p>Следующий релиз: </p>
+        <h2 id="release-title">Релиз через</h2>
+        <div id="release-countdown" class="countdown">Загрузка...</div>
+        <a id="presave-button" class="action-button disabled" href="#" target="_blank">Pre-save</a>
+    </div>
+</section>
+    <section id="about" class="about-section">
+    <div class="about-background-image"></div>
+    <div class="about-overlay"></div>
+
+
+    <div class="about-container">
+        <h2>О нас</h2>
+
+            <div class="column-left">
+                <h3>KADRA Records</h3> это команда профессионалов, работающая в музыкальной индустрии уже более 15 лет. 
+Мы гордимся тем, что помогли более чем 30 трекам войти в топ-чарты, меняя звучание современной сцены.
+                </p>
+                <p>
+<h3>За годы работы мы сотрудничали</h3> с такими артистами, как Джиган, Artik & Asti, Ирина Тонева, Ирина Ортман, Ганвест, Mekhman, Tkimali, Kagramanov, KDK, Зомб и другие.
+                </p>
+            </div>
+            <div class="column-right">
+                <h3>Студии и сотрудничество</h3>
+Благодаря трём современным студиям в Москве, Волгограде и на Бали, мы предлагаем полный цикл продюсирования — от первого звука до релиза.
+                </p>
+                <p>
+<h3>Наши студии оснащены топовым оборудованием</h3>, что позволяет нам добиваться высококачественного звука. Мы ищем новые голоса и всегда готовы к сотрудничеству с молодыми талантами!
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    
+</div>
+</div>
+
+    <div class="header-services">
+    <div class="service-block">
+        <h3>Г. Волгоград</h3>
+        <p>Дымченко 8 Центральный р-он.</p>
+    </div>
+    <div class="service-block">
+        <h3>Бали (Kuta, Jalan Wana Gegara)</h3>
+        <p>Наша творческая лаборатория, где природа и вдохновение сливаются воедино.</p>
+    </div>
+    <div class="service-block">
+        <h3>Москва (г.Королёв)</h3>
+        <p>Ул. Советская 49 мрн. Юбилейный.</p>
+    </div>
+</div>
+        </ul>
+   
+    </div>
+
+    <hr class="section-divider">
+
+   
+   <div class="soundcloud-players" id="soundcloud-players-block">
+    <div class="player-container">
+        <h2>Mixing & Mastering</h2>
+        <div id="vk_playlist_-75977862_4"></div>
+    </div>
+
+    <div class="player-container">
+        <h2>Песни в продаже</h2>
+        <iframe scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/2064145701&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+<script type="text/javascript" src="https://vk.com/js/api/openapi.js?173"></script> <a href="/ptsnyavpodarok/pesnyavpodarokkorolev" aria-label="Номер телефона"> 8-961-0777-403</a>                       
+<script type="text/javascript">
+  (function() {
+    VK.Widgets.Playlist("vk_playlist_-75977862_4", -75977862, 4,'a6444ffa528341cfbd');
+  }());
+</script>
+</body>
+</html>
+
+
+</section>
+
+    <section id="contact" class="contact-section">
+    <div class="contact-container">
+        <h2>Свяжитесь с нами</h2>
+        <p>Для сотрудничества или вопросов, оставьте свои данные:</p>
+        
+        <form id="contactForm" action="https://formspree.io/f/mldlywvb" method="POST">
+            <label for="name">Ваше имя:</label>
+            <input type="text" id="name" name="name" required />
+
+            <label for="phone">Ваш Номер телефона:</label>
+            <input type="tel" id="phone" name="phone" required />
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+    <div class="telegram-button-container">
+        <p>
+    &nbsp;&nbsp;&nbsp;
+</p>
+    <a href="https://t.me/kadкф " target="_blank" class="action-button telegram-button">
+       
+        <i class="fa-brands fa-telegram"></i> Перейти в Telegram
+    </a>
+</div>
+</section>
+
+         <h2></h2>
+        <div class="about-vertical-blocks">
+            <div class="info-block">
+                <h3>KADRA records
+                    <button class="expand-button" aria-expanded="false" aria-controls="records-content"></button>
+                </h3>
+                <div class="collapsible-content" id="records-content">
+                    <p>KADRA Records — это больше, чем просто студия звукозаписи. Это творческий дом, где ваши музыкальные идеи обретают профессиональное звучание. За более чем 15 лет работы мы помогли десяткам артистов воплотить их мечты в реальность, а наши треки получили признание, в том числе и 3-х платиновые синглы.</p>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Наши студии
+                    <button class="expand-button" aria-expanded="false" aria-controls="studios-content"></button>
+                </h3>
+                <div class="collapsible-content" id="studios-content">
+                    <p>Наши студии, расположенные в Москве (Королёв), Волгограде и на Бали (Kuta), оснащены топовым оборудованием, чтобы обеспечить идеальный звук независимо от того, где вы находитесь. Мы предлагаем полный спектр услуг — от записи первой демки до финального релиза, готового покорить чарты.</p>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Ключевые услуги
+                    <button class="expand-button" aria-expanded="false" aria-controls="services-content"></button>
+                </h3>
+                <div class="collapsible-content" id="services-content">
+                    <h4>Список всех услуг:</h4>
+                    <ul>
+                        <li>студия звукозаписи</li>
+                        <li>запись музыки</li>
+                        <li>сведение</li>
+                        <li>мастеринг</li>
+                        <li>запись вокала</li>
+                        <li>аренда студии</li>
+                        <li>услуги звукорежиссера</li>
+                        <li>профессиональная запись</li>
+                        <li>музыкальная студия</li>
+                        <li>звукозапись рядом со мной</li>
+                    </ul>
+                    <h4>Специфические услуги:</h4>
+                    <ul>
+                        <li>запись песни под ключ</li>
+                        <li>аранжировка</li>
+                        <li>написание музыки</li>
+                        <li>озвучка рекламы</li>
+                        <li>запись аудиокниги</li>
+                        <li>создание подкаста</li>
+                        <li>запись живых инструментов</li>
+                        <li>реставрация аудио</li>
+                        <li>запись музыкальных инструментов</li>
+                        <li>сведение трека</li>
+                        <li>мастеринг трека</li>
+                        <li>запись рэпа</li>
+                        <li>запись хип-хопа</li>
+                        <li>запись поп-музыки</li>
+                        <li>запись рок-музыки</li>
+                        <li>озвучка видео</li>
+                        <li>запись джинглов</li>
+                        <li>запись презентаций</li>
+                        <li>запись автоответчика</li>
+                    </ul>
+                    <p><strong>Запись вокала и инструментов:</strong> Мы обеспечим профессиональный подход к записи голоса, используя лучшее студийное оборудование. Наша цель — не просто записать, а раскрыть ваш уникальный стиль исполнения. Мы работаем с разными жанрами: от хип-хопа и рэпа до поп-музыки.</p>
+                    <p><strong>Сведение и мастеринг:</strong> Эти два ключевых процесса звукозаписывающей студии превращают набор звуковых дорожек в единую, мощную композицию. Сведение — это балансировка всех инструментов и вокала. Мастеринг — это финальная обработка, которая делает трек громким и сбалансированным для всех платформ. Наши звукорежиссёры используют такие техники, как эквализация, компрессия и панорамирование, чтобы ваш трек звучал максимально качественно.</p>
+                    <p><strong>Песня «под ключ»:</strong> Это наше комплексное решение для тех, кто хочет получить готовый результат. Мы создадим песню с нуля: напишем оригинальный текст и авторскую аранжировку, запишем вокал и проведем все этапы обработки до финального результата. Это идеальный вариант для создания «песни в подарок» или для тех, кто хочет получить готовый коммерческий продукт.</p>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Услуги для бизнеса
+                    <button class="expand-button" aria-expanded="false" aria-controls="business-content"></button>
+                </h3>
+                <div class="collapsible-content" id="business-content">
+                    <p>Помимо музыкальной индустрии, мы предлагаем специализированные услуги для создателей контента и корпоративных клиентов, помогая им достичь своих целей в сфере аудио.</p>
+                    <ul>
+                        <li><strong>Запись подкастов:</strong> Наши студии оснащены всем необходимым для записи подкастов и аудиокниг, что позволяет создавать чистый, профессиональный звук без посторонних шумов. Эта услуга включает в себя аренду студии и работу звукорежиссёра.</li>
+                        <li><strong>Озвучка аудиокниг и рекламы:</strong> Мы работаем с дикторами и предоставляем услуги по начитке текста и озвучиванию аудиокниг и видеороликов. Также мы создаём аудиорекламу и корпоративные гимны, которые помогут вашему бизнесу выделиться.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Локации где и как нас ищут
+                    <button class="expand-button" aria-expanded="false" aria-controls="locations-content"></button>
+                </h3>
+                <div class="collapsible-content" id="locations-content">
+                    <h4>Геозависимые и локальные запросы:</h4>
+                    <ul>
+                        <li>студия звукозаписи Москва</li>
+                        <li>студия звукозаписи Волгоград</li>
+                        <li>студия звукозаписи Бали</li>
+                        <li>студия звукозаписи рядом со мной</li>
+                        <li>студия звукозаписи у метро</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="info-block">
+                <h3>Свяжитесь с нами
+                    <button class="expand-button" aria-expanded="false" aria-controls="contact-content"></button>
+                </h3>
+                <div class="collapsible-content" id="contact-content">
+                    <p>Свяжитесь с нами чтобы узнать сколько стоит записать трек, если вас интересует недорогая и качественная студия, то это к нам, вы можете арендовать студию на час и более для любых задач ( запись вокала , запись песни, запись голоса, запись под минус, запись с педагогом по вокалу.</p>
+                    <p>Студия для подкастов и бизнеса:  для записи подкастов, запись подкаста под ключ, озвучка аудиокниги, услуги диктора, создание аудиорекламы , корпоративный гимн.</p>
+                    <p><strong>Сведение и мастеринг:</strong> сведение песни, мастеринг трека, сведение мультитрека, мастеринг для стриминговых площадок.</p>
+                    <p><strong>Аранжировка:</strong> аранжировка песни , написание музыки, битмейкинг , сочинение песни на заказ. Чтобы узнать больше о наших услугах, ценах или получить консультацию. Начните свой путь к успеху с KADRA Records.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+
+<footer>
+    <p>© 2024 Kadra Records. Все права защищены.</p>
+<p>8-961-077-74-03 WA / TG only</p>
+    <div class="footer-links">
+        <a href="admin.html" aria-label="Вход в админ-панель">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-shield-half">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M12 22V2"/>
+            </svg>
+        </a>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+   <div id="promo-banner-block" style="display: none;">
+    <div class="promo-text">Получите скидку 20% на любую песню!</div>
+    <a href="#soundcloud-players-block" class="buy-button">Из Каталога</a>
+    <div class="timer"></div>
+</div>
+    </script>
+    <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/68b00fb55344dc1921047a89/1j3nrqns9';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</body>
+</html>
