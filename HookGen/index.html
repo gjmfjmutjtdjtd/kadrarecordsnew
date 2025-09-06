@@ -12,6 +12,7 @@
         body {
             font-family: 'Inter', sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -26,6 +27,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 50px rgba(168, 85, 247, 0.4);
             text-align: center;
             animation: fadeIn 1s ease-out;
+            margin: 1rem;
         }
         h1 {
             background-image: linear-gradient(to right, #a855f7, #ec4899);
@@ -66,7 +68,7 @@
             border: 2px solid #a855f7;
             text-align: center;
         }
-        #generateButton {
+        #generateButton, .action-button {
             background-image: linear-gradient(to right, #a855f7, #ec4899);
             color: white;
             padding: 0.75rem 2rem;
@@ -75,7 +77,7 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
         }
-        #generateButton:hover {
+        #generateButton:hover, .action-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
         }
@@ -118,6 +120,43 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .favorites-container {
+            margin-top: 2rem;
+            background-color: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .favorites-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+        .favorite-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        .favorite-text {
+            flex-grow: 1;
+            text-align: left;
+            font-size: 1rem;
+        }
+        .delete-button {
+            background-color: transparent;
+            color: #ef4444;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-left: 1rem;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300">
@@ -156,6 +195,18 @@
         <div class="mt-8 result-container" id="resultContainer">
             <p>Ваш хук появится здесь</p>
         </div>
+        
+        <div id="saveContainer" class="mt-4 hidden">
+            <button id="saveButton" class="action-button">Добавить в избранное</button>
+        </div>
+
+    </div>
+    
+    <div class="container favorites-container">
+        <h2 class="text-2xl font-bold">Избранные хуки</h2>
+        <ul id="favoritesList" class="favorites-list">
+            <p class="text-sm text-slate-400 mt-2">Здесь будут твои любимые хуки.</p>
+        </ul>
     </div>
 
     <script>
@@ -165,6 +216,9 @@
             const resultContainer = document.getElementById('resultContainer');
             const predefinedPromptsList = document.getElementById('predefinedPrompts');
             const rhymeEndingSelect = document.getElementById('rhymeEnding');
+            const saveButton = document.getElementById('saveButton');
+            const saveContainer = document.getElementById('saveContainer');
+            const favoritesList = document.getElementById('favoritesList');
 
             const fetchAndPopulatePrompts = async () => {
                 const songs = [
@@ -248,6 +302,46 @@
                 promptInput.placeholder = "Введите свою тему или выберите из списка...";
             };
 
+            const renderFavorites = () => {
+                const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+                favoritesList.innerHTML = '';
+
+                if (favorites.length === 0) {
+                    favoritesList.innerHTML = `<p class="text-sm text-slate-400 mt-2">Здесь будут твои любимые хуки.</p>`;
+                    return;
+                }
+
+                favorites.forEach(hook => {
+                    const li = document.createElement('li');
+                    li.classList.add('favorite-item');
+                    li.innerHTML = `
+                        <span class="favorite-text">${hook}</span>
+                        <button class="delete-button">Удалить</button>
+                    `;
+                    favoritesList.appendChild(li);
+
+                    li.querySelector('.delete-button').addEventListener('click', () => {
+                        deleteFavorite(hook);
+                    });
+                });
+            };
+
+            const saveFavorite = (hook) => {
+                const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+                if (!favorites.includes(hook)) {
+                    favorites.push(hook);
+                    localStorage.setItem('favorites', JSON.stringify(favorites));
+                    renderFavorites();
+                }
+            };
+
+            const deleteFavorite = (hookToDelete) => {
+                const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+                const updatedFavorites = favorites.filter(hook => hook !== hookToDelete);
+                localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+                renderFavorites();
+            };
+
             const generateHook = async () => {
                 const prompt = promptInput.value.trim();
                 const rhymeEnding = rhymeEndingSelect.value;
@@ -259,6 +353,7 @@
 
                 resultContainer.innerHTML = '<div class="loader"></div>';
                 generateButton.disabled = true;
+                saveContainer.classList.add('hidden');
 
                 let userPrompt = `Сгенерируй хук на тему: "${prompt}".`;
                 if (rhymeEnding !== "none") {
@@ -267,7 +362,7 @@
 
                 const systemPrompt = "Ты — генератор музыкальных хуков в стиле уличной моды и ночной жизни. Генерируй только одно слово, короткую фразу или словосочетание. Твои ответы должны быть лаконичными, эмоциональными, использовать сленг и иметь отсылки к ночному городу, скорости, энергии. Ответ не должен быть списком. Отвечай только самим хуком, без лишних слов. Ответы должны быть только на русском языке.";
 
-                const apiKey = "AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo";
+                const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
                 const payload = {
@@ -293,12 +388,17 @@
 
                     if (generatedText) {
                         resultContainer.innerHTML = `<p class="fade-in">${generatedText}</p>`;
+                        saveButton.classList.remove('hidden');
+                        saveContainer.classList.remove('hidden');
+                        saveButton.onclick = () => saveFavorite(generatedText);
                     } else {
                         resultContainer.innerHTML = `<p>Ошибка генерации. Попробуйте еще раз.</p>`;
+                        saveContainer.classList.add('hidden');
                     }
                 } catch (error) {
                     console.error('Ошибка при обращении к API:', error);
                     resultContainer.innerHTML = `<p>Произошла ошибка. Пожалуйста, попробуйте снова.</p>`;
+                    saveContainer.classList.add('hidden');
                 } finally {
                     generateButton.disabled = false;
                 }
@@ -307,8 +407,8 @@
             generateButton.addEventListener('click', generateHook);
             
             fetchAndPopulatePrompts();
+            renderFavorites();
         });
     </script>
 </body>
 </html>
-
