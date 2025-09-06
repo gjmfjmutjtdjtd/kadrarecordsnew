@@ -16,18 +16,41 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #0f172a;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            transition: background-image 1s ease-in-out;
+            position: relative;
         }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: -1;
+        }
+
         .container {
             max-width: 600px;
             width: 90%;
-            background-color: #1e293b;
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(10px);
             padding: 2.5rem;
             border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 50px rgba(168, 85, 247, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 50px rgba(168, 85, 247, 0.4);
             text-align: center;
             animation: fadeIn 1s ease-out;
             margin: 1rem;
+            position: relative;
+            z-index: 10;
         }
         h1 {
             background-image: linear-gradient(to right, #a855f7, #ec4899);
@@ -48,7 +71,7 @@
         #promptInput {
             width: 100%;
             border-radius: 9999px;
-            padding: 0.75rem 1.5rem;
+            padding: 0.75rem 3rem 0.75rem 1.5rem;
             background-color: #1e293b;
             color: #e2e8f0;
             outline: none;
@@ -59,7 +82,7 @@
         #rhymeEnding {
             background-color: #1e293b;
             color: #e2e8f0;
-            padding: 0.5rem 1rem;
+            padding: 1rem 1.5rem;
             border-radius: 9999px;
             outline: none;
             appearance: none;
@@ -122,7 +145,8 @@
         }
         .favorites-container {
             margin-top: 2rem;
-            background-color: #1e293b;
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(10px);
             padding: 2rem;
             border-radius: 1rem;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
@@ -136,7 +160,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #0f172a;
+            background-color: rgba(15, 23, 42, 0.8);
             color: #e2e8f0;
             padding: 1rem;
             border-radius: 0.5rem;
@@ -157,9 +181,50 @@
             font-size: 1rem;
             margin-left: 1rem;
         }
+        #clearInputButton {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #e2e8f0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            opacity: 0.5;
+            transition: opacity 0.2s ease;
+        }
+        #clearInputButton:hover {
+            opacity: 1;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #loadingOverlay p {
+            margin-top: 1rem;
+            font-size: 1.25rem;
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300">
+
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+        <p>Создаю идеальный вайб...</p>
+    </div>
 
     <div class="container">
         <h1>Генератор Хуков</h1>
@@ -168,12 +233,13 @@
         <div class="mt-8 flex flex-col items-center space-y-4">
             <div class="input-container">
                 <input id="promptInput" list="predefinedPrompts" type="text" placeholder="Загрузка актуальных тем...">
+                <button id="clearInputButton" class="hidden">×</button>
             </div>
             <datalist id="predefinedPrompts"></datalist>
             
             <div class="flex items-center space-x-2 mt-4">
                 <label for="rhymeEnding" class="text-sm">Рифма:</label>
-                <select id="rhymeEnding" class="bg-slate-800 text-slate-300 p-2 rounded-full">
+                <select id="rhymeEnding" class="bg-slate-800 text-slate-300 p-4 rounded-full w-full md:w-auto text-lg font-bold">
                     <option value="none">Нет</option>
                     <option value="ать">ать</option>
                     <option value="еть">еть</option>
@@ -219,6 +285,38 @@
             const saveButton = document.getElementById('saveButton');
             const saveContainer = document.getElementById('saveContainer');
             const favoritesList = document.getElementById('favoritesList');
+            const clearInputButton = document.getElementById('clearInputButton');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            const generateBackgroundImage = async () => {
+                const prompt = "A professional recording studio at night. The room is dimly lit, with neon lights reflecting off high-end audio equipment. There's a haze of smoke in the air, creating a cool, atmospheric effect. The style is urban, cool, and 'swaggy'. The focus is on the equipment and the dark, moody ambiance. Use a wide-angle shot to capture the full scene.";
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ instances: { prompt: prompt }, parameters: { "sampleCount": 1} })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
+                    if (base64Data) {
+                        document.body.style.backgroundImage = `url(data:image/png;base64,${base64Data})`;
+                    } else {
+                        console.error('Ошибка: не удалось получить данные изображения.');
+                    }
+                } catch (error) {
+                    console.error('Ошибка при обращении к API генерации изображений:', error);
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            };
 
             const fetchAndPopulatePrompts = async () => {
                 const songs = [
@@ -398,18 +496,34 @@
                 } catch (error) {
                     console.error('Ошибка при обращении к API:', error);
                     resultContainer.innerHTML = `<p>Произошла ошибка. Пожалуйста, попробуйте снова.</p>`;
-                    saveContainer.classList.add('hidden');
+                        saveContainer.classList.add('hidden');
                 } finally {
                     generateButton.disabled = false;
                 }
             };
 
+            // Event listener to show/hide the clear button
+            promptInput.addEventListener('input', () => {
+                if (promptInput.value.length > 0) {
+                    clearInputButton.classList.remove('hidden');
+                } else {
+                    clearInputButton.classList.add('hidden');
+                }
+            });
+
+            // Event listener to clear the input field
+            clearInputButton.addEventListener('click', () => {
+                promptInput.value = '';
+                clearInputButton.classList.add('hidden');
+                promptInput.focus();
+            });
+
             generateButton.addEventListener('click', generateHook);
             
             fetchAndPopulatePrompts();
             renderFavorites();
+            generateBackgroundImage();
         });
     </script>
 </body>
 </html>
-
