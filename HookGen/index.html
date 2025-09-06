@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор Хуков - Tkimali</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0f172a;
+        }
+        .container {
+            max-width: 600px;
+            width: 90%;
+            background-color: #1e293b;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 50px rgba(168, 85, 247, 0.4);
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+        h1 {
+            background-image: linear-gradient(to right, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .input-container {
+            position: relative;
+            padding: 0.5rem;
+            background: linear-gradient(to right, #a855f7, #ec4899);
+            border-radius: 9999px;
+            display: inline-block;
+            width: 100%;
+        }
+        #promptInput {
+            width: 100%;
+            border-radius: 9999px;
+            padding: 0.75rem 1.5rem;
+            background-color: #1e293b;
+            color: #e2e8f0;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        #rhymeEnding {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            border: 2px solid #a855f7;
+            text-align: center;
+        }
+        #generateButton {
+            background-image: linear-gradient(to right, #a855f7, #ec4899);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+        }
+        #generateButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+        }
+        .result-container {
+            background: #0f172a;
+            border: 2px solid #a855f7;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            min-height: 5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #e2e8f0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.5s ease-out;
+        }
+        .result-container p {
+            margin: 0;
+            opacity: 0.7;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #a855f7;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300">
+
+    <div class="container">
+        <h1>Генератор Хуков</h1>
+        <p class="mt-2 text-sm text-slate-400">Создавай цепляющие фразы для своих треков.</p>
+
+        <div class="mt-8 flex flex-col items-center space-y-4">
+            <div class="input-container">
+                <input id="promptInput" list="predefinedPrompts" type="text" placeholder="Загрузка актуальных тем...">
+            </div>
+            <datalist id="predefinedPrompts"></datalist>
+            
+            <div class="flex items-center space-x-2 mt-4">
+                <label for="rhymeEnding" class="text-sm">Рифма:</label>
+                <select id="rhymeEnding" class="bg-slate-800 text-slate-300 p-2 rounded-full">
+                    <option value="none">Нет</option>
+                    <option value="ать">ать</option>
+                    <option value="еть">еть</option>
+                    <option value="ить">ить</option>
+                    <option value="ость">ость</option>
+                    <option value="ие">ие</option>
+                    <option value="ство">ство</option>
+                    <option value="ау">ау</option>
+                    <option value="ит">ит</option>
+                    <option value="ия">ия</option>
+                </select>
+            </div>
+            
+            <button id="generateButton">
+                Генерировать
+            </button>
+        </div>
+
+        <div class="mt-8 result-container" id="resultContainer">
+            <p>Ваш хук появится здесь</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const generateButton = document.getElementById('generateButton');
+            const promptInput = document.getElementById('promptInput');
+            const resultContainer = document.getElementById('resultContainer');
+            const predefinedPromptsList = document.getElementById('predefinedPrompts');
+            const rhymeEndingSelect = document.getElementById('rhymeEnding');
+
+            const fetchAndPopulatePrompts = async () => {
+                const songs = [
+                    "Как же ты красива", "Худи", "Шёлк", "Матушка", "Асфальт",
+                    "Само собой", "Топит", "Царица", "Забываю", "По барам",
+                    "На часах ноль-ноль", "Девочка-огонь", "Мосты горят", "Грустный дэнс", "Ветер меняет направление",
+                    "Музыка нас связала", "Одиночка", "Разбитое сердце", "Милый", "Солнце",
+                    "Поцелуй", "Ночной город", "Всё хорошо", "Твои глаза", "Мечтаю",
+                    "Ядовитая", "Без тебя", "Моя душа", "Она любит", "Наш дом",
+                    "Крылья", "Свобода", "Любовь", "Время", "Дождь",
+                    "Весна", "Осень", "Зима", "Лето", "Твой смех",
+                    "Ночь", "День", "Свет", "Тьма", "Слова",
+                    "Молчание", "Вода", "Огонь", "Земля", "Воздух",
+                    "Горы", "Река", "Океан", "Звезда", "Луна",
+                    "Солнце", "Гром", "Молния", "Рассвет", "Закат",
+                    "Дорога", "Путь", "Конец", "Начало", "Сон",
+                    "Реальность", "Сила", "Слабость", "Память", "Забыть",
+                    "Скучаю", "Вместе", "Один", "Танцуй", "Стой",
+                    "Беги", "Лети", "Падай", "Взлетай", "Крик",
+                    "Шепот", "Смех", "Слезы", "Радость", "Боль",
+                    "Танцуй до утра", "Дикий вайб", "Бит бьёт", "Прямо в сердце",
+                    "Район не спит", "На полном газу", "Твоё имя", "Тайный знак",
+                    "Я тебя ищу", "Моя вселенная", "За тобой", "Всё ради тебя",
+                    "Дым и зеркала", "Ноль-ноль", "Бесконечность", "Последний танец",
+                    "Лед и пламя", "Горячий снег", "Шестое чувство", "Тишина",
+                    "Мои мечты", "Падаем в бездну", "Сердце-огонь", "Твой взгляд"
+                ];
+
+                const synonyms = {
+                    "Как же ты красива": ["Твоя красота", "Сияешь", "Ты прекрасна", "Небесная"],
+                    "Худи": ["Мой худи", "Закутанный в любовь", "Свободный стиль", "Под капюшоном"],
+                    "Шёлк": ["Шёлковая кожа", "Мягкий свет", "Нежное прикосновение"],
+                    "Матушка": ["Родные земли", "Старые корни", "Моя деревня"],
+                    "Асфальт": ["Черный асфальт", "Пыль дорог", "Уличный стиль", "Бетонные джунгли"],
+                    "Само собой": ["Всё само собой", "Ничего не изменить", "Как должно быть"],
+                    "Топит": ["Топит лёд", "Меня топит", "Под водой"],
+                    "Царица": ["Королева", "Моя королева", "Главная", "Ты мой мир"],
+                    "Забываю": ["Всё забыл", "Память стёр", "С чистого листа"],
+                    "По барам": ["Иду по барам", "Ночной забег", "Всё по кругу"],
+                    "На часах ноль-ноль": ["Полночь", "Ноль-ноль", "Время любить", "Ночь не спит"],
+                    "Девочка-огонь": ["Горячая", "Огненная", "Ярче огня"],
+                    "Мосты горят": ["Все мосты сожжены", "Прошлое сгорает", "Нет пути назад"],
+                    "Грустный дэнс": ["Танцую в грусти", "Дэнс в одиночестве", "Грустная ночь"],
+                    "Ветер меняет направление": ["Перемены", "Куда ветер", "Новый путь"],
+                    "Музыка нас связала": ["Наша музыка", "Единый ритм", "Связанные ноты"],
+                    "Одиночка": ["Один на районе", "Волк-одиночка", "Сам по себе"],
+                    "Разбитое сердце": ["Сердце на куски", "Сквозь боль", "Не заживает"],
+                    "Милый": ["Мой милый", "Моя милая", "Милые слова", "Ты мой"],
+                    "Солнце": ["Тёплый день", "Лучик света", "Твоё солнце"],
+                    "Поцелуй": ["Горячий поцелуй", "Сладкий яд", "Первый поцелуй"],
+                    "Ночной город": ["Огни города", "Сонный город", "Улицы-призраки", "Город без сна"],
+                    "Всё хорошо": ["Всё будет хорошо", "Всё в порядке", "Я рядом"],
+                    "Твои глаза": ["Они горят", "Глаза-бездна", "Отражение в глазах"],
+                    "Мечтаю": ["С тобой мечтаю", "Мечты сбываются", "Мечты о нас"],
+                    "Ядовитая": ["Она как яд", "Ядовитая любовь", "Смертельный яд"],
+                    "Без тебя": ["Мне без тебя", "Пустота", "Я один"],
+                    "Моя душа": ["Крик души", "Свет в душе", "Сердце-душа"],
+                    "Она любит": ["Её любовь", "Она тебя любит", "Любовь её"],
+                    "Танцуй до утра": ["Двигайся", "Ночная туса", "Зажигаем"],
+                    "Дикий вайб": ["Наш вайб", "Дикий ритм", "Атмосфера"],
+                    "Бит бьёт": ["Биение сердца", "Бит", "Пульс"],
+                    "Прямо в сердце": ["Сердце на ладони", "Ты моя", "Стрела Амура"],
+                    "Район не спит": ["Родной район", "Наш дом", "Улица-река"],
+                    "На полном газу": ["Скорость", "По газам", "Не тормози"],
+                    "Твоё имя": ["Имя на губах", "Твоё имя — моё", "Навсегда"],
+                    "Тайный знак": ["Наш знак", "Тайная любовь", "Секрет"]
+                };
+
+                const allPrompts = songs.flatMap(song => {
+                    const related = synonyms[song] || [];
+                    return [song, ...related];
+                });
+
+                predefinedPromptsList.innerHTML = '';
+                allPrompts.forEach(prompt => {
+                    const option = document.createElement('option');
+                    option.value = prompt;
+                    predefinedPromptsList.appendChild(option);
+                });
+
+                promptInput.placeholder = "Введите свою тему или выберите из списка...";
+            };
+
+            const generateHook = async () => {
+                const prompt = promptInput.value.trim();
+                const rhymeEnding = rhymeEndingSelect.value;
+
+                if (!prompt) {
+                    resultContainer.innerHTML = `<p>Пожалуйста, введите свою тему или выберите готовый вариант.</p>`;
+                    return;
+                }
+
+                resultContainer.innerHTML = '<div class="loader"></div>';
+                generateButton.disabled = true;
+
+                let userPrompt = `Сгенерируй хук на тему: "${prompt}".`;
+                if (rhymeEnding !== "none") {
+                    userPrompt += ` Хук должен заканчиваться на "${rhymeEnding}".`;
+                }
+
+                const systemPrompt = "Ты — генератор музыкальных хуков в стиле уличной моды и ночной жизни. Генерируй только одно слово, короткую фразу или словосочетание. Твои ответы должны быть лаконичными, эмоциональными, использовать сленг и иметь отсылки к ночному городу, скорости, энергии. Ответ не должен быть списком. Отвечай только самим хуком, без лишних слов. Ответы должны быть только на русском языке.";
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    }
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const generatedText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (generatedText) {
+                        resultContainer.innerHTML = `<p class="fade-in">${generatedText}</p>`;
+                    } else {
+                        resultContainer.innerHTML = `<p>Ошибка генерации. Попробуйте еще раз.</p>`;
+                    }
+                } catch (error) {
+                    console.error('Ошибка при обращении к API:', error);
+                    resultContainer.innerHTML = `<p>Произошла ошибка. Пожалуйста, попробуйте снова.</p>`;
+                } finally {
+                    generateButton.disabled = false;
+                }
+            };
+
+            generateButton.addEventListener('click', generateHook);
+            
+            fetchAndPopulatePrompts();
+        });
+    </script>
+</body>
+</html>
