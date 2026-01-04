@@ -68,7 +68,7 @@
         }
 
         .artist-slide {
-            flex: 0 0 300px; /* Фиксированная ширина карточки в слайдере */
+            flex: 0 0 300px;
             scroll-snap-align: start;
         }
 
@@ -234,7 +234,7 @@
                         <div class="hit-check-container bento-card border-white/5 relative p-4" id="tool-container">
                             <div id="upload-interface" class="w-full max-w-md text-center">
                                 <div onclick="document.getElementById('file-input').click()" class="bento-card p-12 flex flex-col items-center justify-center cursor-pointer group border-dashed border-2 border-white/10 hover:border-[var(--accent)] transition">
-                                    <input type="file" id="file-input" class="hidden" accept="audio/*" onchange="startAnalysis(this.files[0])">
+                                    <input type="file" id="file-input" class="hidden" accept="audio/*" onchange="window.startAnalysis(this.files[0])">
                                     <div class="w-20 h-20 rounded-full bg-[var(--accent)]/5 flex items-center justify-center mb-6 group-hover:scale-110 transition">
                                         <i class="fas fa-music text-3xl text-[var(--accent)]"></i>
                                     </div>
@@ -288,7 +288,7 @@
         <section id="collab" class="py-32 px-4 max-w-5xl mx-auto text-center">
             <h2 class="text-sm font-bold uppercase tracking-[0.4em] mb-12 text-gray-500 italic">Connect via Email</h2>
             <div class="overflow-hidden">
-                <div id="email-btn" onclick="copyEmail()" class="contact-link font-syne font-bold uppercase italic text-white">
+                <div id="email-btn" onclick="window.copyEmail()" class="contact-link font-syne font-bold uppercase italic text-white">
                     thekadrainfo@gmail.com
                 </div>
                 <p class="mt-6 text-[9px] uppercase font-bold tracking-[0.2em] text-gray-600 animate-pulse">Кликни, чтобы скопировать</p>
@@ -318,7 +318,7 @@
                 <h2 class="text-xl font-bold font-syne uppercase tracking-tighter">Admin Access</h2>
             </div>
             <input type="password" id="admin-pass" placeholder="Пароль" class="w-full px-4 py-3 rounded-xl mb-4 outline-none border border-white/10 text-white">
-            <button id="login-btn" onclick="loginAdmin()" class="w-full bg-[var(--accent)] text-black font-black py-3 rounded-xl uppercase text-[10px]">Войти</button>
+            <button id="login-btn" onclick="window.loginAdmin()" class="w-full bg-[var(--accent)] text-black font-black py-3 rounded-xl uppercase text-[10px]">Войти</button>
             <button onclick="document.getElementById('admin-modal').classList.remove('active')" class="w-full mt-4 text-[9px] uppercase font-bold text-gray-500">Отмена</button>
         </div>
     </div>
@@ -341,7 +341,7 @@
                         <input type="text" id="artist-name" placeholder="Имя артиста" class="w-full px-4 py-3 rounded-xl text-sm">
                         <input type="text" id="artist-genre" placeholder="Жанр / Описание" class="w-full px-4 py-3 rounded-xl text-sm">
                         <input type="text" id="artist-image" placeholder="URL фотографии" class="w-full px-4 py-3 rounded-xl text-sm">
-                        <button id="add-artist-btn" onclick="addArtist()" class="w-full bg-[var(--accent)] text-black font-black py-4 rounded-xl uppercase text-[10px] tracking-widest mt-2 transition active:scale-95">Записать в Базу</button>
+                        <button id="add-artist-btn" onclick="window.addArtist()" class="w-full bg-[var(--accent)] text-black font-black py-4 rounded-xl uppercase text-[10px] tracking-widest mt-2 transition active:scale-95">Записать в Базу</button>
                     </div>
                 </div>
 
@@ -356,40 +356,46 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
+        /** * ВНИМАНИЕ: Для GitHub Pages замените данные ниже на ваши из Firebase Console 
+         * Project Settings -> Your Apps -> Web App -> Firebase SDK snippet -> Config
+         */
+        const firebaseConfig = {
+            apiKey: "ВАШ_API_KEY",
+            authDomain: "ВАШ_PROJECT.firebaseapp.com",
+            projectId: "ВАШ_PROJECT_ID",
+            storageBucket: "ВАШ_PROJECT.appspot.com",
+            messagingSenderId: "ВАШ_ID",
+            appId: "ВАШ_APP_ID"
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kadra-label-2026';
+        
+        // Используем константу для пути в базе данных (можете изменить на свой)
+        const dbPath = "kadra_label_v1";
 
         let currentUser = null;
         let rosterData = [];
-
-        // Функция инициализации авторизации
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        };
 
         // Слушатель состояния входа
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
                 subscribeToRoster();
+            } else {
+                // Анонимный вход, если пользователь не авторизован
+                signInAnonymously(auth).catch(err => console.error("Auth error:", err));
             }
         });
 
-        initAuth();
-
         // Подписка на данные из Firestore
         function subscribeToRoster() {
-            const rosterRef = collection(db, 'artifacts', appId, 'public', 'data', 'roster');
+            // Путь к коллекции: kadra_label_v1/public/roster
+            const rosterRef = collection(db, dbPath, 'public', 'roster');
             onSnapshot(rosterRef, (snapshot) => {
                 rosterData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderRoster();
@@ -437,7 +443,7 @@
             `).join('');
         }
 
-        // --- Глобальные функции для работы с HTML (onclick) ---
+        // --- Глобальные функции ---
 
         window.loginAdmin = () => {
             const passField = document.getElementById('admin-pass');
@@ -445,14 +451,14 @@
             if (pass === 'admin2026') {
                 document.getElementById('admin-modal').classList.remove('active');
                 document.getElementById('admin-dashboard').classList.add('active');
-                passField.value = ''; // Очистка пароля
+                passField.value = '';
             } else {
                 alert('Неверный пароль');
             }
         };
 
         window.addArtist = async () => {
-            if (!currentUser) return;
+            if (!currentUser) return alert("Подождите авторизации...");
             const name = document.getElementById('artist-name').value;
             const genre = document.getElementById('artist-genre').value;
             const image = document.getElementById('artist-image').value || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop';
@@ -465,7 +471,7 @@
             btn.disabled = true;
 
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'roster'), {
+                await addDoc(collection(db, dbPath, 'public', 'roster'), {
                     name, genre, image, createdAt: new Date()
                 });
                 document.getElementById('artist-name').value = '';
@@ -473,7 +479,7 @@
                 document.getElementById('artist-image').value = '';
             } catch (e) {
                 console.error(e);
-                alert("Ошибка доступа к базе данных");
+                alert("Ошибка доступа. Проверьте правила (Rules) в Firebase Firestore.");
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
@@ -484,7 +490,7 @@
             if (!currentUser) return;
             if(confirm('Удалить артиста из базы?')) {
                 try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'roster', id));
+                    await deleteDoc(doc(db, dbPath, 'public', 'roster', id));
                 } catch (e) {
                     console.error(e);
                     alert("Ошибка при удалении");
@@ -494,29 +500,22 @@
 
         window.copyEmail = () => {
             const email = "thekadrainfo@gmail.com";
-            // Используем классический надежный метод создания временного элемента для Canvas
             const textArea = document.createElement("textarea");
             textArea.value = email;
-            // Делаем элемент невидимым
             textArea.style.position = "fixed";
             textArea.style.left = "-9999px";
             textArea.style.top = "0";
             document.body.appendChild(textArea);
-            
             textArea.focus();
             textArea.select();
-            
             try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    const toast = document.getElementById('copy-toast');
-                    toast.classList.add('active');
-                    setTimeout(() => toast.classList.remove('active'), 2500);
-                }
+                document.execCommand('copy');
+                const toast = document.getElementById('copy-toast');
+                toast.classList.add('active');
+                setTimeout(() => toast.classList.remove('active'), 2500);
             } catch (err) {
                 console.error('Ошибка копирования:', err);
             }
-            
             document.body.removeChild(textArea);
         };
 
@@ -537,7 +536,6 @@
             }, 40);
         };
 
-        // Кастомный курсор
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
