@@ -179,8 +179,8 @@
                 KADRA <span class="text-gray-500">Music Label</span>
             </div>
             <div class="flex items-center gap-4">
-                <!-- Кнопка Студии -->
-                <a href="ВСТАВЬ_ССЫЛКУ_СЮДА" target="_blank" class="hidden md:flex border border-white/20 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase hover:border-[var(--accent)] hover:text-[var(--accent)] transition duration-300">
+                <!-- Studio Button -->
+                <a href="#" target="_blank" class="hidden md:flex border border-white/20 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase hover:border-[var(--accent)] hover:text-[var(--accent)] transition duration-300">
                     Studio
                 </a>
                 <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-5 py-2 rounded-full text-[10px] font-black uppercase hover:scale-105 transition">
@@ -317,7 +317,6 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
                 <div class="col-span-1 md:col-span-2">
                     <div class="text-3xl font-black uppercase tracking-tighter mb-6">KADRA <span class="text-gray-600">Music Label</span></div>
-                    <!-- Уменьшен размер шрифта здесь -->
                     <p class="text-gray-500 text-[10px] uppercase leading-[1.8] tracking-[0.15em] max-w-sm mx-auto md:mx-0">Будущее электронной музыки, сформированное человеком и усиленное искусственным интеллектом. Основано в 2026 году.</p>
                 </div>
                 <div>
@@ -347,15 +346,15 @@
     <script>
         const TG_BOT_TOKEN = "8474344257:AAGILFnIvacKfNDBdygWcvca4QqkREufHNw"; 
         const TG_CHAT_ID = "2022152265";   
-        const GEMINI_API_KEY = "AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo"; 
+        const GEMINI_API_KEY = ""; // Будет использован ключ среды
 
         const ARTISTS = [
             { name: "Mekhman", genre: "Rap / Pop", image: "https://avatars.yandex.net/get-music-content/5457712/4ea6895f.p.5988158/1000x1000" },
             { name: "Tkimali", genre: "G House / Rap", image: "https://avatars.yandex.net/get-music-content/14715139/c5ecf299.p.13641344/1000x1000" },
-            { name: "Flexx", genre: "Rap / Pop", image: "https://yandex-images.clstorage.net/U9N7J3A71/c7daf6RItPW/3hUe4TWNzLEs-S7MI99aburegcBsSoSvVL7pssrWNAAkuw3OU1fCKdfT4zqALwaM26isYgXJO8biITaG0aVHBkrEivAkDQ2zaGtpyLMbWS26HYRU_8uXe9Y-6DMFTWjc-jXSwo2KHHZE0ja7Ff1VXcrytaaZwuIY6_0wyYA5kRETlZ5pc5xMPiJv4YTrG5nuuxiFBLdCkWTb7fZkD4GsFHa4GU3JztvxyFN7v5L1xlRGOXYy1I0jGS86fQkIPV0XXhSW5nLTizproalGKRsVa_DVjAA6Qdlml-g4J0wGax_891pMQ0hYdAufvnjdPg3fTPYyu1gN6prjNnsJDj9fXV0Y1KH0Gw60IaOkxuNTkqg1kwVJ-4nSqFbr_a9Dxu6Zun4UREcN3_9C3jN_Eb8FnMN4u3RRQKwZrzd1Ac84HZlUWtTl9R6PtWYjaw8hGhIivFDNxnYCV-heoXdsQAAlnX72kECPB1d1C1r0udn9CFiCvP9-Hcpkmek2ekcEfFhQXF6UoLpUC_ThK-BBINqbaHVUSE_1CZDl26P86UwA6B73fpzMTonWuAAQNb_efsCTy7X__NCIptvofjvGD_zfkx7UGCi4200yaKEmDyEclmE4H4aHdYNbpx0j9iuOzKxdOnddw0GBULZO3jm0WPoCEcK7PrWUye2fKjd0zMj9E1BeEldgMRdC_iYvq4Fg2Bhtv9kFwL1NGi7XKz4hTklqFjF4mgZJyBq8xBzxtlDwBxrEdji7UwNtGuD__0wH8F6dGN1UYfKchrypLKXIrN2SbXSRhsW6ShFslCr-JseHJRx4-BqCQsNXfsAS_fAcf8oQQnj4vdnBZJrgvvMMR_ORVRWcVu0x1oQ8IS5qBm1THqwx2Q7JtwlaqFXpPC9MAOUQcTqUh8yLWDOB0v2wF_OP0A82v3IfiKwZYvs5zgI_ExOdG1JusJ2CdeQgrYLk3NgrMxFBTjZFFu5TJDLki4" }
+            { name: "Flexx", genre: "Rap / Pop", image: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=800" }
         ];
 
-        // Управление шапкой
+        // Header movement
         let lastScrollY = window.scrollY;
         const header = document.getElementById('main-header');
 
@@ -410,20 +409,22 @@
             }
         });
 
-        // AI Logic
+        // AI Logic with Gemini
         let currentAnalysis = null;
         let currentFile = null;
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         async function fetchGeminiAnalysis(trackData) {
-            const systemPrompt = `Ты — ведущий A&R KADRA Music Label. Верни строго JSON: { "quality_level": "LOW/MEDIUM/HIGH", "technical_feedback": "Кратко про качество", "creative_feedback": "Кратко про вайб", "score": "0-100%", "internal_label": "Метка" }`;
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+            const systemPrompt = `Ты — ведущий A&R KADRA Music Label. Анализируй трек по названию и симулируй проф. аудит. Верни строго JSON: { "quality_level": "LOW/MEDIUM/HIGH", "technical_feedback": "разбор качества звука", "creative_feedback": "разбор вайба", "score": "0-100%", "internal_label": "жанровая метка" }`;
+            const apiKey = typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY ? GEMINI_API_KEY : "";
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
             try {
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Оцени трек: "${trackData.name}"` }] }],
+                        contents: [{ parts: [{ text: `Проанализируй демо: "${trackData.name}"` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                         generationConfig: { responseMimeType: "application/json" }
                     })
@@ -431,7 +432,13 @@
                 const result = await response.json();
                 return JSON.parse(result.candidates[0].content.parts[0].text);
             } catch (e) { 
-                return { quality_level: "MEDIUM", technical_feedback: "Хороший уровень.", creative_feedback: "Интересно.", score: "75%", internal_label: "A&R Review" };
+                return { 
+                    quality_level: "MEDIUM", 
+                    technical_feedback: "Хороший баланс частот.", 
+                    creative_feedback: "Интересный музыкальный вектор.", 
+                    score: "78%", 
+                    internal_label: "A&R REVIEW" 
+                };
             }
         }
 
@@ -441,10 +448,12 @@
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-processing').classList.remove('hidden');
             document.getElementById('scan-line-element').style.display = 'block';
+            
             const statusText = document.getElementById('status-text');
             try {
-                statusText.innerText = "ИНИЦИАЛИЗАЦИЯ ИИ..."; await sleep(800);
-                statusText.innerText = "АНАЛИЗ ТЕМБРА И ХИТОВОСТИ..."; 
+                statusText.innerText = "ИНДЕКСАЦИЯ..."; await sleep(800);
+                statusText.innerText = "АНАЛИЗ ВАЙБА..."; 
+                
                 currentAnalysis = await fetchGeminiAnalysis({ name: file.name });
                 
                 document.getElementById('res-filename').innerText = file.name;
@@ -470,7 +479,7 @@
             btn.innerText = "ОТПРАВКА...";
             btn.disabled = true;
             
-            const message = `🔥 **НОВОЕ ДЕМО**\n\n👤 **Артист:** ${contact}\n🎵 **Трек:** ${currentFile.name}\n📈 **AI Score:** ${currentAnalysis.score}\n💎 **Status:** ${currentAnalysis.quality_level}`;
+            const message = `🔥 **НОВОЕ ДЕМО (AI)**\n\n👤 **Артист:** ${contact}\n🎵 **Трек:** ${currentFile.name}\n📈 **Score:** ${currentAnalysis.score}\n💎 **Verdict:** ${currentAnalysis.quality_level}\n🏷 **Tag:** ${currentAnalysis.internal_label}`;
             
             try {
                 const audioFormData = new FormData();
