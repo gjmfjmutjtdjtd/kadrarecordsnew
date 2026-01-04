@@ -496,6 +496,20 @@
         const slots = ['12:00', '15:00', '18:00', '21:00'];
         let selectedTime = null;
 
+        /**
+         * Функция генерации псевдослучайного числа на основе сида (строки)
+         * Это гарантирует, что для одной и той же даты и времени результат будет всегда одинаков.
+         */
+        function seededRandom(seed) {
+            let hash = 0;
+            for (let i = 0; i < seed.length; i++) {
+                hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+                hash |= 0;
+            }
+            const x = Math.sin(hash) * 10000;
+            return x - Math.floor(x);
+        }
+
         function showNotification(text, success = true) {
             const toast = document.getElementById('notification');
             const toastText = document.getElementById('notification-text');
@@ -506,6 +520,10 @@
 
         function initCalendar() {
             const today = new Date();
+            // Очищаем перед рендером на всякий случай
+            headerEl.innerHTML = '';
+            bodyEl.innerHTML = '';
+
             for (let i = 0; i < 7; i++) {
                 const date = new Date();
                 date.setDate(today.getDate() + i);
@@ -525,10 +543,14 @@
                 row.className = 'grid grid-cols-4 md:grid-cols-7 gap-2';
                 for (let i = 0; i < 7; i++) {
                     const slot = document.createElement('div');
-                    const isBusy = Math.random() > 0.7;
                     const date = new Date();
                     date.setDate(today.getDate() + i);
                     const dateStr = date.toLocaleDateString('ru-RU');
+
+                    // Используем дату и время как сид для "случайности"
+                    // Таким образом, статус слота закреплен за конкретным временем
+                    const seed = dateStr + time + "kadra_salt"; 
+                    const isBusy = seededRandom(seed) > 0.65; // Вероятность занятости ~35%
 
                     slot.className = `p-3 text-center text-[9px] font-black rounded-xl cursor-pointer ${isBusy ? 'slot-booked' : 'slot-free'}`;
                     slot.innerText = time;
