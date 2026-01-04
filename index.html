@@ -178,9 +178,15 @@
                 <div class="w-2 h-2 bg-[var(--accent)]"></div>
                 KADRA <span class="text-gray-500">Music Label</span>
             </div>
-            <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-5 py-2 rounded-full text-[10px] font-black uppercase hover:scale-105 transition">
-                Send Demo
-            </button>
+            <div class="flex items-center gap-4">
+                <!-- Кнопка Студии -->
+                <a href="ВСТАВЬ_ССЫЛКУ_СЮДА" target="_blank" class="hidden md:flex border border-white/20 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase hover:border-[var(--accent)] hover:text-[var(--accent)] transition duration-300">
+                    Studio
+                </a>
+                <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-5 py-2 rounded-full text-[10px] font-black uppercase hover:scale-105 transition">
+                    Send Demo
+                </button>
+            </div>
         </nav>
     </header>
 
@@ -311,7 +317,8 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
                 <div class="col-span-1 md:col-span-2">
                     <div class="text-3xl font-black uppercase tracking-tighter mb-6">KADRA <span class="text-gray-600">Music Label</span></div>
-                    <p class="text-gray-500 text-xs uppercase leading-loose tracking-[0.2em] max-w-sm mx-auto md:mx-0">Будущее электронной музыки, сформированное человеком и усиленное искусственным интеллектом. Основано в 2026 году.</p>
+                    <!-- Уменьшен размер шрифта здесь -->
+                    <p class="text-gray-500 text-[10px] uppercase leading-[1.8] tracking-[0.15em] max-w-sm mx-auto md:mx-0">Будущее электронной музыки, сформированное человеком и усиленное искусственным интеллектом. Основано в 2026 году.</p>
                 </div>
                 <div>
                     <h4 class="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Навигация</h4>
@@ -354,10 +361,8 @@
 
         window.addEventListener('scroll', () => {
             if (window.scrollY > lastScrollY && window.scrollY > 100) {
-                // Скролл вниз - прячем
                 header.classList.add('header-hidden');
             } else {
-                // Скролл вверх - показываем
                 header.classList.remove('header-hidden');
             }
             lastScrollY = window.scrollY;
