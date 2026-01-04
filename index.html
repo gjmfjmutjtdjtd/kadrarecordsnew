@@ -345,7 +345,7 @@
         const ARTISTS = [
             { name: "Mekhman", genre: "Rap / Pop", image: "https://avatars.yandex.net/get-music-content/5457712/4ea6895f.p.5988158/1000x1000" },
             { name: "Tkimali", genre: "G House / Rap", image: "https://avatars.yandex.net/get-music-content/14715139/c5ecf299.p.13641344/1000x1000" },
-            { name: "Flexx", genre: "Rap / Pop", image: "https://yandex-images.clstorage.net/U9N7J3A71/c7daf6RItPW/3hUe4TWNzLEs-S7MI99aburegcBsSoSvVL7pssrWNAAkuw3OU1fCKdfT4zqALwaM26isYgXJO8biITaG0aVHBkrEivAkDQ2zaGtpyLMbWS26HYRU_8uXe9Y-6DMFTWjc-jXSwo2KHHZE0ja7Ff1VXcrytaaZwuIY6_0wyYA5kRETlZ5pc5xMPiJv4YTrG5nuuxiFBLdCkWTb7fZkD4GsFHa4GU3JztvxyFN7v5L1xlRGOXYy1I0jGS86fQkIPV0XXhSW5nLTizproalGKRsVa_DVjAA6Qdlml-g4J0wGax_891pMQ0hYdAufvnjdPg3fTPYyu1gN6prjNnsJDj9fXV0Y1KH0Gw60IaOkxuNTkqg1kwVJ-4nSqFbr_a9Dxu6Zun4UREcN3_9C3jN_Eb8FnMN4u3RRQKwZrzd1Ac84HZlUWtTl9R6PtWYjaw8hGhIivFDNxnYCV-heoXdsQAAlnX72kECPB1d1C1r0udn9CFiCvP9-Hcpkmek2ekcEfFhQXF6UoLpUC_ThK-BBINqbaHVUSE_1CZDl26P86UwA6B73fpzMTonWuAAQNb_efsCTy7X__NCIptvofjvGD_zfkx7UGCi4200yaKEmDyEclmE4H4aHdYNbpx0j9iuOzKxdOnddw0GBULZO3jm0WPoCEcK7PrWUye2fKjd0zMj9E1BeEldgMRdC_iYvq4Fg2Bhtv9kFwL1NGi7XKz4hTklqFjF4mgZJyBq8xBzxtlDwBxrEdji7UwNtGuD__0wH8F6dGN1UYfKchrypLKXIrN2SbXSRhsW6ShFslCr-JseHJRx4-BqCQsNXfsAS_fAcf8oQQnj4vdnBZJrgvvMMR_ORVRWcVu0x1oQ8IS5qBm1THqwx2Q7JtwlaqFXpPC9MAOUQcTqUh8yLWDOB0v2wF_OP0A82v3IfiKwZYvs5zgI_ExOdG1JusJ2CdeQgrYLk3NgrMxFBTjZFFu5TJDLki4" },
+            { name: "Flexx", genre: "Rap / Pop", image: "https://yandex-images.clstorage.net/U9N7J3A71/c7daf6RItPW/3hUe4TWNzLEs-S7MI99aburegcBsSoSvVL7pssrWNAAkuw3OU1fCKdfT4zqALwaM26isYgXJO8biITaG0aVHBkrEivAkDQ2zaGtpyLMbWS26HYRU_8uXe9Y-6DMFTWjc-jXSwo2KHHZE0ja7Ff1VXcrytaaZwuIY6_0wyYA5kRETlZ5pc5xMPiJv4YTrG5nuuxiFBLdCkWTb7fZkD4GsFHa4GU3JztvxyFN7v5L1xlRGOXYy1I0jGS86fQkIPV0XXhSW5nLTizproalGKRsVa_DVjAA6Qdlml-g4J0wGax_891pMQ0hYdAufvnjdPg3fTPYyu1gN6prjNnsJDj9fXV0Y1KH0Gw60IaOkxuNTkqg1kwVJ-4nSqFbr_a9Dxu6Zun4UREcN3_9C3jN_Eb8FnMN4u3RRQKwZrzd1Ac84HZlUWtTl9R6PtWYjaw8hGhIivFDNxnYCV-heoXdsQAAlnX72kECPB1d1C1r0udn9CFiCvP9-Hcpkmek2ekcEfFhQXF6UoLpUC_ThK-BBINqbaHVUSE_1CZDl26P86UwA6B73fpzMTonWuAAQNb_efsCTy7X__NCIptvofjvGD_zfkx7UGCi4200yaKEmDyEclmE4H4aHdYNbpx0j9iuOzKxdOnddw0GBULZO3jm0WPoCEcK7PrWUye2fKjd0zMj9E1BeEldgMRdC_iYvq4Fg2Bhtv9kFwL1NGi7XKz4hTklqFjF4mgZJyBq8xBzxtlDwBxrEdji7UwNtGuD__0wH8F6dGN1UYfKchrypLKXIrN2SbXSRhsW6ShFslCr-JseHJRx4-BqCQsNXfsAS_fAcf8oQQnj4vdnBZJrgvvMMR_ORVRWcVu0x1oQ8IS5qBm1THqwx2Q7JtwlaqFXpPC9MAOUQcTqUh8yLWDOB0v2wF_OP0A82v3IfiKwZYvs5zgI_ExOdG1JusJ2CdeQgrYLk3NgrMxFBTjZFFu5TJDLki4" }
         ];
 
         // Управление шапкой
@@ -371,7 +371,7 @@
                 grid.innerHTML = ARTISTS.map(a => `
                     <div class="artist-slide">
                         <div class="artist-card">
-                            <img src="${a.image}" class="artist-image" alt="${a.name}">
+                            <img src="${a.image}" class="artist-image" alt="${a.name}" onerror="this.src='https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=800'">
                             <div class="artist-overlay">
                                 <h3 class="text-white font-bold uppercase text-3xl tracking-tighter italic mb-1">${a.name}</h3>
                                 <div class="flex items-center gap-2">
