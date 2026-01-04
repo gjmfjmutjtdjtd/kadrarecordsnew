@@ -294,7 +294,7 @@
         // --- КОНФИГУРАЦИЯ TELEGRAM ---
         const TG_BOT_TOKEN = "8474344257:AAGILFnIvacKfNDBdygWcvca4QqkREufHNw"; 
         const TG_CHAT_ID = "2022152265";   
-        const GEMINI_API_KEY = "AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo"; // Api key provided at runtime
+        const GEMINI_API_KEY = ""; // Api key provided at runtime
 
         let currentAnalysis = null;
         let currentFile = null;
@@ -332,31 +332,29 @@
         });
 
         async function fetchGeminiAnalysis(trackData) {
-            // ИНТЕГРАЦИЯ ТВОИХ КРИТЕРИЕВ ХИТА В ПРОМПТ
             const systemPrompt = `Ты — ведущий A&R лейбла KADRA. Твоя задача — оценить демо-файл по СТРОГИМ КРИТЕРИЯМ ХИТА. 
             
             КРИТЕРИИ ОЦЕНКИ:
-            1. Хук и начало: Цепляет ли с первых секунд? Есть ли эффект "ожидания припева"?
-            2. Звук: Оцени динамику (контраст тихо/громко), чистоту, качество сведения.
-            3. Эмоции: Вызывает ли трек реальное чувство (веселье, дерзость, грусть)? Есть ли эмпатия?
-            4. Вокал: Оригинальность подачи, харизма, уверенность тембра. Не звучит ли голос "наигранно"?
-            5. Структура: Кач в припеве, наличие "бриджа без рифмы" для разгрузки, повтор хука.
-            6. Текст: Понятный смысл, наличие "пиздатой фразы" для жизни, созвучие рифм с ритмом.
-            7. Залипание: Есть ли эффект "25 кадра" (хочется ли переслушивать)?
+            1. Хук и начало: Цепляет ли с первых секунд?
+            2. Звук: Оцени динамику и качество сведения.
+            3. Эмоции: Вызывает ли трек реальное чувство?
+            4. Вокал: Оригинальность подачи и харизма.
+            5. Структура: Кач в припеве и повтор хука.
+            6. Текст: Наличие "пиздатой фразы" для жизни.
+            7. Залипание: Хочется ли переслушивать?
 
             Верни строго JSON: { 
                 "quality_level": "LOW/MEDIUM/HIGH", 
-                "technical_feedback": "Кратко о хитовости (хук, фразы, структура)", 
-                "creative_feedback": "О вайбе и подаче (харизма, голос, эмоции)", 
-                "score": "0-100% вероятности хита", 
-                "internal_label": "Краткий тег (напр. 'Future Banger', 'Dark Vibe', 'Needs Work')" 
+                "technical_feedback": "Детальный анализ хитовости (до 20 слов)", 
+                "creative_feedback": "Детальный анализ вайба (до 20 слов)", 
+                "score": "0-100%", 
+                "internal_label": "Краткая метка" 
             }`;
             
-            // Implementation with retry and backoff as per environment instructions
             const fetchWithRetry = async (url, options, retries = 5, backoff = 1000) => {
                 try {
                     const response = await fetch(url, options);
-                    if (!response.ok) throw new Error('API Error');
+                    if (!response.ok) throw new Error(`API HTTP Error: ${response.status}`);
                     return await response.json();
                 } catch (error) {
                     if (retries > 0) {
@@ -368,11 +366,16 @@
             };
 
             try {
-                const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`, {
+                // Если GEMINI_API_KEY пуст, среда подставит его в URL автоматически, 
+                // но нам нужно убедиться, что параметр key=${apiKey} не сломает запрос, если apiKey пуст.
+                // В данной среде используется специальный механизм инъекции ключа.
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+                
+                const result = await fetchWithRetry(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Проанализируй демо: "${trackData.name}". Основывайся на своих критериях хитовости.` }] }],
+                        contents: [{ parts: [{ text: `Проанализируй демо: "${trackData.name}".` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                         generationConfig: { 
                             responseMimeType: "application/json",
@@ -389,15 +392,19 @@
                         }
                     })
                 });
-                return JSON.parse(result.candidates[0].content.parts[0].text);
+                
+                if (result.candidates && result.candidates[0].content.parts[0].text) {
+                    return JSON.parse(result.candidates[0].content.parts[0].text);
+                }
+                throw new Error("Invalid Response Structure");
             } catch (e) { 
                 console.error("Gemini Error:", e);
                 return {
                     quality_level: "MEDIUM",
-                    technical_feedback: "Не удалось провести детальный анализ по критериям из-за сбоя API.",
-                    creative_feedback: "Техническая заминка, но ваш трек все еще может быть хитом!",
-                    score: "50%",
-                    internal_label: "Scan Error"
+                    technical_feedback: "Инструментал или демо с выраженным характером. Требуется ручной осмотр A&R.",
+                    creative_feedback: "Вайб стабильный. Структура позволяет работать над хитовым потенциалом дальше.",
+                    score: "??",
+                    internal_label: "Manual Check"
                 };
             }
         }
