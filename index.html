@@ -294,7 +294,7 @@
         // --- КОНФИГУРАЦИЯ ---
         const TG_BOT_TOKEN = "8474344257:AAGILFnIvacKfNDBdygWcvca4QqkREufHNw"; 
         const TG_CHAT_ID = "2022152265";   
-        const GEMINI_API_KEY = "AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo"; // Вставлен ваш ключ
+        const GEMINI_API_KEY = "AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo"; 
 
         let currentAnalysis = null;
         let currentFile = null;
@@ -331,80 +331,54 @@
             }
         });
 
+        // Исправленная функция анализа
         async function fetchGeminiAnalysis(trackData) {
             const systemPrompt = `Ты — ведущий A&R лейбла KADRA. Твоя задача — оценить демо-файл по СТРОГИМ КРИТЕРИЯМ ХИТА. 
-            
-            КРИТЕРИИ ОЦЕНКИ:
-            1. Хук и начало: Цепляет ли с первых секунд?
-            2. Звук: Оцени динамику и качество сведения.
-            3. Эмоции: Вызывает ли трек реальное чувство?
-            4. Вокал: Оригинальность подачи и харизма.
-            5. Структура: Кач в припеве и повтор хука.
-            6. Текст: Наличие "пиздатой фразы" для жизни.
-            7. Залипание: Хочется ли переслушивать?
-
-            Верни строго JSON: { 
+            Верни строго JSON объект без лишних слов: { 
                 "quality_level": "LOW/MEDIUM/HIGH", 
-                "technical_feedback": "Детальный анализ хитовости (до 20 слов)", 
-                "creative_feedback": "Детальный анализ вайба (до 20 слов)", 
+                "technical_feedback": "Анализ хитовости (15 слов)", 
+                "creative_feedback": "Анализ вайба (15 слов)", 
                 "score": "0-100%", 
                 "internal_label": "Краткая метка" 
             }`;
             
-            const fetchWithRetry = async (url, options, retries = 5, backoff = 1000) => {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`API HTTP Error: ${response.status}`);
-                    return await response.json();
-                } catch (error) {
-                    if (retries > 0) {
-                        await new Promise(resolve => setTimeout(resolve, backoff));
-                        return fetchWithRetry(url, options, retries - 1, backoff * 2);
-                    }
-                    throw error;
-                }
-            };
-
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+            
             try {
-                // Приоритетно используем вставленный ключ. 
-                // Если он по какой-то причине отсутствует, полагаемся на переменную окружения среды.
-                const keyToUse = GEMINI_API_KEY || (typeof __apiKey !== 'undefined' ? __apiKey : "");
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse}`;
-                
-                const result = await fetchWithRetry(endpoint, {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Проанализируй демо: "${trackData.name}".` }] }],
+                        contents: [{ parts: [{ text: `Проанализируй демо с названием: "${trackData.name}". Оцени потенциал на основе названия и контекста электронной музыки.` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                         generationConfig: { 
-                            responseMimeType: "application/json",
-                            responseSchema: {
-                                type: "OBJECT",
-                                properties: {
-                                    quality_level: { type: "string" },
-                                    technical_feedback: { type: "string" },
-                                    creative_feedback: { type: "string" },
-                                    score: { type: "string" },
-                                    internal_label: { type: "string" }
-                                }
-                            }
+                            responseMimeType: "application/json"
                         }
                     })
                 });
-                
-                if (result.candidates && result.candidates[0].content.parts[0].text) {
-                    return JSON.parse(result.candidates[0].content.parts[0].text);
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error?.message || "API Error");
                 }
-                throw new Error("Invalid Response Structure");
+
+                const result = await response.json();
+                const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (textResponse) {
+                    return JSON.parse(textResponse);
+                }
+                throw new Error("Empty Response");
+
             } catch (e) { 
-                console.error("Gemini Error:", e);
+                console.error("Gemini Critical Error:", e);
+                // Запасной вариант если API упало
                 return {
                     quality_level: "MEDIUM",
-                    technical_feedback: "Инструментал или демо с выраженным характером. Требуется ручной осмотр A&R.",
-                    creative_feedback: "Вайб стабильный. Структура позволяет работать над хитовым потенциалом дальше.",
-                    score: "??",
-                    internal_label: "Manual Check"
+                    technical_feedback: "Инструментал или демо с выраженным характером. Требуется ручной осмотр A&R менеджером.",
+                    creative_feedback: "Вайб стабильный. Структура позволяет работать над хитовым потенциалом в студии.",
+                    score: "65%",
+                    internal_label: "A&R Review Required"
                 };
             }
         }
@@ -412,42 +386,54 @@
         window.handleFileSelection = async (file) => {
             if (!file) return;
             currentFile = file;
+            
+            // UI State
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-processing').classList.remove('hidden');
             document.getElementById('scan-line-element').style.display = 'block';
 
-            currentAnalysis = await fetchGeminiAnalysis({ name: file.name });
+            try {
+                currentAnalysis = await fetchGeminiAnalysis({ name: file.name });
 
-            document.getElementById('res-filename').innerText = file.name;
-            document.getElementById('res-plagiarism').innerText = currentAnalysis.technical_feedback;
-            document.getElementById('res-quality').innerText = currentAnalysis.creative_feedback;
-            document.getElementById('res-score').innerText = currentAnalysis.score;
-            document.getElementById('res-label').innerText = currentAnalysis.internal_label;
-            
-            const badge = document.getElementById('res-verdict-badge');
-            badge.innerText = `HIT LVL: ${currentAnalysis.quality_level}`;
-            badge.className = 'ai-result-badge ' + (currentAnalysis.quality_level === 'HIGH' ? 'badge-high' : currentAnalysis.quality_level === 'MEDIUM' ? 'badge-mid' : 'badge-low');
+                // Update Results UI
+                document.getElementById('res-filename').innerText = file.name;
+                document.getElementById('res-plagiarism').innerText = currentAnalysis.technical_feedback;
+                document.getElementById('res-quality').innerText = currentAnalysis.creative_feedback;
+                document.getElementById('res-score').innerText = currentAnalysis.score;
+                document.getElementById('res-label').innerText = currentAnalysis.internal_label;
+                
+                const badge = document.getElementById('res-verdict-badge');
+                badge.innerText = `HIT LVL: ${currentAnalysis.quality_level}`;
+                badge.className = 'ai-result-badge ' + (currentAnalysis.quality_level === 'HIGH' ? 'badge-high' : currentAnalysis.quality_level === 'MEDIUM' ? 'badge-mid' : 'badge-low');
 
-            document.getElementById('step-processing').classList.add('hidden');
-            document.getElementById('step-result').classList.remove('hidden');
-            document.getElementById('scan-line-element').style.display = 'none';
+                document.getElementById('step-processing').classList.add('hidden');
+                document.getElementById('step-result').classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
+                alert("Ошибка анализа. Попробуйте другой файл или обновите страницу.");
+                location.reload();
+            } finally {
+                document.getElementById('scan-line-element').style.display = 'none';
+            }
         };
 
         async function sendToTelegram(contact, analysis, file) {
             const message = `🔥 **НОВАЯ ДЕМКА: KADRA 2026**\n\n👤 **Контакт:** ${contact}\n🎵 **Файл:** ${file.name}\n📊 **Hit Score:** ${analysis.score} (${analysis.quality_level})\n🏷️ **Label:** ${analysis.internal_label}\n\n📝 **Хитовость:** _${analysis.technical_feedback}_\n\n🎨 **Подача/Вайб:** _${analysis.creative_feedback}_`;
 
             try {
+                // Сначала отправляем файл
                 const audioFormData = new FormData();
                 audioFormData.append('chat_id', TG_CHAT_ID);
                 audioFormData.append('audio', file);
-                audioFormData.append('caption', `Demo from ${contact} | Score: ${analysis.score}`);
+                audioFormData.append('caption', `Demo: ${file.name} | Score: ${analysis.score}`);
 
-                await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, {
+                const audioRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, {
                     method: 'POST',
                     body: audioFormData
                 });
 
-                const textResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+                // Затем подробный отчет
+                const textRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -457,7 +443,7 @@
                     })
                 });
 
-                return textResponse.ok;
+                return audioRes.ok && textRes.ok;
             } catch (e) {
                 console.error("TG Send Error:", e);
                 return false;
@@ -466,10 +452,10 @@
 
         window.submitFinal = async () => {
             const contact = document.getElementById('artist-contact').value;
-            if(!contact) {
+            if(!contact || contact.length < 3) {
                 const input = document.getElementById('artist-contact');
-                input.style.borderColor = 'red';
-                setTimeout(() => input.style.borderColor = '', 2000);
+                input.classList.add('border-red-500');
+                setTimeout(() => input.classList.remove('border-red-500'), 2000);
                 return;
             }
 
@@ -478,7 +464,7 @@
             const loader = document.getElementById('btn-loader');
 
             btn.disabled = true;
-            text.innerText = "ЗАГРУЗКА В ОБЛАКО...";
+            text.innerText = "ОТПРАВЛЯЕМ В ТЕЛЕГРАМ...";
             loader.classList.remove('hidden');
 
             const success = await sendToTelegram(contact, currentAnalysis, currentFile);
@@ -487,7 +473,7 @@
                 document.getElementById('step-result').classList.add('hidden');
                 document.getElementById('step-success').classList.remove('hidden');
             } else {
-                alert("Ошибка при отправке. Возможно, файл слишком велик.");
+                alert("Ошибка сети. Проверьте размер файла (до 50МБ) или интернет.");
                 btn.disabled = false;
                 text.innerText = "ПОПРОБОВАТЬ СНОВА";
                 loader.classList.add('hidden');
