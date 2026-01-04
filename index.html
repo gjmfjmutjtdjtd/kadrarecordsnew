@@ -291,10 +291,10 @@
     </footer>
 
     <script>
-        // --- КОНФИГУРАЦИЯ TELEGRAM ---
+        // --- КОНФИГУРАЦИЯ ---
         const TG_BOT_TOKEN = "8474344257:AAGILFnIvacKfNDBdygWcvca4QqkREufHNw"; 
         const TG_CHAT_ID = "2022152265";   
-        const GEMINI_API_KEY = ""; // Api key provided at runtime
+        const GEMINI_API_KEY = "AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo"; // Вставлен ваш ключ
 
         let currentAnalysis = null;
         let currentFile = null;
@@ -366,10 +366,10 @@
             };
 
             try {
-                // Если GEMINI_API_KEY пуст, среда подставит его в URL автоматически, 
-                // но нам нужно убедиться, что параметр key=${apiKey} не сломает запрос, если apiKey пуст.
-                // В данной среде используется специальный механизм инъекции ключа.
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+                // Приоритетно используем вставленный ключ. 
+                // Если он по какой-то причине отсутствует, полагаемся на переменную окружения среды.
+                const keyToUse = GEMINI_API_KEY || (typeof __apiKey !== 'undefined' ? __apiKey : "");
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse}`;
                 
                 const result = await fetchWithRetry(endpoint, {
                     method: 'POST',
