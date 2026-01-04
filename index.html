@@ -368,6 +368,7 @@
         let currentUser = null;
         let rosterData = [];
 
+        // Функция инициализации авторизации
         const initAuth = async () => {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
@@ -376,6 +377,7 @@
             }
         };
 
+        // Слушатель состояния входа
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
@@ -385,6 +387,7 @@
 
         initAuth();
 
+        // Подписка на данные из Firestore
         function subscribeToRoster() {
             const rosterRef = collection(db, 'artifacts', appId, 'public', 'data', 'roster');
             onSnapshot(rosterRef, (snapshot) => {
@@ -394,6 +397,7 @@
             }, (error) => console.error("Firestore Error:", error));
         }
 
+        // Отрисовка публичного ростера
         function renderRoster() {
             const grid = document.getElementById('roster-grid');
             if (rosterData.length === 0) {
@@ -413,8 +417,10 @@
             `).join('');
         }
 
+        // Отрисовка списка в админ-панели
         function renderAdminRoster() {
             const list = document.getElementById('admin-roster-list');
+            if (!list) return;
             list.innerHTML = rosterData.map(artist => `
                 <div class="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl group">
                     <div class="flex items-center gap-4">
@@ -431,6 +437,20 @@
             `).join('');
         }
 
+        // --- Глобальные функции для работы с HTML (onclick) ---
+
+        window.loginAdmin = () => {
+            const passField = document.getElementById('admin-pass');
+            const pass = passField.value;
+            if (pass === 'admin2026') {
+                document.getElementById('admin-modal').classList.remove('active');
+                document.getElementById('admin-dashboard').classList.add('active');
+                passField.value = ''; // Очистка пароля
+            } else {
+                alert('Неверный пароль');
+            }
+        };
+
         window.addArtist = async () => {
             if (!currentUser) return;
             const name = document.getElementById('artist-name').value;
@@ -440,6 +460,7 @@
             if(!name || !genre) return alert('Заполните поля');
 
             const btn = document.getElementById('add-artist-btn');
+            const originalText = btn.innerText;
             btn.innerText = "СОХРАНЕНИЕ...";
             btn.disabled = true;
 
@@ -451,9 +472,10 @@
                 document.getElementById('artist-genre').value = '';
                 document.getElementById('artist-image').value = '';
             } catch (e) {
-                alert("Ошибка доступа");
+                console.error(e);
+                alert("Ошибка доступа к базе данных");
             } finally {
-                btn.innerText = "Записать в Базу";
+                btn.innerText = originalText;
                 btn.disabled = false;
             }
         };
@@ -461,17 +483,12 @@
         window.deleteArtist = async (id) => {
             if (!currentUser) return;
             if(confirm('Удалить артиста из базы?')) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'roster', id));
-            }
-        };
-
-        window.loginAdmin = () => {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === 'admin2026') {
-                document.getElementById('admin-modal').classList.remove('active');
-                document.getElementById('admin-dashboard').classList.add('active');
-            } else {
-                alert('Неверный пароль');
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'roster', id));
+                } catch (e) {
+                    console.error(e);
+                    alert("Ошибка при удалении");
+                }
             }
         };
 
@@ -492,12 +509,6 @@
             document.body.removeChild(textArea);
         };
 
-        const cursor = document.getElementById('cursor');
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
-
         window.startAnalysis = (file) => {
             if(!file) return;
             document.getElementById('upload-interface').classList.add('hidden');
@@ -514,6 +525,13 @@
                 }
             }, 40);
         };
+
+        // Кастомный курсор
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
     </script>
 </body>
 </html>
