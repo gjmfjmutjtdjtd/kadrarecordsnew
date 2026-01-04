@@ -37,7 +37,6 @@
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* Анимация скрытия/появления шапки */
         header {
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
         }
@@ -179,7 +178,6 @@
                 KADRA <span class="text-gray-500">Music Label</span>
             </div>
             <div class="flex items-center gap-4">
-                <!-- Studio Button -->
                 <a href="#" target="_blank" class="hidden md:flex border border-white/20 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase hover:border-[var(--accent)] hover:text-[var(--accent)] transition duration-300">
                     Studio
                 </a>
@@ -346,7 +344,7 @@
     <script>
         const TG_BOT_TOKEN = "8474344257:AAGILFnIvacKfNDBdygWcvca4QqkREufHNw"; 
         const TG_CHAT_ID = "2022152265";   
-        const GEMINI_API_KEY = ""; // Будет использован ключ среды
+        const GEMINI_API_KEY = ""; 
 
         const ARTISTS = [
             { name: "Mekhman", genre: "Rap / Pop", image: "https://avatars.yandex.net/get-music-content/5457712/4ea6895f.p.5988158/1000x1000" },
@@ -354,7 +352,6 @@
             { name: "Flexx", genre: "Rap / Pop", image: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/6a/c8/6d/6ac86d1c-9995-09f6-e079-653805196fb5/cover.jpg/1200x1200bf-60.jpg" }
         ];
 
-        // Header movement
         let lastScrollY = window.scrollY;
         const header = document.getElementById('main-header');
 
@@ -409,13 +406,35 @@
             }
         });
 
-        // AI Logic with Gemini
         let currentAnalysis = null;
         let currentFile = null;
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        async function fetchGeminiAnalysis(trackData) {
-            const systemPrompt = `Ты — ведущий A&R KADRA Music Label. Анализируй трек по названию и симулируй проф. аудит. Верни строго JSON: { "quality_level": "LOW/MEDIUM/HIGH", "technical_feedback": "разбор качества звука", "creative_feedback": "разбор вайба", "score": "0-100%", "internal_label": "жанровая метка" }`;
+        async function getAudioDuration(file) {
+            return new Promise((resolve) => {
+                const audio = document.createElement('audio');
+                audio.src = URL.createObjectURL(file);
+                audio.addEventListener('loadedmetadata', () => {
+                    resolve(audio.duration);
+                });
+                audio.onerror = () => resolve(0);
+            });
+        }
+
+        function hasClicheWords(filename) {
+            const cliches = ['final', 'new', 'track', 'draft', 'demo', '1', '2', 'v1', 'v2', 'copy', 'untitled'];
+            const lower = filename.toLowerCase();
+            return cliches.some(word => lower.includes(word));
+        }
+
+        function isCorrectFormat(filename) {
+            const name = filename.replace(/\.[^/.]+$/, "");
+            const parts = name.split('-');
+            return parts.length >= 2 && parts[0].trim().length > 0 && parts[1].trim().length > 0;
+        }
+
+        async function fetchGeminiAnalysis(trackData, technicalScore) {
+            const systemPrompt = `Ты — ведущий A&R KADRA Music Label. Анализируй трек по названию. Игнорируй технические баллы (они уже посчитаны), сосредоточься на творческой ценности. Верни строго JSON: { "quality_level": "LOW/MEDIUM/HIGH", "technical_feedback": "разбор качества", "creative_feedback": "разбор вайба", "ai_creative_score": 0-40, "internal_label": "жанр" }`;
             const apiKey = typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY ? GEMINI_API_KEY : "";
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             
@@ -424,7 +443,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Проанализируй демо: "${trackData.name}"` }] }],
+                        contents: [{ parts: [{ text: `Название: "${trackData.name}"` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                         generationConfig: { responseMimeType: "application/json" }
                     })
@@ -434,10 +453,10 @@
             } catch (e) { 
                 return { 
                     quality_level: "MEDIUM", 
-                    technical_feedback: "Хороший баланс частот.", 
-                    creative_feedback: "Интересный музыкальный вектор.", 
-                    score: "78%", 
-                    internal_label: "A&R REVIEW" 
+                    technical_feedback: "Стандартный продакшн.", 
+                    creative_feedback: "Интересный стиль.", 
+                    ai_creative_score: 25, 
+                    internal_label: "DEMO" 
                 };
             }
         }
@@ -451,10 +470,39 @@
             
             const statusText = document.getElementById('status-text');
             try {
-                statusText.innerText = "ИНДЕКСАЦИЯ..."; await sleep(800);
-                statusText.innerText = "АНАЛИЗ ВАЙБА..."; 
+                statusText.innerText = "ИЗМЕРЕНИЕ ДЛИНЫ..."; 
+                const duration = await getAudioDuration(file);
                 
-                currentAnalysis = await fetchGeminiAnalysis({ name: file.name });
+                statusText.innerText = "ПРОВЕРКА МЕТАДАННЫХ...";
+                await sleep(500);
+                
+                let techScore = 0;
+                let logs = [];
+                
+                if (duration > 100) { 
+                    techScore += 20; 
+                    logs.push("Длительность > 100с (+20)");
+                }
+                if (isCorrectFormat(file.name)) { 
+                    techScore += 20; 
+                    logs.push("Верный формат нейминга (+20)");
+                }
+                if (!hasClicheWords(file.name)) { 
+                    techScore += 20; 
+                    logs.push("Нет шаблонных слов (+20)");
+                }
+
+                statusText.innerText = "AI АУДИТ ВАЙБА..."; 
+                const aiData = await fetchGeminiAnalysis({ name: file.name });
+                
+                const totalScoreNum = techScore + (aiData.ai_creative_score || 0);
+                const finalScore = Math.min(totalScoreNum, 100);
+
+                currentAnalysis = {
+                    ...aiData,
+                    score: finalScore + "%",
+                    technical_feedback: logs.length > 0 ? "Тех. чеки: " + logs.join(', ') : aiData.technical_feedback
+                };
                 
                 document.getElementById('res-filename').innerText = file.name;
                 document.getElementById('res-plagiarism').innerText = currentAnalysis.technical_feedback;
@@ -468,7 +516,10 @@
                 
                 document.getElementById('step-processing').classList.add('hidden');
                 document.getElementById('step-result').classList.remove('hidden');
-            } catch (err) { location.reload(); }
+            } catch (err) { 
+                console.error(err);
+                location.reload(); 
+            }
             finally { document.getElementById('scan-line-element').style.display = 'none'; }
         };
 
@@ -479,7 +530,7 @@
             btn.innerText = "ОТПРАВКА...";
             btn.disabled = true;
             
-            const message = `🔥 **НОВОЕ ДЕМО (AI)**\n\n👤 **Артист:** ${contact}\n🎵 **Трек:** ${currentFile.name}\n📈 **Score:** ${currentAnalysis.score}\n💎 **Verdict:** ${currentAnalysis.quality_level}\n🏷 **Tag:** ${currentAnalysis.internal_label}`;
+            const message = `🔥 **НОВОЕ ДЕМО (AI)**\n\n👤 **Артист:** ${contact}\n🎵 **Трек:** ${currentFile.name}\n📈 **Score:** ${currentAnalysis.score}\n💎 **Verdict:** ${currentAnalysis.quality_level}\n🏷 **Tag:** ${currentAnalysis.internal_label}\n📝 **Feedback:** ${currentAnalysis.creative_feedback}`;
             
             try {
                 const audioFormData = new FormData();
