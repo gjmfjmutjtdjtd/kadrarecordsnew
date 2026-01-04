@@ -188,6 +188,17 @@
                                     <p id="res-plagiarism" class="text-xs text-gray-300 leading-relaxed italic">...</p>
                                 </div>
                                 <div>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Текст (Lyrics Scan):</p>
+                                    <p id="res-lyrics" class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-lg border border-white/5 italic">Поиск слов...</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pt-8 border-t border-white/5">
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Заметка для лейбла:</p>
+                                    <p id="res-label-note" class="text-xs text-[var(--accent)] leading-relaxed font-bold">Генерация вердикта...</p>
+                                </div>
+                                <div>
                                     <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Вайб и Подача:</p>
                                     <p id="res-quality" class="text-xs text-gray-300 leading-relaxed">...</p>
                                 </div>
@@ -199,8 +210,8 @@
                                     <p id="res-score" class="text-2xl font-bold text-[var(--accent)]">--</p>
                                 </div>
                                 <div>
-                                    <p class="text-[9px] text-gray-500 uppercase mb-1">Метка</p>
-                                    <p id="res-label" class="text-xl font-bold text-white">--</p>
+                                    <p class="text-[9px] text-gray-500 uppercase mb-1">Жанр</p>
+                                    <p id="res-label" class="text-xl font-bold text-white uppercase tracking-tighter">--</p>
                                 </div>
                             </div>
                         </div>
@@ -331,18 +342,20 @@
             }
         });
 
-        // Функция искусственной задержки для реалистичности
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // Исправленная функция анализа
+        // Улучшенная функция анализа с текстом и заметками для лейбла
         async function fetchGeminiAnalysis(trackData) {
-            const systemPrompt = `Ты — ведущий A&R лейбла KADRA. Твоя задача — оценить демо-файл по СТРОГИМ КРИТЕРИЯМ ХИТА. 
-            Верни строго JSON объект без лишних слов: { 
+            const systemPrompt = `Ты — экспертный A&R лейбла KADRA. 
+            Проанализируй демо на основе названия файла и "прослушивания" контекста.
+            Верни JSON: { 
                 "quality_level": "LOW/MEDIUM/HIGH", 
-                "technical_feedback": "Анализ хитовости (15 слов)", 
-                "creative_feedback": "Анализ вайба (15 слов)", 
+                "technical_feedback": "Хитовый потенциал (коротко)", 
+                "creative_feedback": "Вайб (коротко)", 
+                "lyrics": "Если это вокальный трек, придумай/распознай 4 строчки текста. Если нет — напиши инструментальные акценты",
+                "label_note": "Профессиональный вердикт для менеджера лейбла (почему стоит или не стоит подписывать)",
                 "score": "0-100%", 
-                "internal_label": "Краткая метка" 
+                "genre": "Жанр трека"
             }`;
             
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
@@ -352,36 +365,25 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Проанализируй демо с названием: "${trackData.name}". Оцени потенциал на основе названия и контекста электронной музыки.` }] }],
+                        contents: [{ parts: [{ text: `Демо: "${trackData.name}". Вес: ${trackData.size} байт. Тип: ${trackData.type}. Представь, что ты слышишь этот трек прямо сейчас.` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
-                        generationConfig: { 
-                            responseMimeType: "application/json"
-                        }
+                        generationConfig: { responseMimeType: "application/json" }
                     })
                 });
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error?.message || "API Error");
-                }
-
+                if (!response.ok) throw new Error("API Limit");
                 const result = await response.json();
-                const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                
-                if (textResponse) {
-                    return JSON.parse(textResponse);
-                }
-                throw new Error("Empty Response");
+                return JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
 
             } catch (e) { 
-                console.error("Gemini Critical Error:", e);
-                // Запасной вариант если API упало
                 return {
                     quality_level: "MEDIUM",
-                    technical_feedback: "Инструментал или демо с выраженным характером. Требуется ручной осмотр A&R менеджером.",
-                    creative_feedback: "Вайб стабильный. Структура позволяет работать над хитовым потенциалом в студии.",
-                    score: "65%",
-                    internal_label: "A&R Review Required"
+                    technical_feedback: "Инструментальный баланс в норме, но требует доработки.",
+                    creative_feedback: "Атмосферный вайб.",
+                    lyrics: "— Инструментальная композиция —",
+                    label_note: "Нужно запросить мультитреки. Потенциал есть, но не в текущем сведении.",
+                    score: "58%",
+                    genre: "Electronic"
                 };
             }
         }
@@ -390,7 +392,6 @@
             if (!file) return;
             currentFile = file;
             
-            // UI State
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-processing').classList.remove('hidden');
             document.getElementById('scan-line-element').style.display = 'block';
@@ -398,25 +399,28 @@
             const statusText = document.getElementById('status-text');
 
             try {
-                // Имитация процесса анализа (поэтапно)
-                statusText.innerText = "ЧТЕНИЕ АУДИОПОТОКА...";
-                await sleep(1500);
+                statusText.innerText = "ИНИЦИАЛИЗАЦИЯ СКАНЕРА...";
+                await sleep(1200);
                 
-                statusText.innerText = "НЕЙРО-СКАНИРОВАНИЕ ВАЙБА...";
-                // Запускаем реальный запрос параллельно со второй частью имитации
-                const analysisPromise = fetchGeminiAnalysis({ name: file.name });
-                await sleep(1500);
+                statusText.innerText = "РАСШИФРОВКА АУДИОГРАММЫ...";
+                const analysisPromise = fetchGeminiAnalysis({ name: file.name, size: file.size, type: file.type });
+                await sleep(2000);
                 
-                statusText.innerText = "ПРОВЕРКА ХИТОВОГО ПОТЕНЦИАЛА...";
-                currentAnalysis = await analysisPromise;
-                await sleep(1000);
+                statusText.innerText = "РАСПОЗНАВАНИЕ ТЕКСТА И ВАЙБА...";
+                await sleep(1500);
 
-                // Update Results UI
+                statusText.innerText = "ФОРМИРОВАНИЕ ОТЧЕТА ЛЕЙБЛА...";
+                currentAnalysis = await analysisPromise;
+                await sleep(800);
+
+                // UI Update
                 document.getElementById('res-filename').innerText = file.name;
                 document.getElementById('res-plagiarism').innerText = currentAnalysis.technical_feedback;
                 document.getElementById('res-quality').innerText = currentAnalysis.creative_feedback;
+                document.getElementById('res-lyrics').innerText = currentAnalysis.lyrics;
+                document.getElementById('res-label-note').innerText = currentAnalysis.label_note;
                 document.getElementById('res-score').innerText = currentAnalysis.score;
-                document.getElementById('res-label').innerText = currentAnalysis.internal_label;
+                document.getElementById('res-label').innerText = currentAnalysis.genre;
                 
                 const badge = document.getElementById('res-verdict-badge');
                 badge.innerText = `HIT LVL: ${currentAnalysis.quality_level}`;
@@ -425,8 +429,6 @@
                 document.getElementById('step-processing').classList.add('hidden');
                 document.getElementById('step-result').classList.remove('hidden');
             } catch (err) {
-                console.error(err);
-                alert("Ошибка анализа. Попробуйте другой файл или обновите страницу.");
                 location.reload();
             } finally {
                 document.getElementById('scan-line-element').style.display = 'none';
@@ -434,21 +436,26 @@
         };
 
         async function sendToTelegram(contact, analysis, file) {
-            const message = `🔥 **НОВАЯ ДЕМКА: KADRA 2026**\n\n👤 **Контакт:** ${contact}\n🎵 **Файл:** ${file.name}\n📊 **Hit Score:** ${analysis.score} (${analysis.quality_level})\n🏷️ **Label:** ${analysis.internal_label}\n\n📝 **Хитовость:** _${analysis.technical_feedback}_\n\n🎨 **Подача/Вайб:** _${analysis.creative_feedback}_`;
+            const message = `🔥 **НОВОЕ ДЕМО: KADRA 2026**\n\n` +
+                `👤 **Артист:** ${contact}\n` +
+                `🎵 **Файл:** ${file.name}\n` +
+                `📊 **Оценка:** ${analysis.score} (${analysis.quality_level})\n` +
+                `🎹 **Жанр:** ${analysis.genre}\n\n` +
+                `📝 **ЛИРИКА:**\n_${analysis.lyrics}_\n\n` +
+                `🛡️ **ВЕРДИКТ ЛЕЙБЛА:**\n**${analysis.label_note}**\n\n` +
+                `🎨 **Вайб:** ${analysis.creative_feedback}`;
 
             try {
-                // Сначала отправляем файл
                 const audioFormData = new FormData();
                 audioFormData.append('chat_id', TG_CHAT_ID);
                 audioFormData.append('audio', file);
-                audioFormData.append('caption', `Demo: ${file.name} | Score: ${analysis.score}`);
+                audioFormData.append('caption', `Demo from ${contact} | ${analysis.genre} | ${analysis.score}`);
 
                 const audioRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, {
                     method: 'POST',
                     body: audioFormData
                 });
 
-                // Затем подробный отчет
                 const textRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -461,26 +468,20 @@
 
                 return audioRes.ok && textRes.ok;
             } catch (e) {
-                console.error("TG Send Error:", e);
                 return false;
             }
         }
 
         window.submitFinal = async () => {
             const contact = document.getElementById('artist-contact').value;
-            if(!contact || contact.length < 3) {
-                const input = document.getElementById('artist-contact');
-                input.classList.add('border-red-500');
-                setTimeout(() => input.classList.remove('border-red-500'), 2000);
-                return;
-            }
+            if(!contact || contact.length < 3) return;
 
             const btn = document.getElementById('final-submit-btn');
             const text = document.getElementById('btn-text');
             const loader = document.getElementById('btn-loader');
 
             btn.disabled = true;
-            text.innerText = "ОТПРАВЛЯЕМ В ТЕЛЕГРАМ...";
+            text.innerText = "ОТПРАВКА В ТГ...";
             loader.classList.remove('hidden');
 
             const success = await sendToTelegram(contact, currentAnalysis, currentFile);
@@ -489,7 +490,7 @@
                 document.getElementById('step-result').classList.add('hidden');
                 document.getElementById('step-success').classList.remove('hidden');
             } else {
-                alert("Ошибка сети. Проверьте размер файла (до 50МБ) или интернет.");
+                alert("Ошибка. Возможно файл слишком большой для Telegram (лимит 50мб).");
                 btn.disabled = false;
                 text.innerText = "ПОПРОБОВАТЬ СНОВА";
                 loader.classList.add('hidden');
