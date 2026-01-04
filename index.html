@@ -288,7 +288,7 @@
         <section id="collab" class="py-32 px-4 max-w-5xl mx-auto text-center">
             <h2 class="text-sm font-bold uppercase tracking-[0.4em] mb-12 text-gray-500 italic">Connect via Email</h2>
             <div class="overflow-hidden">
-                <div onclick="copyEmail()" class="contact-link font-syne font-bold uppercase italic text-white">
+                <div id="email-btn" onclick="copyEmail()" class="contact-link font-syne font-bold uppercase italic text-white">
                     thekadrainfo@gmail.com
                 </div>
                 <p class="mt-6 text-[9px] uppercase font-bold tracking-[0.2em] text-gray-600 animate-pulse">Кликни, чтобы скопировать</p>
@@ -494,18 +494,29 @@
 
         window.copyEmail = () => {
             const email = "thekadrainfo@gmail.com";
+            // Используем классический надежный метод создания временного элемента для Canvas
             const textArea = document.createElement("textarea");
             textArea.value = email;
+            // Делаем элемент невидимым
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
             document.body.appendChild(textArea);
+            
+            textArea.focus();
             textArea.select();
+            
             try {
-                document.execCommand('copy');
-                const toast = document.getElementById('copy-toast');
-                toast.classList.add('active');
-                setTimeout(() => toast.classList.remove('active'), 2500);
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    const toast = document.getElementById('copy-toast');
+                    toast.classList.add('active');
+                    setTimeout(() => toast.classList.remove('active'), 2500);
+                }
             } catch (err) {
-                console.error('Не удалось скопировать', err);
+                console.error('Ошибка копирования:', err);
             }
+            
             document.body.removeChild(textArea);
         };
 
