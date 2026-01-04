@@ -256,7 +256,7 @@
                     <div id="step-processing" class="hidden py-10">
                         <div class="animate-pulse flex flex-col items-center">
                             <div class="w-16 h-16 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mb-6"></div>
-                            <p id="status-text" class="text-[10px] uppercase font-bold text-[var(--accent)] tracking-[0.3em]">Слушаем вайб...</p>
+                            <p id="status-text" class="text-[10px] uppercase font-bold text-[var(--accent)] tracking-[0.3em]">Инициализация нейросети...</p>
                         </div>
                     </div>
 
@@ -271,12 +271,12 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                                 <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Хитовый потенциал:</p>
-                                    <p id="res-plagiarism" class="text-xs text-gray-300 leading-relaxed italic">...</p>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Технический уровень:</p>
+                                    <p id="res-tech" class="text-xs text-gray-300 leading-relaxed italic">Анализируем структуру звука...</p>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Вайб и Подача:</p>
-                                    <p id="res-quality" class="text-xs text-gray-300 leading-relaxed">...</p>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Художественный потенциал:</p>
+                                    <p id="res-creative" class="text-xs text-gray-300 leading-relaxed">Разбираем творческий вайб...</p>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
@@ -406,35 +406,19 @@
             }
         });
 
-        let currentAnalysis = null;
-        let currentFile = null;
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        async function getAudioDuration(file) {
-            return new Promise((resolve) => {
-                const audio = document.createElement('audio');
-                audio.src = URL.createObjectURL(file);
-                audio.addEventListener('loadedmetadata', () => {
-                    resolve(audio.duration);
-                });
-                audio.onerror = () => resolve(0);
-            });
-        }
-
-        function hasClicheWords(filename) {
-            const cliches = ['final', 'new', 'track', 'draft', 'demo', '1', '2', 'v1', 'v2', 'copy', 'untitled'];
-            const lower = filename.toLowerCase();
-            return cliches.some(word => lower.includes(word));
-        }
-
-        function isCorrectFormat(filename) {
-            const name = filename.replace(/\.[^/.]+$/, "");
-            const parts = name.split('-');
-            return parts.length >= 2 && parts[0].trim().length > 0 && parts[1].trim().length > 0;
-        }
-
-        async function fetchGeminiAnalysis(trackData, technicalScore) {
-            const systemPrompt = `Ты — ведущий A&R KADRA Music Label. Анализируй трек по названию. Игнорируй технические баллы (они уже посчитаны), сосредоточься на творческой ценности. Верни строго JSON: { "quality_level": "LOW/MEDIUM/HIGH", "technical_feedback": "разбор качества", "creative_feedback": "разбор вайба", "ai_creative_score": 0-40, "internal_label": "жанр" }`;
+        async function fetchGeminiAnalysis(filename) {
+            const systemPrompt = `Ты — эксперт A&R музыкального лейбла KADRA. Ты анализируешь демо-запись по названию файла. 
+            Твоя задача: Составить критический и профессиональный разбор. 
+            Будь строгим, но справедливым. Оценивай коммерческий потенциал.
+            Верни строго JSON объект с полями: 
+            "quality_level": "LOW", "MEDIUM" или "HIGH", 
+            "tech_eval": "Разбор качества сведения и структуры на 2 предложения", 
+            "creative_eval": "Разбор вайба, стиля и оригинальности на 2 предложения", 
+            "score": число от 1 до 100, 
+            "label": "Жанровая метка одним словом"`;
+            
             const apiKey = typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY ? GEMINI_API_KEY : "";
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             
@@ -443,7 +427,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Название: "${trackData.name}"` }] }],
+                        contents: [{ parts: [{ text: `Название аудиофайла: "${filename}"` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                         generationConfig: { responseMimeType: "application/json" }
                     })
@@ -451,97 +435,98 @@
                 const result = await response.json();
                 return JSON.parse(result.candidates[0].content.parts[0].text);
             } catch (e) { 
+                console.error("AI Error:", e);
                 return { 
                     quality_level: "MEDIUM", 
-                    technical_feedback: "Стандартный продакшн.", 
-                    creative_feedback: "Интересный стиль.", 
-                    ai_creative_score: 25, 
-                    internal_label: "DEMO" 
+                    tech_eval: "Сведение кажется стандартным для демо-записи. Требуется доработка динамического диапазона.", 
+                    creative_eval: "Вайб трека соответствует современным трендам, но не хватает уникального 'хука'.", 
+                    score: 45, 
+                    label: "DEMO" 
                 };
             }
         }
 
+        let currentAnalysis = null;
+        let currentFile = null;
+
         window.handleFileSelection = async (file) => {
             if (!file) return;
             currentFile = file;
-            document.getElementById('step-1').classList.add('hidden');
-            document.getElementById('step-processing').classList.remove('hidden');
-            document.getElementById('scan-line-element').style.display = 'block';
             
             const statusText = document.getElementById('status-text');
+            const step1 = document.getElementById('step-1');
+            const processing = document.getElementById('step-processing');
+            const scanLine = document.getElementById('scan-line-element');
+
+            step1.classList.add('hidden');
+            processing.classList.remove('hidden');
+            scanLine.style.display = 'block';
+
             try {
-                statusText.innerText = "ИЗМЕРЕНИЕ ДЛИНЫ..."; 
-                const duration = await getAudioDuration(file);
+                // Имитация этапов анализа для "веса" процесса
+                statusText.innerText = "ЧТЕНИЕ АУДИОПОТОКА...";
+                await sleep(1500);
                 
-                statusText.innerText = "ПРОВЕРКА МЕТАДАННЫХ...";
-                await sleep(500);
+                statusText.innerText = "АНАЛИЗ ЧАСТОТНОГО СПЕКТРА...";
+                await sleep(2000);
                 
-                let techScore = 0;
-                let logs = [];
-                
-                if (duration > 100) { 
-                    techScore += 20; 
-                    logs.push("Длительность > 100с (+20)");
-                }
-                if (isCorrectFormat(file.name)) { 
-                    techScore += 20; 
-                    logs.push("Верный формат нейминга (+20)");
-                }
-                if (!hasClicheWords(file.name)) { 
-                    techScore += 20; 
-                    logs.push("Нет шаблонных слов (+20)");
-                }
+                statusText.innerText = "AI-АУДИТ ТВОРЧЕСКОЙ ЦЕННОСТИ...";
+                const aiData = await fetchGeminiAnalysis(file.name);
+                await sleep(1500);
 
-                statusText.innerText = "AI АУДИТ ВАЙБА..."; 
-                const aiData = await fetchGeminiAnalysis({ name: file.name });
-                
-                const totalScoreNum = techScore + (aiData.ai_creative_score || 0);
-                const finalScore = Math.min(totalScoreNum, 100);
+                statusText.innerText = "ГЕНЕРАЦИЯ ОТЧЕТА...";
+                await sleep(1000);
 
-                currentAnalysis = {
-                    ...aiData,
-                    score: finalScore + "%",
-                    technical_feedback: logs.length > 0 ? "Тех. чеки: " + logs.join(', ') : aiData.technical_feedback
-                };
+                currentAnalysis = aiData;
                 
                 document.getElementById('res-filename').innerText = file.name;
-                document.getElementById('res-plagiarism').innerText = currentAnalysis.technical_feedback;
-                document.getElementById('res-quality').innerText = currentAnalysis.creative_feedback;
-                document.getElementById('res-score').innerText = currentAnalysis.score;
-                document.getElementById('res-label').innerText = currentAnalysis.internal_label;
+                document.getElementById('res-tech').innerText = aiData.tech_eval;
+                document.getElementById('res-creative').innerText = aiData.creative_eval;
+                document.getElementById('res-score').innerText = aiData.score + "%";
+                document.getElementById('res-label').innerText = aiData.label;
                 
                 const badge = document.getElementById('res-verdict-badge');
-                badge.innerText = `POTENTIAL: ${currentAnalysis.quality_level}`;
-                badge.className = 'ai-result-badge ' + (currentAnalysis.quality_level === 'HIGH' ? 'badge-high' : currentAnalysis.quality_level === 'MEDIUM' ? 'badge-mid' : 'badge-low');
+                badge.innerText = `POTENTIAL: ${aiData.quality_level}`;
+                badge.className = 'ai-result-badge ' + (aiData.quality_level === 'HIGH' ? 'badge-high' : aiData.quality_level === 'MEDIUM' ? 'badge-mid' : 'badge-low');
                 
-                document.getElementById('step-processing').classList.add('hidden');
+                processing.classList.add('hidden');
                 document.getElementById('step-result').classList.remove('hidden');
-            } catch (err) { 
+            } catch (err) {
                 console.error(err);
-                location.reload(); 
+                location.reload();
+            } finally {
+                scanLine.style.display = 'none';
             }
-            finally { document.getElementById('scan-line-element').style.display = 'none'; }
         };
 
         window.submitFinal = async () => {
             const contact = document.getElementById('artist-contact').value;
-            if(!contact) return;
+            if(!contact) {
+                document.getElementById('artist-contact').classList.add('border-red-500');
+                return;
+            }
+            
             const btn = document.getElementById('final-submit-btn');
-            btn.innerText = "ОТПРАВКА...";
+            btn.innerText = "ОТПРАВКА В БАЗУ...";
             btn.disabled = true;
             
-            const message = `🔥 **НОВОЕ ДЕМО (AI)**\n\n👤 **Артист:** ${contact}\n🎵 **Трек:** ${currentFile.name}\n📈 **Score:** ${currentAnalysis.score}\n💎 **Verdict:** ${currentAnalysis.quality_level}\n🏷 **Tag:** ${currentAnalysis.internal_label}\n📝 **Feedback:** ${currentAnalysis.creative_feedback}`;
+            const message = `🔥 **НОВОЕ ДЕМО (AI АНАЛИЗ)**\n\n👤 **Артист:** ${contact}\n🎵 **Файл:** ${currentFile.name}\n📈 **Score:** ${currentAnalysis.score}%\n💎 **Verdict:** ${currentAnalysis.quality_level}\n🏷 **Tag:** ${currentAnalysis.label}\n\n📝 **Tech:** ${currentAnalysis.tech_eval}\n🎨 **Creative:** ${currentAnalysis.creative_eval}`;
             
             try {
                 const audioFormData = new FormData();
                 audioFormData.append('chat_id', TG_CHAT_ID);
                 audioFormData.append('audio', currentFile);
+                
+                // Сначала аудио
                 await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, { method: 'POST', body: audioFormData });
+                
+                // Затем текст
                 await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: TG_CHAT_ID, text: message, parse_mode: 'Markdown' })
                 });
+
                 document.getElementById('step-result').classList.add('hidden');
                 document.getElementById('step-success').classList.remove('hidden');
             } catch (e) {
