@@ -43,7 +43,6 @@
             box-shadow: 0 20px 40px rgba(0, 242, 255, 0.1);
         }
 
-        /* Горизонтальный слайдер ростера */
         .roster-scroll-container {
             display: flex;
             overflow-x: auto;
@@ -52,30 +51,11 @@
             scroll-snap-type: x mandatory;
             scrollbar-width: thin;
             scrollbar-color: var(--accent) transparent;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .roster-scroll-container::-webkit-scrollbar {
-            height: 4px;
-        }
-        .roster-scroll-container::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-        }
-        .roster-scroll-container::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 10px;
         }
 
         .artist-slide {
             flex: 0 0 300px;
             scroll-snap-align: start;
-        }
-
-        @media (max-width: 768px) {
-            .artist-slide {
-                flex: 0 0 260px;
-            }
         }
 
         .text-kinetic {
@@ -95,24 +75,6 @@
             transform: translate(-50%, -50%);
         }
 
-        .hero-title-fix {
-            display: inline-block;
-            font-style: italic;
-            line-height: 1.2;
-        }
-
-        .hit-check-container {
-            width: 100%; min-height: 550px;
-            border-radius: 16px; background: #000;
-            display: flex; align-items: center; justify-content: center;
-        }
-        
-        input, textarea {
-            color: white !important;
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
         .modal-overlay {
             background: rgba(0,0,0,0.95);
             backdrop-filter: blur(15px);
@@ -127,15 +89,10 @@
 
         .admin-dashboard-view {
             background: #000;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 2000;
-            display: none;
-            overflow-y: auto;
-            padding: 40px;
+            width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0;
+            z-index: 2000; display: none;
+            overflow-y: auto; padding: 40px;
         }
         .admin-dashboard-view.active { display: block; }
 
@@ -144,55 +101,28 @@
             background-position: center;
         }
 
-        .contact-link {
-            font-size: clamp(1.2rem, 3.5vw, 2.2rem);
-            letter-spacing: 0.1em;
-            transition: all 0.4s ease;
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-        .contact-link:hover {
-            color: var(--accent);
-            letter-spacing: 0.15em;
-            filter: blur(0.5px);
-        }
-
         #copy-toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
+            position: fixed; bottom: 30px; left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: var(--accent);
-            color: black;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 800;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
+            background: var(--accent); color: black;
+            padding: 12px 24px; border-radius: 50px;
+            font-weight: 800; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.2em;
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10000;
         }
-        #copy-toast.active {
-            transform: translateX(-50%) translateY(0);
-        }
+        #copy-toast.active { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
-<body class="selection:bg-[var(--accent)] selection:text-black">
+<body>
     <div class="glow-cursor" id="cursor"></div>
-    <div id="copy-toast">Адрес скопирован в буфер</div>
+    <div id="copy-toast">Адрес скопирован</div>
 
     <header class="fixed top-0 w-full z-[100] px-4 py-6">
         <nav class="max-w-6xl mx-auto bento-card px-6 py-4 flex justify-between items-center border-white/5">
             <div class="text-xl font-extrabold tracking-tighter uppercase flex items-center gap-2">
-                <div class="w-2 h-2 bg-[var(--accent)] animate-pulse"></div>
+                <div class="w-2 h-2 bg-[var(--accent)]"></div>
                 KADRA <span class="text-gray-500">26</span>
-            </div>
-            <div class="hidden lg:flex gap-8 text-[10px] font-bold uppercase tracking-widest">
-                <a href="#artists" class="hover:text-[var(--accent)] transition text-white">Ростер</a>
-                <a href="#hitcheck" class="hover:text-[var(--accent)] transition text-white">A&R Оценка</a>
-                <a href="#collab" class="hover:text-[var(--accent)] transition text-white">Коннект</a>
             </div>
             <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-5 py-2 rounded-full text-[10px] font-black uppercase hover:scale-105 transition">
                 Отправить демо
@@ -201,154 +131,79 @@
     </header>
 
     <main>
-        <!-- Hero Section -->
         <section class="min-h-screen flex flex-col justify-center items-center relative pt-20 px-4">
-            <div class="text-center z-10 max-w-5xl">
-                <h2 class="text-[12px] uppercase tracking-[0.5em] mb-6 text-[var(--accent)] font-bold">Evolutionary Sound Design</h2>
-                <h1 class="text-6xl md:text-9xl font-extrabold tracking-tighter font-syne hero-title-fix text-white">
-                    BEYOND <br> <span class="text-kinetic">REALITY</span>
-                </h1>
-                <p class="text-gray-400 max-w-lg mx-auto text-sm md:text-base mt-8 mb-10 leading-relaxed font-light">
-                    Мы кадрируем будущее музыкальной индустрии, создавая экосистему, где звук становится физическим опытом.
-                </p>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <a href="#hitcheck" class="bento-card px-8 py-4 font-bold uppercase text-xs border-[var(--accent)]/30 text-[var(--accent)] hover:bg-[var(--accent)] hover:text-black transition">Оценить мой трек</a>
-                    <a href="#artists" class="bento-card px-8 py-4 font-bold uppercase text-xs hover:bg-white hover:text-black transition text-white">Ростер артистов</a>
-                </div>
+            <h1 class="text-6xl md:text-9xl font-extrabold tracking-tighter font-syne text-center">
+                BEYOND <br> <span class="text-kinetic">REALITY</span>
+            </h1>
+            <div class="mt-10 flex gap-4">
+                <a href="#hitcheck" class="bento-card px-8 py-4 font-bold uppercase text-xs border-[var(--accent)]/30 text-[var(--accent)] transition">A&R Check</a>
+                <a href="#artists" class="bento-card px-8 py-4 font-bold uppercase text-xs transition text-white">Roster</a>
             </div>
         </section>
 
-        <!-- A&R Section -->
-        <section id="hitcheck" class="py-24 px-4 max-w-7xl mx-auto">
-            <div class="bento-card p-4 md:p-12 border-[var(--accent)]/30 bg-gradient-to-tr from-black to-[var(--accent)]/5">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                    <div class="lg:col-span-4 p-4">
-                        <div class="inline-block px-3 py-1 bg-[var(--accent)]/10 text-[var(--accent)] rounded-full text-[10px] font-bold uppercase tracking-wider mb-6">A&R Pre-Evaluation</div>
-                        <h2 class="text-4xl font-bold font-syne uppercase leading-tight mb-6 text-white">Оценка <br><span class="text-kinetic">виральности</span></h2>
-                        <p class="text-gray-400 text-sm leading-relaxed mb-8">
-                            Отправьте демо на аудит. Система оценит структуру трека, а результат будет отправлен напрямую в A&R отдел KADRA.
-                        </p>
-                    </div>
-                    
-                    <div class="lg:col-span-8">
-                        <div class="hit-check-container bento-card border-white/5 relative p-4" id="tool-container">
-                            <div id="upload-interface" class="w-full max-w-md text-center">
-                                <div onclick="document.getElementById('file-input').click()" class="bento-card p-12 flex flex-col items-center justify-center cursor-pointer group border-dashed border-2 border-white/10 hover:border-[var(--accent)] transition">
-                                    <input type="file" id="file-input" class="hidden" accept="audio/*" onchange="window.startAnalysis(this.files[0])">
-                                    <div class="w-20 h-20 rounded-full bg-[var(--accent)]/5 flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                                        <i class="fas fa-music text-3xl text-[var(--accent)]"></i>
-                                    </div>
-                                    <h3 class="text-lg font-bold uppercase mb-2 text-white">Загрузите Ваш трек</h3>
-                                    <button class="px-8 py-3 bg-white text-black text-[10px] font-black rounded-full uppercase hover:bg-[var(--accent)] transition">Выбрать файл</button>
-                                </div>
-                            </div>
-
-                            <div id="processing-state" class="hidden w-full max-w-md text-center p-12">
-                                <div class="relative w-24 h-24 mx-auto mb-8">
-                                    <div class="absolute inset-0 border-t-2 border-[var(--accent)] rounded-full animate-spin"></div>
-                                </div>
-                                <h3 class="text-lg font-bold uppercase mb-4 text-white">Анализ аудио...</h3>
-                                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                    <div id="progress-bar" class="h-full bg-[var(--accent)] w-0 transition-all duration-300"></div>
-                                </div>
-                            </div>
-
-                            <div id="success-state" class="hidden w-full max-w-md text-center p-12">
-                                <i class="fas fa-check-circle text-5xl text-green-500 mb-6"></i>
-                                <h3 class="text-2xl font-bold uppercase text-white">Демо Принято</h3>
-                                <p class="text-gray-500 text-xs mt-4">Мы свяжемся с вами после прослушивания.</p>
-                                <button onclick="location.reload()" class="mt-8 text-[10px] uppercase font-bold text-[var(--accent)]">Загрузить еще</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Artists Horizontal Slider Section -->
-        <section id="artists" class="py-24 px-4 max-w-7xl mx-auto overflow-hidden">
-            <div class="flex justify-between items-end mb-10">
-                <h2 class="text-4xl font-bold font-syne uppercase italic text-white">Active <span class="text-[var(--accent)]">Roster</span></h2>
-                <div class="flex gap-4 mb-2">
-                    <button onclick="document.getElementById('roster-grid').scrollBy({left: -320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-[var(--accent)] hover:text-[var(--accent)] transition">
-                        <i class="fas fa-chevron-left text-xs"></i>
-                    </button>
-                    <button onclick="document.getElementById('roster-grid').scrollBy({left: 320, behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-[var(--accent)] hover:text-[var(--accent)] transition">
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </button>
-                </div>
-            </div>
-            
+        <section id="artists" class="py-24 px-4 max-w-7xl mx-auto">
+            <h2 class="text-4xl font-bold font-syne uppercase italic text-white mb-10">Active <span class="text-[var(--accent)]">Roster</span></h2>
             <div id="roster-grid" class="roster-scroll-container">
-                <div class="text-gray-500 text-sm italic uppercase tracking-widest py-20 text-center animate-pulse w-full">Загрузка ростера...</div>
+                <div class="text-gray-500 text-sm italic uppercase tracking-widest py-20 text-center w-full">Загрузка...</div>
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section id="collab" class="py-32 px-4 max-w-5xl mx-auto text-center">
-            <h2 class="text-sm font-bold uppercase tracking-[0.4em] mb-12 text-gray-500 italic">Connect via Email</h2>
-            <div class="overflow-hidden">
-                <div id="email-btn" onclick="window.copyEmail()" class="contact-link font-syne font-bold uppercase italic text-white">
-                    thekadrainfo@gmail.com
+        <section id="hitcheck" class="py-24 px-4 max-w-7xl mx-auto">
+            <div class="bento-card p-12 border-[var(--accent)]/30">
+                <h2 class="text-4xl font-bold font-syne uppercase text-center mb-10 text-white">Отправить <span class="text-kinetic">Демо</span></h2>
+                <div class="flex justify-center">
+                    <div id="upload-interface" class="bento-card p-12 border-dashed border-2 border-white/10 w-full max-w-md text-center cursor-pointer hover:border-[var(--accent)] transition" onclick="document.getElementById('file-input').click()">
+                        <input type="file" id="file-input" class="hidden" accept="audio/*" onchange="window.startAnalysis(this.files[0])">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-[var(--accent)] mb-4"></i>
+                        <p class="text-xs uppercase font-bold text-white">Кликните для загрузки MP3/WAV</p>
+                    </div>
+                    <div id="processing-state" class="hidden text-center py-10">
+                        <div class="animate-spin text-[var(--accent)] text-4xl mb-4"><i class="fas fa-circle-notch"></i></div>
+                        <p class="text-xs uppercase font-bold text-white">Анализ частот...</p>
+                    </div>
+                    <div id="success-state" class="hidden text-center py-10">
+                        <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+                        <p class="text-xs uppercase font-bold text-white">Трек в базе A&R</p>
+                    </div>
                 </div>
-                <p class="mt-6 text-[9px] uppercase font-bold tracking-[0.2em] text-gray-600 animate-pulse">Кликни, чтобы скопировать</p>
             </div>
         </section>
     </main>
 
-    <footer class="py-20 border-t border-white/5 relative z-20">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-10">
-            <div class="text-center md:text-left">
-                <div class="text-xl font-black tracking-tighter uppercase mb-2 text-white">KADRA MUSIC</div>
-                <div class="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">Evolutionary Sound Design 2026</div>
-                <div class="mt-4 flex gap-4">
-                    <a href="#" class="text-[9px] uppercase font-bold text-gray-500 hover:text-[var(--accent)]">Studio Services</a>
-                    <button onclick="document.getElementById('admin-modal').classList.add('active')" class="text-[9px] uppercase font-bold text-gray-800 hover:text-white transition">Admin Panel</button>
-                </div>
-            </div>
-            <div class="text-[9px] font-bold uppercase tracking-widest italic opacity-40 text-white font-syne">KADRA LABEL GROUP LTD</div>
-        </div>
+    <footer class="py-10 border-t border-white/5 text-center">
+        <button onclick="document.getElementById('admin-modal').classList.add('active')" class="text-[9px] uppercase font-bold text-gray-700 hover:text-white transition">Admin Panel</button>
     </footer>
 
-    <!-- Admin Login Modal -->
+    <!-- Admin Modals -->
     <div id="admin-modal" class="modal-overlay">
-        <div class="bento-card p-8 w-full max-w-md border-[var(--accent)]/30">
-            <div class="text-center mb-6 text-white">
-                <i class="fas fa-lock text-[var(--accent)] text-2xl mb-4"></i>
-                <h2 class="text-xl font-bold font-syne uppercase tracking-tighter">Admin Access</h2>
-            </div>
-            <input type="password" id="admin-pass" placeholder="Пароль" class="w-full px-4 py-3 rounded-xl mb-4 outline-none border border-white/10 text-white">
-            <button id="login-btn" onclick="window.loginAdmin()" class="w-full bg-[var(--accent)] text-black font-black py-3 rounded-xl uppercase text-[10px]">Войти</button>
-            <button onclick="document.getElementById('admin-modal').classList.remove('active')" class="w-full mt-4 text-[9px] uppercase font-bold text-gray-500">Отмена</button>
+        <div class="bento-card p-8 w-full max-w-md">
+            <h2 class="text-white text-center font-bold uppercase mb-6">Вход в систему</h2>
+            <input type="password" id="admin-pass" placeholder="Пароль" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white mb-4">
+            <button onclick="window.loginAdmin()" class="w-full bg-[var(--accent)] text-black font-bold py-3 rounded-lg uppercase text-xs">Войти</button>
+            <button onclick="document.getElementById('admin-modal').classList.remove('active')" class="w-full mt-4 text-[9px] text-gray-500 uppercase">Закрыть</button>
         </div>
     </div>
 
-    <!-- Admin Dashboard -->
     <div id="admin-dashboard" class="admin-dashboard-view">
-        <div class="max-w-6xl mx-auto pb-20">
-            <div class="flex justify-between items-center mb-12">
-                <div>
-                    <h1 class="text-4xl font-black font-syne uppercase italic text-white tracking-tighter">KADRA <span class="text-kinetic">CONTROL</span></h1>
-                    <p class="text-[10px] uppercase font-bold text-gray-500 tracking-[0.3em]">Cloud Database Enabled</p>
-                </div>
-                <button onclick="document.getElementById('admin-dashboard').classList.remove('active')" class="px-6 py-2 border border-white/10 rounded-full text-[10px] font-bold text-white uppercase hover:border-white transition">Закрыть</button>
+        <div class="max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-2xl font-bold text-white uppercase">KADRA <span class="text-[var(--accent)]">Admin</span></h2>
+                <button onclick="document.getElementById('admin-dashboard').classList.remove('active')" class="text-white uppercase text-[10px] border border-white/10 px-4 py-2 rounded-full">Выйти</button>
             </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
-                <div class="bento-card p-8 border-[var(--accent)]/20">
-                    <h2 class="text-xl font-bold font-syne uppercase text-white mb-6">Добавить в ростер</h2>
-                    <div class="space-y-4">
-                        <input type="text" id="artist-name" placeholder="Имя артиста" class="w-full px-4 py-3 rounded-xl text-sm">
-                        <input type="text" id="artist-genre" placeholder="Жанр / Описание" class="w-full px-4 py-3 rounded-xl text-sm">
-                        <input type="text" id="artist-image" placeholder="URL фотографии" class="w-full px-4 py-3 rounded-xl text-sm">
-                        <button id="add-artist-btn" onclick="window.addArtist()" class="w-full bg-[var(--accent)] text-black font-black py-4 rounded-xl uppercase text-[10px] tracking-widest mt-2 transition active:scale-95">Записать в Базу</button>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bento-card p-6">
+                    <h3 class="text-white font-bold uppercase mb-4 text-sm">Новый Артист</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="artist-name" placeholder="Имя" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white text-xs">
+                        <input type="text" id="artist-genre" placeholder="Жанр" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white text-xs">
+                        <input type="text" id="artist-image" placeholder="URL фото" class="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white text-xs">
+                        <button onclick="window.addArtist()" class="w-full bg-white text-black font-bold py-3 rounded-lg uppercase text-[10px]">Добавить</button>
                     </div>
                 </div>
-
-                <div class="bento-card p-8 border-white/5">
-                    <h2 class="text-xl font-bold font-syne uppercase text-white mb-6">Активный Ростер (Облако)</h2>
-                    <div id="admin-roster-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                    </div>
+                <div class="bento-card p-6">
+                    <h3 class="text-white font-bold uppercase mb-4 text-sm">Управление</h3>
+                    <div id="admin-roster-list" class="space-y-2"></div>
                 </div>
             </div>
         </div>
@@ -357,11 +212,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        /** * ВНИМАНИЕ: Для GitHub Pages замените данные ниже на ваши из Firebase Console 
-         * Project Settings -> Your Apps -> Web App -> Firebase SDK snippet -> Config
-         */
+        // !!! ВАЖНО: Замените "ВАШ_..." на реальные значения из Firebase Console !!!
         const firebaseConfig = {
             apiKey: "ВАШ_API_KEY",
             authDomain: "ВАШ_PROJECT.firebaseapp.com",
@@ -371,175 +224,127 @@
             appId: "ВАШ_APP_ID"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Используем константу для пути в базе данных (можете изменить на свой)
-        const dbPath = "kadra_label_v1";
+        // Проверка заполненности конфига перед инициализацией
+        const isConfigValid = firebaseConfig.apiKey !== "ВАШ_API_KEY" && firebaseConfig.apiKey !== "";
+
+        let app, auth, db;
+        if (isConfigValid) {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                initFirebase();
+            } catch (err) {
+                console.error("Firebase init error:", err);
+            }
+        } else {
+            console.warn("Firebase Config не заполнен. Функции БД отключены.");
+            document.getElementById('roster-grid').innerHTML = '<p class="w-full text-center text-gray-500 uppercase text-[10px]">Конфигурация Firebase не найдена</p>';
+        }
 
         let currentUser = null;
         let rosterData = [];
 
-        // Слушатель состояния входа
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                subscribeToRoster();
-            } else {
-                // Анонимный вход, если пользователь не авторизован
-                signInAnonymously(auth).catch(err => console.error("Auth error:", err));
-            }
-        });
+        function initFirebase() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log("Успешная авторизация:", user.uid);
+                    currentUser = user;
+                    subscribeToRoster();
+                } else {
+                    console.log("Попытка входа...");
+                    signInAnonymously(auth).catch(err => {
+                        console.error("ОШИБКА СЕТИ ИЛИ КОНФИГА:", err.code);
+                        if (err.code === 'auth/network-request-failed') {
+                            console.error("Решение: Проверьте интернет или добавьте ваш домен в Authorized Domains в Firebase Console.");
+                        }
+                    });
+                }
+            });
+        }
 
-        // Подписка на данные из Firestore
         function subscribeToRoster() {
-            // Путь к коллекции: kadra_label_v1/public/roster
-            const rosterRef = collection(db, dbPath, 'public', 'roster');
-            onSnapshot(rosterRef, (snapshot) => {
-                rosterData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderRoster();
-                renderAdminRoster();
-            }, (error) => console.error("Firestore Error:", error));
+            const ref = collection(db, "kadra_roster");
+            onSnapshot(ref, (snap) => {
+                rosterData = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderUI();
+            }, (err) => {
+                console.error("Ошибка прав доступа (Firestore Rules):", err);
+            });
         }
 
-        // Отрисовка публичного ростера
-        function renderRoster() {
+        function renderUI() {
             const grid = document.getElementById('roster-grid');
-            if (rosterData.length === 0) {
-                grid.innerHTML = `<div class="text-center text-gray-600 uppercase text-[10px] tracking-widest py-10 w-full">Ростер пока пуст</div>`;
-                return;
-            }
-            grid.innerHTML = rosterData.map(artist => `
-                <div class="artist-slide">
-                    <div class="bento-card h-80 flex flex-col justify-end group overflow-hidden relative artist-card-bg" style="background-image: url('${artist.image}')">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition"></div>
-                        <div class="relative z-10 p-6">
-                            <h3 class="text-2xl font-bold uppercase italic text-white group-hover:text-[var(--accent)] transition">${artist.name}</h3>
-                            <p class="text-[var(--accent)] text-[10px] uppercase font-bold tracking-widest mt-1">${artist.genre}</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Отрисовка списка в админ-панели
-        function renderAdminRoster() {
-            const list = document.getElementById('admin-roster-list');
-            if (!list) return;
-            list.innerHTML = rosterData.map(artist => `
-                <div class="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl group">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-lg artist-card-bg" style="background-image: url('${artist.image}')"></div>
-                        <div>
-                            <div class="text-xs font-bold text-white uppercase tracking-tight">${artist.name}</div>
-                            <div class="text-[9px] text-gray-500 uppercase">${artist.genre}</div>
-                        </div>
-                    </div>
-                    <button onclick="window.deleteArtist('${artist.id}')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition">
-                        <i class="fas fa-trash-alt text-[10px]"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // --- Глобальные функции ---
-
-        window.loginAdmin = () => {
-            const passField = document.getElementById('admin-pass');
-            const pass = passField.value;
-            if (pass === 'admin2026') {
-                document.getElementById('admin-modal').classList.remove('active');
-                document.getElementById('admin-dashboard').classList.add('active');
-                passField.value = '';
+            const adminList = document.getElementById('admin-roster-list');
+            
+            if(rosterData.length === 0) {
+                grid.innerHTML = '<p class="w-full text-center text-gray-600 uppercase text-[10px]">Ростер пуст</p>';
             } else {
-                alert('Неверный пароль');
+                grid.innerHTML = rosterData.map(a => `
+                    <div class="artist-slide">
+                        <div class="bento-card h-80 artist-card-bg relative overflow-hidden group" style="background-image: url('${a.image}')">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition"></div>
+                            <div class="absolute bottom-6 left-6">
+                                <h3 class="text-white font-bold uppercase text-xl">${a.name}</h3>
+                                <p class="text-[var(--accent)] font-bold text-[9px] uppercase tracking-widest">${a.genre}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                adminList.innerHTML = rosterData.map(a => `
+                    <div class="flex justify-between items-center bg-white/5 p-2 rounded-lg">
+                        <span class="text-[10px] text-white uppercase">${a.name}</span>
+                        <button onclick="window.deleteArtist('${a.id}')" class="text-red-500 text-[10px] uppercase">Удалить</button>
+                    </div>
+                `).join('');
             }
-        };
+        }
 
         window.addArtist = async () => {
-            if (!currentUser) return alert("Подождите авторизации...");
+            if(!currentUser) return alert("Ошибка: Нет подключения к базе данных. Проверьте API Key и настройки домена.");
             const name = document.getElementById('artist-name').value;
             const genre = document.getElementById('artist-genre').value;
-            const image = document.getElementById('artist-image').value || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop';
+            const image = document.getElementById('artist-image').value || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=400";
             
-            if(!name || !genre) return alert('Заполните поля');
-
-            const btn = document.getElementById('add-artist-btn');
-            const originalText = btn.innerText;
-            btn.innerText = "СОХРАНЕНИЕ...";
-            btn.disabled = true;
+            if(!name || !genre) return alert("Заполните поля");
 
             try {
-                await addDoc(collection(db, dbPath, 'public', 'roster'), {
-                    name, genre, image, createdAt: new Date()
-                });
+                await addDoc(collection(db, "kadra_roster"), { name, genre, image, date: new Date() });
                 document.getElementById('artist-name').value = '';
                 document.getElementById('artist-genre').value = '';
-                document.getElementById('artist-image').value = '';
             } catch (e) {
                 console.error(e);
-                alert("Ошибка доступа. Проверьте правила (Rules) в Firebase Firestore.");
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
+                alert("Ошибка: Проверьте Firestore Rules.");
             }
         };
 
         window.deleteArtist = async (id) => {
-            if (!currentUser) return;
-            if(confirm('Удалить артиста из базы?')) {
-                try {
-                    await deleteDoc(doc(db, dbPath, 'public', 'roster', id));
-                } catch (e) {
-                    console.error(e);
-                    alert("Ошибка при удалении");
-                }
-            }
+            if(confirm("Удалить?")) await deleteDoc(doc(db, "kadra_roster", id));
         };
 
-        window.copyEmail = () => {
-            const email = "thekadrainfo@gmail.com";
-            const textArea = document.createElement("textarea");
-            textArea.value = email;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            textArea.style.top = "0";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                const toast = document.getElementById('copy-toast');
-                toast.classList.add('active');
-                setTimeout(() => toast.classList.remove('active'), 2500);
-            } catch (err) {
-                console.error('Ошибка копирования:', err);
-            }
-            document.body.removeChild(textArea);
+        window.loginAdmin = () => {
+            if(document.getElementById('admin-pass').value === 'admin2026') {
+                document.getElementById('admin-modal').classList.remove('active');
+                document.getElementById('admin-dashboard').classList.add('active');
+            } else alert("Неверно");
         };
 
         window.startAnalysis = (file) => {
-            if(!file) return;
             document.getElementById('upload-interface').classList.add('hidden');
             document.getElementById('processing-state').classList.remove('hidden');
-            let progress = 0;
-            const bar = document.getElementById('progress-bar');
-            const interval = setInterval(() => {
-                progress += 3;
-                bar.style.width = progress + '%';
-                if(progress >= 100) {
-                    clearInterval(interval);
-                    document.getElementById('processing-state').classList.add('hidden');
-                    document.getElementById('success-state').classList.remove('hidden');
-                }
-            }, 40);
+            setTimeout(() => {
+                document.getElementById('processing-state').classList.add('hidden');
+                document.getElementById('success-state').classList.remove('hidden');
+            }, 2000);
         };
 
-        const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+            const cursor = document.getElementById('cursor');
+            if (cursor) {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            }
         });
     </script>
 </body>
