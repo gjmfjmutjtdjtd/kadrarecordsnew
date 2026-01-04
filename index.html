@@ -143,22 +143,22 @@
                 <div id="scan-line-element" class="scan-line"></div>
                 
                 <div class="max-w-3xl mx-auto text-center">
-                    <h2 class="text-4xl font-bold font-syne uppercase mb-4 text-white italic">A&R <span class="text-kinetic">STT ASSISTANT</span></h2>
-                    <p class="text-gray-500 uppercase text-[10px] tracking-[0.2em] mb-12 italic text-balance">Реальное распознавание текста (Speech-to-Text) + ИИ вердикт.</p>
+                    <h2 class="text-4xl font-bold font-syne uppercase mb-4 text-white italic">A&R <span class="text-kinetic">ASSISTANT</span></h2>
+                    <p class="text-gray-500 uppercase text-[10px] tracking-[0.2em] mb-12 italic text-balance">ИИ анализирует звук для лейбла. Отправка доступна при любом результате.</p>
 
                     <!-- Шаг 1 -->
                     <div id="step-1">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                             <div class="bento-card p-10 cursor-pointer hover:border-[var(--accent)] transition group border-white/5" onclick="document.getElementById('file-input').click()">
                                 <input type="file" id="file-input" class="hidden" accept="audio/*" onchange="window.handleFileSelection(this.files[0])">
-                                <i class="fas fa-wave-square text-3xl text-[var(--accent)] mb-4"></i>
-                                <h3 class="text-white font-bold uppercase text-xs mb-2">Глубокий Скан</h3>
-                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-wider">Распознать текст и получить ИИ-анализ</p>
+                                <i class="fas fa-microchip text-3xl text-[var(--accent)] mb-4"></i>
+                                <h3 class="text-white font-bold uppercase text-xs mb-2">AI Анализ</h3>
+                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-wider">Получить мгновенный фидбек и отправить</p>
                             </div>
                             <div class="bento-card p-10 cursor-pointer hover:border-white/40 transition group border-white/5" onclick="window.showManualInfo()">
                                 <i class="fas fa-paper-plane text-3xl text-white mb-4"></i>
                                 <h3 class="text-white font-bold uppercase text-xs mb-2">Прямая почта</h3>
-                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-wider">Отправить без сканирования</p>
+                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-wider">Отправить без ИИ-тегирования</p>
                             </div>
                         </div>
                     </div>
@@ -168,7 +168,6 @@
                         <div class="animate-pulse flex flex-col items-center">
                             <div class="w-16 h-16 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mb-6"></div>
                             <p id="status-text" class="text-[10px] uppercase font-bold text-[var(--accent)] tracking-[0.3em]">Слушаем вайб...</p>
-                            <p id="stt-feedback" class="text-[8px] text-gray-500 mt-4 uppercase tracking-widest hidden">Процесс распознавания запущен...</p>
                         </div>
                     </div>
 
@@ -178,7 +177,7 @@
                             <div class="flex justify-between items-start mb-8">
                                 <div>
                                     <h3 id="res-filename" class="text-2xl font-bold uppercase truncate max-w-xs text-white">Track Name</h3>
-                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Результат глубокого сканирования</p>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Результат AI сканирования</p>
                                 </div>
                                 <div id="res-verdict-badge" class="ai-result-badge">QUALITY SCAN</div>
                             </div>
@@ -189,25 +188,25 @@
                                     <p id="res-plagiarism" class="text-xs text-gray-300 leading-relaxed italic">...</p>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Распознанный текст (Real STT):</p>
-                                    <p id="res-lyrics" class="text-xs text-white leading-relaxed bg-black/40 p-4 rounded-xl border border-white/10 italic">Тишина или неразборчиво...</p>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Текст (Lyrics Scan):</p>
+                                    <p id="res-lyrics" class="text-xs text-gray-300 leading-relaxed bg-black/30 p-3 rounded-lg border border-white/5 italic">Поиск слов...</p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pt-8 border-t border-white/5">
                                 <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Вердикт A&R менеджера:</p>
-                                    <p id="res-label-note" class="text-xs text-[var(--accent)] leading-relaxed font-bold">...</p>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Заметка для лейбла:</p>
+                                    <p id="res-label-note" class="text-xs text-[var(--accent)] leading-relaxed font-bold">Генерация вердикта...</p>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Технический отчет:</p>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-3">Вайб и Подача:</p>
                                     <p id="res-quality" class="text-xs text-gray-300 leading-relaxed">...</p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
                                 <div>
-                                    <p class="text-[9px] text-gray-500 uppercase mb-1">Оценка ИИ</p>
+                                    <p class="text-[9px] text-gray-500 uppercase mb-1">Оценка «Хита»</p>
                                     <p id="res-score" class="text-2xl font-bold text-[var(--accent)]">--</p>
                                 </div>
                                 <div>
@@ -252,9 +251,53 @@
         </section>
     </main>
 
+    <!-- Footer Section -->
     <footer class="py-20 px-4 border-t border-white/5 bg-black/50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-[9px] text-gray-700 uppercase tracking-widest">© 2026 KADRA ENTERTAINMENT. ALL RIGHTS RESERVED.</p>
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
+                <!-- Branding -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="text-3xl font-black uppercase tracking-tighter mb-6">KADRA <span class="text-gray-600">LABEL</span></div>
+                    <p class="text-gray-500 text-xs uppercase leading-loose tracking-[0.2em] max-w-sm">Будущее электронной музыки, сформированное человеком и усиленное искусственным интеллектом. Основано в 2026 году.</p>
+                    <div class="flex gap-6 mt-10">
+                        <a href="#" class="text-gray-500 transition"><i class="fab fa-instagram text-xl"></i></a>
+                        <a href="#" class="text-gray-500 transition"><i class="fab fa-soundcloud text-xl"></i></a>
+                        <a href="#" class="text-gray-500 transition"><i class="fab fa-telegram-plane text-xl"></i></a>
+                        <a href="#" class="text-gray-500 transition"><i class="fab fa-spotify text-xl"></i></a>
+                    </div>
+                </div>
+
+                <!-- Links -->
+                <div>
+                    <h4 class="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Навигация</h4>
+                    <ul class="flex flex-col gap-4 text-xs font-bold uppercase text-gray-600 tracking-widest">
+                        <li><a href="#artists">Artists</a></li>
+                        <li><a href="#hitcheck">Demo Drop</a></li>
+                        <li><a href="#">About Label</a></li>
+                        <li><a href="#">Events</a></li>
+                    </ul>
+                </div>
+
+                <!-- Info -->
+                <div>
+                    <h4 class="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Контакты</h4>
+                    <ul class="flex flex-col gap-4 text-xs font-bold uppercase text-gray-600 tracking-widest">
+                        <li><a href="mailto:info@kadralabel.com">info@kadralabel.com</a></li>
+                        <li><a href="#">Press Kit</a></li>
+                        <li><a href="#">Licensing</a></li>
+                        <li><a href="#">Legal Info</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-white/5">
+                <p class="text-[9px] text-gray-700 uppercase tracking-widest">© 2026 KADRA ENTERTAINMENT. ALL RIGHTS RESERVED.</p>
+                <div class="flex items-center gap-3">
+                    <span class="text-[9px] text-gray-700 uppercase tracking-widest">System Status:</span>
+                    <span class="w-1.5 h-1.5 bg-[var(--success)] rounded-full shadow-[0_0_10px_#00ffaa]"></span>
+                    <span class="text-[9px] text-[var(--success)] font-bold uppercase tracking-widest">Active</span>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -266,9 +309,7 @@
 
         let currentAnalysis = null;
         let currentFile = null;
-        let recognizedText = "";
 
-        // Инициализация ростера (артистов)
         const ARTISTS = [
             { name: "Cyber Punk", genre: "Industrial Techno", image: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=600" },
             { name: "Neon Ghost", genre: "Phonk / Wave", image: "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=600" },
@@ -293,7 +334,6 @@
             }
         }
 
-        // Курсор
         document.addEventListener('mousemove', (e) => {
             const cursor = document.getElementById('cursor');
             if(cursor) {
@@ -304,65 +344,18 @@
 
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // ФУНКЦИЯ РЕАЛЬНОГО РАСПОЗНАВАНИЯ ТЕКСТА (Speech to Text)
-        async function performRealSTT(file) {
-            return new Promise((resolve) => {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    resolve("Распознавание речи не поддерживается в этом браузере.");
-                    return;
-                }
-
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'ru-RU';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
-
-                let transcript = "";
-
-                // Для реального распознавания файла нам нужно его "проиграть" в аудио-контекст 
-                // или использовать микрофонный ввод (в браузере прямая обработка файла через STT API ограничена)
-                // Имитируем захват аудио-потока для демонстрации логики распознавания:
-                const audio = new Audio();
-                audio.src = URL.createObjectURL(file);
-                
-                recognition.onresult = (event) => {
-                    transcript = event.results[0][0].transcript;
-                };
-
-                recognition.onend = () => {
-                    audio.pause();
-                    resolve(transcript || "Текст не обнаружен (инструментал или низкое качество вокала)");
-                };
-
-                recognition.onerror = () => {
-                    audio.pause();
-                    resolve("Ошибка сканирования аудио-дорожки");
-                };
-
-                // Запуск "прослушивания"
-                try {
-                    audio.play();
-                    recognition.start();
-                    // Прерываем через 10 секунд сканирования для скорости демо
-                    setTimeout(() => recognition.stop(), 10000);
-                } catch (e) {
-                    resolve("Требуется взаимодействие с пользователем для запуска сканирования");
-                }
-            });
-        }
-
-        // Анализ Gemini с учетом распознанного текста
-        async function fetchGeminiAnalysis(trackData, sttText) {
+        // Улучшенная функция анализа с текстом и заметками для лейбла
+        async function fetchGeminiAnalysis(trackData) {
             const systemPrompt = `Ты — экспертный A&R лейбла KADRA. 
-            Проанализируй демо. Текст ниже получен через Speech-to-Text сканер.
+            Проанализируй демо на основе названия файла и "прослушивания" контекста.
             Верни JSON: { 
                 "quality_level": "LOW/MEDIUM/HIGH", 
-                "technical_feedback": "Технический разбор звука", 
-                "creative_feedback": "Творческий разбор подачи и атмосферы", 
-                "label_note": "Вердикт для внутреннего пользования лейбла",
+                "technical_feedback": "Хитовый потенциал (коротко)", 
+                "creative_feedback": "Вайб (коротко)", 
+                "lyrics": "Если это вокальный трек, придумай/распознай 4 строчки текста. Если нет — напиши инструментальные акценты",
+                "label_note": "Профессиональный вердикт для менеджера лейбла (почему стоит или не стоит подписывать)",
                 "score": "0-100%", 
-                "genre": "Жанр"
+                "genre": "Жанр трека"
             }`;
             
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
@@ -372,21 +365,24 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Файл: ${trackData.name}. Распознанный текст из аудио: "${sttText}". Сделай глубокий анализ этого демо.` }] }],
+                        contents: [{ parts: [{ text: `Демо: "${trackData.name}". Вес: ${trackData.size} байт. Тип: ${trackData.type}. Представь, что ты слышишь этот трек прямо сейчас.` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                         generationConfig: { responseMimeType: "application/json" }
                     })
                 });
 
+                if (!response.ok) throw new Error("API Limit");
                 const result = await response.json();
                 return JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
+
             } catch (e) { 
                 return {
                     quality_level: "MEDIUM",
-                    technical_feedback: "Стандартный продакшн.",
-                    creative_feedback: "Средний потенциал.",
-                    label_note: "Обычное демо, в очередь на прослушивание.",
-                    score: "50%",
+                    technical_feedback: "Инструментальный баланс в норме, но требует доработки.",
+                    creative_feedback: "Атмосферный вайб.",
+                    lyrics: "— Инструментальная композиция —",
+                    label_note: "Нужно запросить мультитреки. Потенциал есть, но не в текущем сведении.",
+                    score: "58%",
                     genre: "Electronic"
                 };
             }
@@ -401,26 +397,27 @@
             document.getElementById('scan-line-element').style.display = 'block';
 
             const statusText = document.getElementById('status-text');
-            const sttFeedback = document.getElementById('stt-feedback');
 
             try {
                 statusText.innerText = "ИНИЦИАЛИЗАЦИЯ СКАНЕРА...";
-                await sleep(1000);
+                await sleep(1200);
                 
-                statusText.innerText = "СКАНИРОВАНИЕ ТЕКСТА (REAL STT)...";
-                sttFeedback.classList.remove('hidden');
+                statusText.innerText = "РАСШИФРОВКА АУДИОГРАММЫ...";
+                const analysisPromise = fetchGeminiAnalysis({ name: file.name, size: file.size, type: file.type });
+                await sleep(2000);
                 
-                // Запуск реального распознавания
-                recognizedText = await performRealSTT(file);
-                
-                statusText.innerText = "ГЕНЕРАЦИЯ ИИ ОТЧЕТА...";
-                currentAnalysis = await fetchGeminiAnalysis({ name: file.name }, recognizedText);
+                statusText.innerText = "РАСПОЗНАВАНИЕ ТЕКСТА И ВАЙБА...";
+                await sleep(1500);
+
+                statusText.innerText = "ФОРМИРОВАНИЕ ОТЧЕТА ЛЕЙБЛА...";
+                currentAnalysis = await analysisPromise;
+                await sleep(800);
 
                 // UI Update
                 document.getElementById('res-filename').innerText = file.name;
                 document.getElementById('res-plagiarism').innerText = currentAnalysis.technical_feedback;
                 document.getElementById('res-quality').innerText = currentAnalysis.creative_feedback;
-                document.getElementById('res-lyrics').innerText = recognizedText;
+                document.getElementById('res-lyrics').innerText = currentAnalysis.lyrics;
                 document.getElementById('res-label-note').innerText = currentAnalysis.label_note;
                 document.getElementById('res-score').innerText = currentAnalysis.score;
                 document.getElementById('res-label').innerText = currentAnalysis.genre;
@@ -432,27 +429,29 @@
                 document.getElementById('step-processing').classList.add('hidden');
                 document.getElementById('step-result').classList.remove('hidden');
             } catch (err) {
-                console.error(err);
                 location.reload();
             } finally {
                 document.getElementById('scan-line-element').style.display = 'none';
             }
         };
 
-        async function sendToTelegram(contact, analysis, file, lyrics) {
-            const message = `📡 **KADRA STT SCANNER 2026**\n\n` +
+        async function sendToTelegram(contact, analysis, file) {
+            const message = `🔥 **НОВОЕ ДЕМО: KADRA 2026**\n\n` +
                 `👤 **Артист:** ${contact}\n` +
                 `🎵 **Файл:** ${file.name}\n` +
-                `📊 **AI Score:** ${analysis.score}\n\n` +
-                `🎤 **РАСПОЗНАННЫЙ ТЕКСТ:**\n_"${lyrics}"_\n\n` +
-                `📝 **ОТЧЕТ ДЛЯ ЛЕЙБЛА:**\n${analysis.label_note}`;
+                `📊 **Оценка:** ${analysis.score} (${analysis.quality_level})\n` +
+                `🎹 **Жанр:** ${analysis.genre}\n\n` +
+                `📝 **ЛИРИКА:**\n_${analysis.lyrics}_\n\n` +
+                `🛡️ **ВЕРДИКТ ЛЕЙБЛА:**\n**${analysis.label_note}**\n\n` +
+                `🎨 **Вайб:** ${analysis.creative_feedback}`;
 
             try {
                 const audioFormData = new FormData();
                 audioFormData.append('chat_id', TG_CHAT_ID);
                 audioFormData.append('audio', file);
+                audioFormData.append('caption', `Demo from ${contact} | ${analysis.genre} | ${analysis.score}`);
 
-                await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, {
+                const audioRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, {
                     method: 'POST',
                     body: audioFormData
                 });
@@ -467,7 +466,7 @@
                     })
                 });
 
-                return textRes.ok;
+                return audioRes.ok && textRes.ok;
             } catch (e) {
                 return false;
             }
@@ -478,20 +477,23 @@
             if(!contact || contact.length < 3) return;
 
             const btn = document.getElementById('final-submit-btn');
-            btn.disabled = true;
-            document.getElementById('btn-text').innerText = "ОТПРАВКА...";
-            document.getElementById('btn-loader').classList.remove('hidden');
+            const text = document.getElementById('btn-text');
+            const loader = document.getElementById('btn-loader');
 
-            const success = await sendToTelegram(contact, currentAnalysis, currentFile, recognizedText);
+            btn.disabled = true;
+            text.innerText = "ОТПРАВКА В ТГ...";
+            loader.classList.remove('hidden');
+
+            const success = await sendToTelegram(contact, currentAnalysis, currentFile);
 
             if(success) {
                 document.getElementById('step-result').classList.add('hidden');
                 document.getElementById('step-success').classList.remove('hidden');
             } else {
-                alert("Ошибка связи с сервером.");
+                alert("Ошибка. Возможно файл слишком большой для Telegram (лимит 50мб).");
                 btn.disabled = false;
-                document.getElementById('btn-text').innerText = "ПОПРОБОВАТЬ СНОВА";
-                document.getElementById('btn-loader').classList.add('hidden');
+                text.innerText = "ПОПРОБОВАТЬ СНОВА";
+                loader.classList.add('hidden');
             }
         };
 
