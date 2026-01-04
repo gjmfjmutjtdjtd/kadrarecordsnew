@@ -331,6 +331,9 @@
             }
         });
 
+        // Функция искусственной задержки для реалистичности
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
         // Исправленная функция анализа
         async function fetchGeminiAnalysis(trackData) {
             const systemPrompt = `Ты — ведущий A&R лейбла KADRA. Твоя задача — оценить демо-файл по СТРОГИМ КРИТЕРИЯМ ХИТА. 
@@ -392,8 +395,21 @@
             document.getElementById('step-processing').classList.remove('hidden');
             document.getElementById('scan-line-element').style.display = 'block';
 
+            const statusText = document.getElementById('status-text');
+
             try {
-                currentAnalysis = await fetchGeminiAnalysis({ name: file.name });
+                // Имитация процесса анализа (поэтапно)
+                statusText.innerText = "ЧТЕНИЕ АУДИОПОТОКА...";
+                await sleep(1500);
+                
+                statusText.innerText = "НЕЙРО-СКАНИРОВАНИЕ ВАЙБА...";
+                // Запускаем реальный запрос параллельно со второй частью имитации
+                const analysisPromise = fetchGeminiAnalysis({ name: file.name });
+                await sleep(1500);
+                
+                statusText.innerText = "ПРОВЕРКА ХИТОВОГО ПОТЕНЦИАЛА...";
+                currentAnalysis = await analysisPromise;
+                await sleep(1000);
 
                 // Update Results UI
                 document.getElementById('res-filename').innerText = file.name;
