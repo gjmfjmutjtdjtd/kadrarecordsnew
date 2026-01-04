@@ -200,7 +200,7 @@
                                 </div>
                                 <div>
                                     <p class="text-[9px] text-gray-500 uppercase mb-1">Метка</p>
-                                    <p id="res-label" class="text-xl font-bold text-white">--</p>
+                                    <p id="res-label" class="text-xl font-bold text-white uppercase">--</p>
                                 </div>
                             </div>
                         </div>
@@ -240,41 +240,28 @@
         </section>
     </main>
 
-    <!-- Footer Section -->
     <footer class="py-20 px-4 border-t border-white/5 bg-black/50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
-                <!-- Branding -->
                 <div class="col-span-1 md:col-span-2">
                     <div class="text-3xl font-black uppercase tracking-tighter mb-6">KADRA <span class="text-gray-600">LABEL</span></div>
                     <p class="text-gray-500 text-xs uppercase leading-loose tracking-[0.2em] max-w-sm">Будущее электронной музыки, сформированное человеком и усиленное искусственным интеллектом. Основано в 2026 году.</p>
-                    <div class="flex gap-6 mt-10">
-                        <a href="#" class="text-gray-500 transition"><i class="fab fa-instagram text-xl"></i></a>
-                        <a href="#" class="text-gray-500 transition"><i class="fab fa-soundcloud text-xl"></i></a>
-                        <a href="#" class="text-gray-500 transition"><i class="fab fa-telegram-plane text-xl"></i></a>
-                        <a href="#" class="text-gray-500 transition"><i class="fab fa-spotify text-xl"></i></a>
-                    </div>
                 </div>
 
-                <!-- Links -->
                 <div>
                     <h4 class="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Навигация</h4>
                     <ul class="flex flex-col gap-4 text-xs font-bold uppercase text-gray-600 tracking-widest">
                         <li><a href="#artists">Artists</a></li>
                         <li><a href="#hitcheck">Demo Drop</a></li>
                         <li><a href="#">About Label</a></li>
-                        <li><a href="#">Events</a></li>
                     </ul>
                 </div>
 
-                <!-- Info -->
                 <div>
                     <h4 class="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Контакты</h4>
                     <ul class="flex flex-col gap-4 text-xs font-bold uppercase text-gray-600 tracking-widest">
                         <li><a href="mailto:info@kadralabel.com">info@kadralabel.com</a></li>
                         <li><a href="#">Press Kit</a></li>
-                        <li><a href="#">Licensing</a></li>
-                        <li><a href="#">Legal Info</a></li>
                     </ul>
                 </div>
             </div>
@@ -331,10 +318,8 @@
             }
         });
 
-        // Функция искусственной задержки для реалистичности
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // Исправленная функция анализа
         async function fetchGeminiAnalysis(trackData) {
             const systemPrompt = `Ты — ведущий A&R лейбла KADRA. Твоя задача — оценить демо-файл по СТРОГИМ КРИТЕРИЯМ ХИТА. 
             Верни строго JSON объект без лишних слов: { 
@@ -354,32 +339,18 @@
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: `Проанализируй демо с названием: "${trackData.name}". Оцени потенциал на основе названия и контекста электронной музыки.` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
-                        generationConfig: { 
-                            responseMimeType: "application/json"
-                        }
+                        generationConfig: { responseMimeType: "application/json" }
                     })
                 });
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error?.message || "API Error");
-                }
-
                 const result = await response.json();
                 const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                
-                if (textResponse) {
-                    return JSON.parse(textResponse);
-                }
-                throw new Error("Empty Response");
-
+                return JSON.parse(textResponse);
             } catch (e) { 
-                console.error("Gemini Critical Error:", e);
-                // Запасной вариант если API упало
                 return {
                     quality_level: "MEDIUM",
-                    technical_feedback: "Инструментал или демо с выраженным характером. Требуется ручной осмотр A&R менеджером.",
-                    creative_feedback: "Вайб стабильный. Структура позволяет работать над хитовым потенциалом в студии.",
+                    technical_feedback: "Инструментал или демо с выраженным характером. Требуется ручной осмотр менеджером.",
+                    creative_feedback: "Вайб стабильный. Структура позволяет работать над хитовым потенциалом.",
                     score: "65%",
                     internal_label: "A&R Review Required"
                 };
@@ -390,7 +361,6 @@
             if (!file) return;
             currentFile = file;
             
-            // UI State
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-processing').classList.remove('hidden');
             document.getElementById('scan-line-element').style.display = 'block';
@@ -398,20 +368,16 @@
             const statusText = document.getElementById('status-text');
 
             try {
-                // Имитация процесса анализа (поэтапно)
                 statusText.innerText = "ЧТЕНИЕ АУДИОПОТОКА...";
                 await sleep(1500);
                 
                 statusText.innerText = "НЕЙРО-СКАНИРОВАНИЕ ВАЙБА...";
-                // Запускаем реальный запрос параллельно со второй частью имитации
                 const analysisPromise = fetchGeminiAnalysis({ name: file.name });
                 await sleep(1500);
                 
                 statusText.innerText = "ПРОВЕРКА ХИТОВОГО ПОТЕНЦИАЛА...";
                 currentAnalysis = await analysisPromise;
-                await sleep(1000);
 
-                // Update Results UI
                 document.getElementById('res-filename').innerText = file.name;
                 document.getElementById('res-plagiarism').innerText = currentAnalysis.technical_feedback;
                 document.getElementById('res-quality').innerText = currentAnalysis.creative_feedback;
@@ -425,8 +391,6 @@
                 document.getElementById('step-processing').classList.add('hidden');
                 document.getElementById('step-result').classList.remove('hidden');
             } catch (err) {
-                console.error(err);
-                alert("Ошибка анализа. Попробуйте другой файл или обновите страницу.");
                 location.reload();
             } finally {
                 document.getElementById('scan-line-element').style.display = 'none';
@@ -434,54 +398,38 @@
         };
 
         async function sendToTelegram(contact, analysis, file) {
-            const message = `🔥 **НОВАЯ ДЕМКА: KADRA 2026**\n\n👤 **Контакт:** ${contact}\n🎵 **Файл:** ${file.name}\n📊 **Hit Score:** ${analysis.score} (${analysis.quality_level})\n🏷️ **Label:** ${analysis.internal_label}\n\n📝 **Хитовость:** _${analysis.technical_feedback}_\n\n🎨 **Подача/Вайб:** _${analysis.creative_feedback}_`;
+            const message = `🔥 **НОВАЯ ДЕМКА: KADRA 2026**\n\n👤 **Контакт:** ${contact}\n🎵 **Файл:** ${file.name}\n📊 **Score:** ${analysis.score} (${analysis.quality_level})\n🏷️ **Label:** ${analysis.internal_label}\n\n📝 **Хитовость:** _${analysis.technical_feedback}_\n\n🎨 **Вайб:** _${analysis.creative_feedback}_`;
 
             try {
-                // Сначала отправляем файл
                 const audioFormData = new FormData();
                 audioFormData.append('chat_id', TG_CHAT_ID);
                 audioFormData.append('audio', file);
-                audioFormData.append('caption', `Demo: ${file.name} | Score: ${analysis.score}`);
 
                 const audioRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, {
                     method: 'POST',
                     body: audioFormData
                 });
 
-                // Затем подробный отчет
                 const textRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: TG_CHAT_ID,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
+                    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: message, parse_mode: 'Markdown' })
                 });
 
                 return audioRes.ok && textRes.ok;
             } catch (e) {
-                console.error("TG Send Error:", e);
                 return false;
             }
         }
 
         window.submitFinal = async () => {
             const contact = document.getElementById('artist-contact').value;
-            if(!contact || contact.length < 3) {
-                const input = document.getElementById('artist-contact');
-                input.classList.add('border-red-500');
-                setTimeout(() => input.classList.remove('border-red-500'), 2000);
-                return;
-            }
+            if(!contact || contact.length < 3) return;
 
             const btn = document.getElementById('final-submit-btn');
-            const text = document.getElementById('btn-text');
-            const loader = document.getElementById('btn-loader');
-
             btn.disabled = true;
-            text.innerText = "ОТПРАВЛЯЕМ В ТЕЛЕГРАМ...";
-            loader.classList.remove('hidden');
+            document.getElementById('btn-text').innerText = "ОТПРАВЛЯЕМ...";
+            document.getElementById('btn-loader').classList.remove('hidden');
 
             const success = await sendToTelegram(contact, currentAnalysis, currentFile);
 
@@ -489,10 +437,10 @@
                 document.getElementById('step-result').classList.add('hidden');
                 document.getElementById('step-success').classList.remove('hidden');
             } else {
-                alert("Ошибка сети. Проверьте размер файла (до 50МБ) или интернет.");
+                alert("Ошибка отправки.");
                 btn.disabled = false;
-                text.innerText = "ПОПРОБОВАТЬ СНОВА";
-                loader.classList.add('hidden');
+                document.getElementById('btn-text').innerText = "ПОПРОБОВАТЬ СНОВА";
+                document.getElementById('btn-loader').classList.add('hidden');
             }
         };
 
