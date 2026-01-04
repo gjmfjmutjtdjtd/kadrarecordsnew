@@ -218,7 +218,7 @@
                     Future <br><span class="cyan-gradient">Audio</span>
                 </h1>
                 <p class="text-gray-500 text-lg md:text-xl mb-12 max-w-md font-light leading-relaxed">
-                    Профессиональное производство музыки в Королёве. 
+                    Профессиональное производство музыки в Королёве. От идеи до мировых чартов.
                 </p>
                 <div class="flex flex-wrap gap-6">
                     <a href="#calendar" class="px-10 py-5 bg-white text-black rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[var(--cyan)] transition-all">
@@ -246,14 +246,14 @@
         </div>
     </section>
 
-    <!-- About Section -->
+    <!-- About Section with Expanded Equipment -->
     <section id="about" class="py-24 px-6">
         <div class="max-w-7xl mx-auto">
-            <div class="grid lg:grid-cols-3 gap-8">
+            <div class="grid lg:grid-cols-3 gap-12">
                 <div class="lg:col-span-1">
-                    <h2 class="text-4xl font-black uppercase italic tracking-tighter italic mb-6">О студии</h2>
+                    <h2 class="text-4xl font-black uppercase italic tracking-tighter mb-6">О студии</h2>
                     <p class="text-gray-500 text-sm leading-relaxed mb-6">
-                        KADRA Records — пространство, где идеи превращаются в платиновые синглы. 15 лет опыта позволили нам создать идеальный тракт для записи и сведения.
+                        KADRA Records — это сочетание проверенной классики и современных технологий. Мы собрали сетап, который позволяет получить плотный, коммерческий звук "как в чартах" при сохранении доступного прайса.
                     </p>
                     <div class="flex gap-4">
                          <div class="text-center">
@@ -266,63 +266,144 @@
                          </div>
                     </div>
                 </div>
+                
                 <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
-                    <div class="bento-card p-8 border-white/5">
-                        <h4 class="text-xs font-bold uppercase tracking-widest mb-4 italic cyan-text underline underline-offset-8">Equipment Hub</h4>
-                        <p class="text-gray-500 text-xs leading-relaxed">Микрофоны Neumann U87, мониторы Genelec/Adam, предусилители Universal Audio 6176. Идеальный акустический расчет.</p>
+                    <!-- Audio Interfaces & Monitoring -->
+                    <div class="bento-card p-8 border-white/5 group">
+                        <div class="flex justify-between items-start mb-6">
+                            <h4 class="text-xs font-bold uppercase tracking-widest italic cyan-text underline underline-offset-8">Monitoring & I/O</h4>
+                            <i class="fa-solid fa-microchip text-white/20 group-hover:text-cyan-500 transition-colors"></i>
+                        </div>
+                        <ul class="space-y-3 text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Мониторы: Yamaha HS8 / Adam T5V</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Интерфейс: Focusrite Scarlett 18i20</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Наушники: Beyerdynamic DT 770 Pro</li>
+                        </ul>
                     </div>
-                    <div class="bento-card p-8 border-white/5">
-                        <h4 class="text-xs font-bold uppercase tracking-widest mb-4 italic cyan-text underline underline-offset-8">AI Integration</h4>
-                        <p class="text-gray-500 text-xs leading-relaxed">Интегрированные нейронные процессоры для чистки звука и генеративного саунд-дизайна.</p>
+
+                    <!-- Microphones & Pre -->
+                    <div class="bento-card p-8 border-white/5 group">
+                        <div class="flex justify-between items-start mb-6">
+                            <h4 class="text-xs font-bold uppercase tracking-widest italic cyan-text underline underline-offset-8">Mic Terminal</h4>
+                            <i class="fa-solid fa-microphone text-white/20 group-hover:text-cyan-500 transition-colors"></i>
+                        </div>
+                        <ul class="space-y-3 text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Neumann TLM 102 / Rode NT1 5th</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Предусилитель: DBX 286s</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Акустический экран: Kaotica Eyeball</li>
+                        </ul>
+                    </div>
+
+                    <!-- Keys & Synths -->
+                    <div class="bento-card p-8 border-white/5 group">
+                        <div class="flex justify-between items-start mb-6">
+                            <h4 class="text-xs font-bold uppercase tracking-widest italic cyan-text underline underline-offset-8">Keys & Control</h4>
+                            <i class="fa-solid fa-keyboard text-white/20 group-hover:text-cyan-500 transition-colors"></i>
+                        </div>
+                        <ul class="space-y-3 text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Arturia KeyStep 37 / Minilab 3</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Контроллер: Akai MPD 218</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Novation Launchkey 49</li>
+                        </ul>
+                    </div>
+
+                    <!-- Software & AI -->
+                    <div class="bento-card p-8 border-white/5 group">
+                        <div class="flex justify-between items-start mb-6">
+                            <h4 class="text-xs font-bold uppercase tracking-widest italic cyan-text underline underline-offset-8">Neural Core</h4>
+                            <i class="fa-solid fa-bolt text-white/20 group-hover:text-cyan-500 transition-colors"></i>
+                        </div>
+                        <ul class="space-y-3 text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> DAW: Logic Pro / FL Studio 24</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> iZotope RX / FabFilter Bundle</li>
+                            <li class="flex items-center gap-2"><span class="w-1 h-1 bg-cyan-500 rounded-full"></span> Waves & Slate Digital Sub</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Services Section -->
+    <!-- Services Section (Expanded) -->
     <section id="services" class="py-24 px-6">
         <div class="max-w-7xl mx-auto">
             <div class="flex items-center gap-6 mb-16">
                 <h2 class="text-4xl font-black uppercase italic tracking-tighter">Услуги</h2>
                 <div class="h-px flex-grow bg-white/10"></div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <!-- Recording -->
-                <div class="md:col-span-2 bento-card p-10 flex flex-col justify-between min-h-[320px]">
-                    <div>
-                        <div class="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center mb-6">
-                            <i class="fa-solid fa-microphone-lines text-xl text-[var(--cyan)]"></i>
-                        </div>
-                        <h3 class="text-2xl font-extrabold uppercase mb-4 italic">Запись вокала</h3>
-                        <p class="text-gray-500 text-sm leading-relaxed">Кристально чистый тракт. Помощь в продюсировании. 1500₽ / час.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Main Service: Recording -->
+                <div class="bento-card p-8 group border-cyan-500/20">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all">
+                        <i class="fa-solid fa-microphone-lines text-xl"></i>
                     </div>
-                    <ul class="mt-6 space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                        <li><i class="fa-solid fa-check cyan-text mr-2"></i> Neumann U87 Ai</li>
-                        <li><i class="fa-solid fa-check cyan-text mr-2"></i> Тюнинг вокала (Melodyne/Autotune)</li>
-                    </ul>
+                    <h3 class="text-xl font-black uppercase italic mb-4">Запись (Live/Studio)</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Работа в акустически подготовленной кабине. Полный контроль дублей, помощь в распевке.</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-[10px] font-black cyan-text uppercase tracking-widest">от 1500₽ / ч</span>
+                        <a href="#calendar" class="text-[9px] font-bold text-white/40 hover:text-white uppercase">Book <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
                 </div>
+
                 <!-- Mixing -->
-                <div class="bento-card p-8 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center mb-6">
-                            <i class="fa-solid fa-sliders text-[var(--cyan)]"></i>
-                        </div>
-                        <h3 class="text-lg font-bold uppercase italic">Сведение</h3>
-                        <p class="text-gray-500 text-xs">Чартовое звучание. Баланс, плотность и объем.</p>
+                <div class="bento-card p-8 group border-white/5">
+                    <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all">
+                        <i class="fa-solid fa-sliders text-xl"></i>
                     </div>
-                    <div class="mt-4 text-[9px] font-black cyan-text uppercase">от 5000₽</div>
+                    <h3 class="text-xl font-black uppercase italic mb-4">Сведение & Мастеринг</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Создание коммерческого баланса, работа с частотами, динамикой и стерео-полем.</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-[10px] font-black cyan-text uppercase tracking-widest">от 5000₽</span>
+                    </div>
                 </div>
-                <!-- Arrangement -->
-                <div class="bento-card p-8 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center mb-6">
-                            <i class="fa-solid fa-music text-[var(--cyan)]"></i>
-                        </div>
-                        <h3 class="text-lg font-bold uppercase italic">Аранжировка</h3>
-                        <p class="text-gray-500 text-xs">Создание битов и музыки с нуля в любом жанре.</p>
+
+                <!-- Beatmaking -->
+                <div class="bento-card p-8 group border-white/5">
+                    <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all">
+                        <i class="fa-solid fa-drum text-xl"></i>
                     </div>
-                    <div class="mt-4 text-[9px] font-black cyan-text uppercase">от 10000₽</div>
+                    <h3 class="text-xl font-black uppercase italic mb-4">Production (Биты)</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Эксклюзивные аранжировки в любых жанрах от Trap до Synthwave.</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-[10px] font-black cyan-text uppercase tracking-widest">от 10000₽</span>
+                    </div>
+                </div>
+
+                <!-- Vocal Correction -->
+                <div class="bento-card p-8 group border-white/5">
+                    <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all">
+                        <i class="fa-solid fa-wave-square text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-black uppercase italic mb-4">Тюн вокала</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Ручная коррекция нот в Melodyne и создание идеального Autotune-эффекта.</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-[10px] font-black cyan-text uppercase tracking-widest">от 2000₽</span>
+                    </div>
+                </div>
+
+                <!-- Distribution -->
+                <div class="bento-card p-8 group border-white/5">
+                    <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all">
+                        <i class="fa-solid fa-globe text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-black uppercase italic mb-4">Дистрибуция</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Загрузка на все площадки (Apple, Spotify, VK). Помощь с промо.</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-[10px] font-black cyan-text uppercase tracking-widest">от 1500₽</span>
+                    </div>
+                </div>
+
+                <!-- Ghostwriting -->
+                <div class="bento-card p-8 group border-white/5">
+                    <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all">
+                        <i class="fa-solid fa-pen-nib text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-black uppercase italic mb-4">Тексты & Песня под ключ</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Написание хитовых текстов и создание структуры трека с нуля.</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-[10px] font-black cyan-text uppercase tracking-widest">индивидуально</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -332,7 +413,7 @@
     <section id="portfolio" class="py-24 px-6 bg-white/[0.01]">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-20">
-                <h2 class="text-5xl font-black uppercase italic tracking-tighter italic mb-4">Наши артисты</h2>
+                <h2 class="text-5xl font-black uppercase italic tracking-tighter mb-4">Наши артисты</h2>
                 <p class="text-[9px] text-gray-500 uppercase tracking-[0.4em]">Достижения, подтвержденные цифрами</p>
             </div>
             
@@ -393,7 +474,7 @@
             <div class="text-center mb-16">
                 <div class="inline-block px-4 py-1 rounded-full border border-cyan-500/30 text-[9px] uppercase tracking-widest text-cyan-500 mb-4">System Schedule</div>
                 <h2 class="text-4xl font-black uppercase italic tracking-tighter italic">Бронирование терминала</h2>
-                <p class="text-gray-500 text-xs mt-4">Выбери свободный слот для автоматического включения в форму.</p>
+                <p class="text-gray-500 text-xs mt-4">Выбери свободный слот для автоматического включения в форму. График обновляется ежедневно.</p>
             </div>
 
             <div class="bento-card p-4 md:p-8 border-cyan-500/20">
@@ -445,7 +526,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-[8px] uppercase tracking-widest text-gray-500 font-bold ml-2">Имя артиста</label>
-                            <input name="artist_name" required type="text" placeholder="GHOST-01" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-4 focus:border-cyan-500 outline-none text-xs font-bold uppercase tracking-widest">
+                            <input name="artist_name" required type="text" placeholder="Name" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-4 focus:border-cyan-500 outline-none text-xs font-bold uppercase tracking-widest">
                         </div>
                         <div class="space-y-2">
                             <label class="text-[8px] uppercase tracking-widest text-gray-500 font-bold ml-2">Телефон / TG</label>
@@ -459,7 +540,9 @@
                                 <option>Запись вокала</option>
                                 <option>Сведение</option>
                                 <option>Аранжировка</option>
-                                <option>Neural Mastering</option>
+                                <option>Тюн вокала</option>
+                                <option>Дистрибуция</option>
+                                <option>Песня под ключ</option>
                             </select>
                         </div>
                         <div class="space-y-2">
@@ -496,10 +579,6 @@
         const slots = ['12:00', '15:00', '18:00', '21:00'];
         let selectedTime = null;
 
-        /**
-         * Функция генерации псевдослучайного числа на основе сида (строки)
-         * Это гарантирует, что для одной и той же даты и времени результат будет всегда одинаков.
-         */
         function seededRandom(seed) {
             let hash = 0;
             for (let i = 0; i < seed.length; i++) {
@@ -520,7 +599,6 @@
 
         function initCalendar() {
             const today = new Date();
-            // Очищаем перед рендером на всякий случай
             headerEl.innerHTML = '';
             bodyEl.innerHTML = '';
 
@@ -547,10 +625,8 @@
                     date.setDate(today.getDate() + i);
                     const dateStr = date.toLocaleDateString('ru-RU');
 
-                    // Используем дату и время как сид для "случайности"
-                    // Таким образом, статус слота закреплен за конкретным временем
-                    const seed = dateStr + time + "kadra_salt"; 
-                    const isBusy = seededRandom(seed) > 0.65; // Вероятность занятости ~35%
+                    const seed = dateStr + time + "kadra_v2_stable"; 
+                    const isBusy = seededRandom(seed) > 0.6; 
 
                     slot.className = `p-3 text-center text-[9px] font-black rounded-xl cursor-pointer ${isBusy ? 'slot-booked' : 'slot-free'}`;
                     slot.innerText = time;
@@ -569,30 +645,21 @@
             });
         }
 
-        // Form Submission logic
         document.getElementById('contact-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             const formData = new FormData(e.target);
             
-            const data = {
-                name: formData.get('artist_name'),
-                contact: formData.get('contact_info'),
-                type: formData.get('session_type'),
-                slot: formData.get('selected_slot') || 'Время не выбрано',
-                details: formData.get('project_details')
-            };
-
             const message = `
 ⚡️ НОВЫЙ ЗАПРОС: KADRA REC
 ━━━━━━━━━━━━━━━━━━
-👤 Артист: ${data.name}
-📞 Контакт: ${data.contact}
-🎹 Услуга: ${data.type}
-🕒 Слот: ${data.slot}
+👤 Артист: ${formData.get('artist_name')}
+📞 Контакт: ${formData.get('contact_info')}
+🎹 Услуга: ${formData.get('session_type')}
+🕒 Слот: ${formData.get('selected_slot') || 'Время не выбрано'}
 ━━━━━━━━━━━━━━━━━━
 📝 Детали: 
-${data.details || 'Нет описания'}
+${formData.get('project_details') || 'Нет описания'}
             `;
 
             try {
@@ -610,7 +677,7 @@ ${data.details || 'Нет описания'}
                 });
 
                 if (response.ok) {
-                    showNotification("Запрос успешно доставлен в систему!");
+                    showNotification("Запрос успешно доставлен!");
                     e.target.reset();
                     document.querySelectorAll('.slot-free').forEach(s => s.classList.remove('slot-selected'));
                 } else {
