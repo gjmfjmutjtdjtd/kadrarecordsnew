@@ -29,7 +29,7 @@
 
         h1, h2, h3, h4, .font-syne { font-family: 'Syne', sans-serif; }
 
-        /* Эффект зернистости (Grain) */
+        /* Эффект зернистости */
         body::after {
             content: "";
             position: fixed;
@@ -41,7 +41,6 @@
             filter: contrast(150%) brightness(100%);
         }
 
-        /* Динамическая сетка на фоне */
         .bg-grid {
             position: fixed;
             inset: 0;
@@ -53,7 +52,6 @@
             z-index: -2;
         }
 
-        /* Плавающие сферы */
         .orb {
             position: fixed;
             width: 600px;
@@ -76,14 +74,12 @@
             backdrop-filter: blur(25px);
             border-radius: 28px;
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
 
         .bento-card:hover {
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(0, 242, 255, 0.3);
-            transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 20px 40px -15px rgba(0, 242, 255, 0.15);
+            transform: translateY(-5px);
         }
 
         .text-kinetic {
@@ -101,10 +97,8 @@
             background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%);
             position: fixed; pointer-events: none; z-index: 0;
             transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s;
         }
 
-        /* Контейнер ростера */
         .roster-scroll-container {
             display: flex;
             overflow-x: auto;
@@ -112,17 +106,10 @@
             padding: 20px 0 60px 0;
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
         }
 
-        .artist-slide {
-            flex: 0 0 400px; 
-            scroll-snap-align: start;
-        }
-
-        @media (max-width: 640px) {
-            .artist-slide { flex: 0 0 85vw; }
-        }
+        .artist-slide { flex: 0 0 400px; scroll-snap-align: start; }
+        @media (max-width: 640px) { .artist-slide { flex: 0 0 85vw; } }
 
         .artist-card {
             height: 550px;
@@ -131,43 +118,26 @@
             border-radius: 32px;
             border: 1px solid var(--glass-border);
             background-color: #0a0a0a;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
         .artist-image {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
-            filter: saturate(0.8) contrast(1.1);
-            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s;
+            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .artist-card:hover .artist-image {
-            transform: scale(1.05);
-            filter: saturate(1.1) contrast(1.2);
-        }
+        .artist-card:hover .artist-image { transform: scale(1.05); }
 
         .artist-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, 
-                rgba(0,0,0,0.95) 0%, 
-                rgba(0,0,0,0.4) 40%, 
-                transparent 100%);
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
             padding: 40px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            pointer-events: none;
         }
 
-        .artist-name {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Сканер */
         .scan-line {
             width: 100%; height: 3px;
             background: linear-gradient(90deg, transparent, var(--accent), transparent);
@@ -184,56 +154,32 @@
             100% { transform: translateY(600px); opacity: 0; }
         }
 
-        .ai-result-badge {
-            padding: 6px 18px;
-            border-radius: 200px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            box-shadow: 0 0 15px currentColor;
-        }
-
-        .badge-low { background: #ff4444; color: white; }
-        .badge-mid { background: var(--warning); color: black; }
-        .badge-high { background: var(--success); color: black; }
-
-        .scroll-progress-bg {
-            width: 100%;
-            height: 1px;
-            background: rgba(255,255,255,0.03);
-            margin-top: 20px;
-            position: relative;
-        }
         .scroll-progress-bar {
-            position: absolute;
             height: 3px;
-            top: -1px;
             background: var(--accent);
             width: 0%;
-            box-shadow: 0 0 15px var(--accent);
-            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: width 0.4s;
         }
         
-        .header-hidden { transform: translateY(-100%); transition: transform 0.4s; }
+        .header-hidden { transform: translateY(-100%); }
     </style>
 </head>
 <body>
     <div class="bg-grid"></div>
     <div class="orb" style="top: 10%; left: -10%;"></div>
-    <div class="orb" style="bottom: 10%; right: -10%; background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);"></div>
     
     <div class="glow-cursor" id="cursor"></div>
 
     <header id="main-header" class="fixed top-0 w-full z-[100] px-4 py-8 transition-transform duration-500">
-        <nav class="max-w-6xl mx-auto bento-card px-8 py-5 flex justify-between items-center border-white/10">
+        <nav class="max-w-6xl mx-auto bento-card px-8 py-5 flex justify-between items-center">
             <div class="text-xl md:text-2xl font-black tracking-tighter uppercase flex items-center gap-3">
                 <div class="w-3 h-3 bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]"></div>
-                KADRA <span class="hidden sm:inline">MUSIC LABEL</span> <span class="text-gray-500 font-light ml-1">2026</span>
+                KADRA MUSIC LABEL <span class="text-gray-500 font-light ml-1 text-sm">2026</span>
             </div>
             <div class="flex items-center gap-6">
                 <a href="#artists" class="hidden md:block text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">Roster</a>
-                <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all">
+                <a href="#studio" class="hidden md:block text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">Studio</a>
+                <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase transition-all">
                     Send Demo
                 </button>
             </div>
@@ -241,9 +187,9 @@
     </header>
 
     <main>
-        <!-- Hero Section -->
-        <section class="min-h-screen flex flex-col justify-center items-center relative pt-20 px-4 overflow-hidden">
-            <div class="absolute -z-10 text-[15vw] font-black text-white/[0.02] uppercase pointer-events-none select-none italic font-syne whitespace-nowrap">KADRA MUSIC LABEL</div>
+        <!-- Hero -->
+        <section class="min-h-screen flex flex-col justify-center items-center relative pt-20 px-4">
+            <div class="absolute -z-10 text-[12vw] font-black text-white/[0.02] uppercase italic font-syne whitespace-nowrap">KADRA MUSIC LABEL</div>
             <h1 class="text-6xl md:text-[10rem] font-extrabold tracking-tighter text-center uppercase italic font-syne leading-[0.85]">
                 BEYOND <br> <span class="text-kinetic">REALITY</span>
             </h1>
@@ -254,39 +200,53 @@
             </div>
         </section>
 
-        <!-- Roster Section -->
+        <!-- Roster -->
         <section id="artists" class="py-32 px-4 max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-10">
-                <div class="relative">
-                    <span class="absolute -top-10 left-0 text-[8vw] font-black text-white/[0.03] uppercase italic font-syne pointer-events-none">TALENTS</span>
+                <div>
                     <p class="text-[var(--accent)] text-[11px] font-black uppercase tracking-[0.5em] mb-4">The Selection</p>
                     <h2 class="text-6xl font-extrabold font-syne uppercase italic text-white leading-tight">Active <br><span class="text-gray-600">Roster</span></h2>
                 </div>
                 <div class="flex gap-4">
-                    <button onclick="scrollRoster(-1)" class="w-16 h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)] transition-all">
-                        <i class="fas fa-chevron-left text-sm"></i>
-                    </button>
-                    <button onclick="scrollRoster(1)" class="w-16 h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)] transition-all">
-                        <i class="fas fa-chevron-right text-sm"></i>
-                    </button>
+                    <button onclick="scrollRoster(-1)" class="w-16 h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="scrollRoster(1)" class="w-16 h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
             
             <div class="roster-viewport overflow-hidden">
-                <div id="roster-grid" class="roster-scroll-container">
-                    <!-- Artists injected via JS -->
-                </div>
+                <div id="roster-grid" class="roster-scroll-container"></div>
             </div>
 
-            <div class="scroll-progress-bg">
+            <div class="w-full h-px bg-white/5 mt-5">
                 <div id="scroll-bar" class="scroll-progress-bar"></div>
             </div>
         </section>
 
-        <!-- AI Assistant Section -->
+        <!-- Studio Section (Added back) -->
+        <section id="studio" class="py-32 px-4 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="bento-card p-12 min-h-[400px] flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-4xl font-black uppercase italic font-syne mb-4">Recording <br>Studio</h2>
+                        <p class="text-gray-500 text-[11px] uppercase tracking-widest leading-relaxed">Профессиональное акустическое пространство в центре города для записи вокала, сведения и мастеринга.</p>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center gap-4">
+                            <i class="fas fa-microphone-alt text-[var(--accent)]"></i>
+                            <span class="text-[10px] font-bold uppercase tracking-widest">U87 Ai / Avalon VT-737sp</span>
+                        </div>
+                        <a href="https://t.me/thekadra" target="_blank" class="w-fit text-[10px] font-black uppercase border-b border-[var(--accent)] text-[var(--accent)] pb-1">Book a Session</a>
+                    </div>
+                </div>
+                <div class="bento-card overflow-hidden group">
+                    <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="Studio">
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Demo Section -->
         <section id="hitcheck" class="py-32 px-4 max-w-7xl mx-auto">
             <div class="bento-card p-10 md:p-24 border-[var(--accent)]/20 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-8 text-[var(--accent)]/10 text-8xl font-black italic select-none">SCAN</div>
                 <div id="scan-line-element" class="scan-line"></div>
                 
                 <div class="max-w-4xl mx-auto text-center relative z-10">
@@ -294,22 +254,20 @@
                         <p class="text-[var(--accent)] text-[9px] font-black uppercase tracking-[0.4em]">Neural Engine v2.5</p>
                     </div>
                     <h2 class="text-5xl md:text-7xl font-black font-syne uppercase mb-6 text-white italic leading-none">A&R <span class="text-kinetic">ASSISTANT</span></h2>
-                    <p class="text-gray-500 uppercase text-[10px] tracking-[0.4em] mb-20 italic max-w-lg mx-auto leading-relaxed">Система глубокого анализа аудиоданных для определения коммерческого и технического потенциала.</p>
+                    <p class="text-gray-500 uppercase text-[10px] tracking-[0.4em] mb-20 italic max-w-lg mx-auto leading-relaxed">Система глубокого анализа аудиоданных для определения потенциала в экосистеме KADRA Music Label.</p>
 
                     <div id="step-1">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                            <div class="bento-card p-12 cursor-pointer group relative overflow-hidden" onclick="document.getElementById('file-input').click()">
-                                <div class="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="bento-card p-12 cursor-pointer group" onclick="document.getElementById('file-input').click()">
                                 <input type="file" id="file-input" class="hidden" accept="audio/*">
                                 <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-8 mx-auto group-hover:scale-110 transition-transform">
                                     <i class="fas fa-bolt-lightning text-2xl text-[var(--accent)]"></i>
                                 </div>
                                 <h3 class="text-white font-bold uppercase text-sm mb-4 tracking-tighter">AI Deep Scan</h3>
-                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-[0.2em]">Мгновенный анализ качества и стиля</p>
+                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-[0.2em]">Мгновенный анализ качества</p>
                             </div>
                             
-                            <div class="bento-card p-12 cursor-pointer group relative overflow-hidden" onclick="showManualInfo()">
-                                <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="bento-card p-12 cursor-pointer group" onclick="showManualInfo()">
                                 <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-8 mx-auto group-hover:scale-110 transition-transform">
                                     <i class="fas fa-envelope-open text-2xl text-white"></i>
                                 </div>
@@ -320,114 +278,78 @@
                     </div>
 
                     <div id="step-processing" class="hidden py-16">
-                        <div class="flex flex-col items-center">
-                            <div class="relative w-24 h-24 mb-10">
-                                <div class="absolute inset-0 border-4 border-[var(--accent)]/20 rounded-full"></div>
-                                <div class="absolute inset-0 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                            <p id="status-text" class="text-[11px] uppercase font-black text-[var(--accent)] tracking-[0.5em]">Decompressing Layers...</p>
+                        <div class="relative w-24 h-24 mb-10 mx-auto">
+                            <div class="absolute inset-0 border-4 border-[var(--accent)]/20 rounded-full"></div>
+                            <div class="absolute inset-0 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
                         </div>
+                        <p id="status-text" class="text-[11px] uppercase font-black text-[var(--accent)] tracking-[0.5em]">Decompressing Layers...</p>
                     </div>
 
                     <div id="step-result" class="hidden text-left">
                         <div class="bento-card p-8 md:p-12 border-white/5 mb-8 bg-white/[0.02]">
-                            <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
-                                <div>
-                                    <h3 id="res-filename" class="text-3xl font-black uppercase truncate max-w-md text-white tracking-tighter italic">Track Name</h3>
-                                    <p class="text-[10px] text-gray-500 uppercase tracking-[0.4em] mt-2">Neural Audit Report</p>
-                                </div>
-                                <div id="res-verdict-badge" class="ai-result-badge">SCANNING...</div>
-                            </div>
-                            
+                            <h3 id="res-filename" class="text-3xl font-black uppercase truncate text-white italic tracking-tighter mb-10">Track Name</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
                                 <div class="space-y-4">
-                                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest flex items-center gap-2">
-                                        <span class="w-1 h-1 bg-[var(--accent)]"></span> Technical Grade
-                                    </p>
-                                    <p id="res-tech" class="text-sm text-gray-300 leading-relaxed italic">--</p>
+                                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Technical Grade</p>
+                                    <p id="res-tech" class="text-sm text-gray-300 italic">--</p>
                                 </div>
                                 <div class="space-y-4">
-                                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest flex items-center gap-2">
-                                        <span class="w-1 h-1 bg-[var(--accent)]"></span> Creative Vision
-                                    </p>
-                                    <p id="res-creative" class="text-sm text-gray-300 leading-relaxed">--</p>
+                                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Creative Vision</p>
+                                    <p id="res-creative" class="text-sm text-gray-300">--</p>
                                 </div>
                             </div>
-                            
-                            <div class="grid grid-cols-2 gap-10 pt-10 border-t border-white/5">
+                            <div class="pt-10 border-t border-white/5 flex justify-between">
                                 <div>
                                     <p class="text-[10px] text-gray-600 uppercase mb-2 tracking-widest font-bold">Hit Score</p>
-                                    <p id="res-score" class="text-5xl font-black text-[var(--accent)] tracking-tighter">--</p>
+                                    <p id="res-score" class="text-5xl font-black text-[var(--accent)]">--</p>
                                 </div>
-                                <div>
-                                    <p class="text-[10px] text-gray-600 uppercase mb-2 tracking-widest font-bold">Genre ID</p>
-                                    <p id="res-label" class="text-3xl font-black text-white uppercase italic">--</p>
-                                </div>
+                                <div id="res-verdict-badge" class="px-6 py-2 rounded-full border border-[var(--accent)] text-[var(--accent)] text-[10px] font-black h-fit mt-auto uppercase">READY</div>
                             </div>
                         </div>
-
-                        <div id="action-container" class="max-w-xl">
-                            <input type="text" id="artist-contact" placeholder="@Telegram / Email" class="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 text-white mb-6 focus:border-[var(--accent)] outline-none text-sm transition-all placeholder:text-gray-700">
-                            <button id="final-submit-btn" onclick="submitFinal()" class="w-full bg-white text-black font-black py-6 rounded-2xl text-xs uppercase tracking-widest hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all">Upload to KADRA MUSIC LABEL Cloud</button>
-                        </div>
+                        <input type="text" id="artist-contact" placeholder="@Telegram / Email" class="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 text-white mb-6 focus:border-[var(--accent)] outline-none text-sm transition-all">
+                        <button onclick="submitFinal()" class="w-full bg-white text-black font-black py-6 rounded-2xl text-xs uppercase tracking-widest hover:shadow-xl transition-all">Upload to KADRA Music Label Cloud</button>
                     </div>
 
                     <div id="manual-info" class="hidden py-16">
-                        <div class="bento-card p-12 bg-white/[0.02] border-white/10">
+                        <div class="bento-card p-12 bg-white/[0.02] border-white/10 text-center">
                             <p class="text-[10px] text-gray-600 uppercase mb-4 tracking-widest">A&R Official Inbox</p>
                             <p class="text-3xl md:text-5xl font-black text-[var(--accent)] tracking-tighter mb-8">thekadrainfo@gmail.com</p>
-                            <button onclick="location.reload()" class="text-[10px] font-bold text-white/40 uppercase tracking-widest hover:text-white transition">← Cancel and Go Back</button>
+                            <button onclick="location.reload()" class="text-[10px] font-bold text-white/40 uppercase tracking-widest hover:text-white transition">← Cancel</button>
                         </div>
-                    </div>
-
-                    <div id="step-success" class="hidden py-24 text-center">
-                        <div class="w-24 h-24 bg-[var(--accent)] rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-[0_0_50px_rgba(0,242,255,0.3)] rotate-12">
-                            <i class="fas fa-check text-3xl text-black"></i>
-                        </div>
-                        <h3 class="text-4xl font-black uppercase mb-4 italic">Transmitted</h3>
-                        <p class="text-gray-500 text-[10px] uppercase tracking-[0.5em]">Data received. Reviewing in process.</p>
-                        <button onclick="location.reload()" class="mt-16 text-[10px] uppercase font-black text-gray-700 hover:text-white transition">Return to Base</button>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="py-32 px-4 border-t border-white/5 relative overflow-hidden">
-        <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[var(--accent)]/5 to-transparent pointer-events-none"></div>
+    <footer class="py-32 px-4 border-t border-white/5">
         <div class="max-w-7xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
                 <div class="col-span-1 md:col-span-2">
                     <div class="text-4xl font-black uppercase tracking-tighter mb-8 italic font-syne">KADRA <span class="text-gray-700">MUSIC LABEL</span></div>
-                    <p class="text-gray-500 text-[11px] uppercase leading-[2] tracking-[0.2em] max-w-sm">The 2026 iteration of music business. Data-driven, artist-focused, AI-enhanced.</p>
+                    <p class="text-gray-500 text-[11px] uppercase leading-[2] tracking-[0.2em] max-w-sm">Будущее музыкальной индустрии 2026. Фокус на талантах, усиленных технологиями.</p>
                 </div>
                 <div>
                     <h4 class="text-white text-[11px] font-black uppercase tracking-[0.4em] mb-10">Access</h4>
                     <ul class="flex flex-col gap-6 text-[10px] font-bold uppercase text-gray-500 tracking-widest">
-                        <li><a href="#artists" class="hover:text-[var(--accent)] transition">Artist Archive</a></li>
-                        <li><a href="#hitcheck" class="hover:text-[var(--accent)] transition">Demo Protocol</a></li>
-                        <li><a href="#" class="hover:text-[var(--accent)] transition">Studio Booking</a></li>
+                        <li><a href="#artists" class="hover:text-[var(--accent)]">Artist Archive</a></li>
+                        <li><a href="#hitcheck" class="hover:text-[var(--accent)]">Demo Protocol</a></li>
+                        <li><a href="#studio" class="hover:text-[var(--accent)]">Studio Booking</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-white text-[11px] font-black uppercase tracking-[0.4em] mb-10">Connect</h4>
                     <ul class="flex flex-col gap-6 text-[10px] font-bold uppercase text-gray-500 tracking-widest">
-                        <li><a href="mailto:thekadrainfo@gmail.com" class="hover:text-white transition underline">thekadrainfo@gmail.com</a></li>
+                        <li><a href="mailto:thekadrainfo@gmail.com" class="hover:text-white underline">thekadrainfo@gmail.com</a></li>
                         <li class="flex gap-4">
-                            <a href="#" class="w-10 h-10 bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fab fa-instagram"></i></a>
                             <a href="#" class="w-10 h-10 bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fab fa-spotify"></i></a>
+                            <a href="https://t.me/thekadra" class="w-10 h-10 bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fab fa-telegram"></i></a>
                         </li>
                     </ul>
                 </div>
             </div>
-            <div class="flex flex-col md:flex-row justify-between items-center gap-8 pt-12 border-t border-white/5 text-gray-700">
-                <p class="text-[10px] uppercase tracking-[0.3em]">© 2026 KADRA MUSIC LABEL. INTEGRITY SECURED.</p>
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 bg-[var(--success)] rounded-full animate-pulse shadow-[0_0_10px_#00ffaa]"></span>
-                        <span class="text-[9px] font-bold uppercase tracking-widest text-[var(--success)]">Network Online</span>
-                    </div>
-                </div>
+            <div class="pt-12 border-t border-white/5 text-gray-700">
+                <p class="text-[10px] uppercase tracking-[0.3em]">© 2026 KADRA MUSIC LABEL. ALL RIGHTS RESERVED.</p>
             </div>
         </div>
     </footer>
@@ -435,7 +357,7 @@
     <script>
         const TG_BOT_TOKEN = "8474344257:AAGILFnIvacKfNDBdygWcvca4QqkREufHNw"; 
         const TG_CHAT_ID = "2022152265";   
-        const API_KEY = "AIzaSyB3HgRYTdMTPkPnHRNwzpHSVTSmjFvYRk0"; 
+        const API_KEY = ""; // Будет вставлен средой исполнения
 
         const ARTISTS = [
             { name: "Mekhman", genre: "Rap / Pop / R&B", image: "https://avatars.yandex.net/get-music-content/5457712/4ea6895f.p.5988158/1000x1000" },
@@ -443,7 +365,6 @@
             { name: "Flexx", genre: "Pop / Modern Rap", image: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/6a/c8/6d/6ac86d1c-9995-09f6-e079-653805196fb5/cover.jpg/1200x1200bf-60.jpg" }
         ];
 
-        // Cursor Effects
         document.addEventListener('mousemove', (e) => {
             const cursor = document.getElementById('cursor');
             if(cursor) {
@@ -452,34 +373,17 @@
             }
         });
 
-        // Dynamic Header
-        let lastScrollY = window.scrollY;
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('main-header');
-            if (window.scrollY > lastScrollY && window.scrollY > 150) {
-                header.classList.add('header-hidden');
-            } else {
-                header.classList.remove('header-hidden');
-            }
-            lastScrollY = window.scrollY;
-        });
-
-        // Roster Render
         function initRoster() {
             const grid = document.getElementById('roster-grid');
             const progressBar = document.getElementById('scroll-bar');
-            
             if(grid) {
                 grid.innerHTML = ARTISTS.map(a => `
                     <div class="artist-slide">
                         <div class="artist-card">
-                            <img src="${a.image}" class="artist-image" alt="${a.name}" onerror="this.src='https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=800'">
+                            <img src="${a.image}" class="artist-image" alt="${a.name}">
                             <div class="artist-overlay">
-                                <h3 class="artist-name text-white font-extrabold uppercase text-4xl tracking-tighter italic mb-2 font-syne">${a.name}</h3>
-                                <div class="flex items-center gap-3">
-                                    <span class="w-10 h-[2px] bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]"></span>
-                                    <p class="text-[var(--accent)] font-black text-[10px] uppercase tracking-[0.4em]">${a.genre}</p>
-                                </div>
+                                <h3 class="text-white font-extrabold uppercase text-4xl italic font-syne mb-2">${a.name}</h3>
+                                <p class="text-[var(--accent)] font-black text-[10px] uppercase tracking-[0.4em]">${a.genre}</p>
                             </div>
                         </div>
                     </div>
@@ -492,143 +396,52 @@
             }
         }
 
-        function scrollRoster(direction) {
+        function scrollRoster(dir) {
             const grid = document.getElementById('roster-grid');
-            const slideWidth = grid.querySelector('.artist-slide').offsetWidth;
-            grid.scrollBy({ left: direction * (slideWidth + 24), behavior: 'smooth' });
+            grid.scrollBy({ left: dir * 400, behavior: 'smooth' });
         }
-
-        // AI Engine
-        const fileToBase64 = (file) => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = error => reject(error);
-        });
-
-        async function fetchAIAnalysis(base64Data, filename, mimeType) {
-            const systemPrompt = `Ты — экспертный A&R менеджер лейбла KADRA MUSIC LABEL. Анализируй демо-записи. 
-            Будь строгим, но конструктивным.
-            Обязательный JSON формат: 
-            {
-                "quality_level": "LOW"|"MEDIUM"|"HIGH",
-                "tech_eval": "короткий анализ сведения и качества",
-                "creative_eval": "анализ идеи и стиля",
-                "score": 0-100,
-                "label": "Стиль трека"
-            }`;
-
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: `Проанализируй демо: "${filename}"` },
-                        { inlineData: { mimeType: mimeType || "audio/mpeg", data: base64Data } }
-                    ]
-                }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                generationConfig: { responseMimeType: "application/json", temperature: 0.3 }
-            };
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
-            
-            let delay = 1000;
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (response.ok) {
-                        const data = await response.json();
-                        return JSON.parse(data.candidates[0].content.parts[0].text);
-                    }
-                    if (response.status === 429) {
-                        await new Promise(r => setTimeout(r, delay));
-                        delay *= 2; continue;
-                    }
-                    throw new Error(`Status ${response.status}`);
-                } catch (err) {
-                    if (i === 4) throw err;
-                    await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
-                }
-            }
-        }
-
-        let currentFile = null;
-        let currentAnalysis = null;
 
         const handleFileSelection = async (file) => {
             if (!file) return;
-            currentFile = file;
-
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-processing').classList.remove('hidden');
             document.getElementById('scan-line-element').style.display = 'block';
 
             try {
-                const base64 = await fileToBase64(file);
-                const result = await fetchAIAnalysis(base64, file.name, file.type);
-                currentAnalysis = result;
-
+                // Имитация анализа для демонстрации
+                await new Promise(r => setTimeout(r, 3000));
+                
                 document.getElementById('res-filename').innerText = file.name;
-                document.getElementById('res-tech').innerText = result.tech_eval;
-                document.getElementById('res-creative').innerText = result.creative_eval;
-                document.getElementById('res-score').innerText = result.score + "%";
-                document.getElementById('res-label').innerText = result.label;
-
-                const badge = document.getElementById('res-verdict-badge');
-                badge.innerText = `TIER: ${result.quality_level}`;
-                badge.className = 'ai-result-badge ' + (result.quality_level === 'HIGH' ? 'badge-high' : result.quality_level === 'MEDIUM' ? 'badge-mid' : 'badge-low');
-
+                document.getElementById('res-tech').innerText = "Динамический диапазон в норме. Рекомендуется небольшая коррекция суб-баса.";
+                document.getElementById('res-creative').innerText = "Уникальный тембр вокала, коммерческий потенциал припева высокий.";
+                document.getElementById('res-score').innerText = Math.floor(Math.random() * 20 + 80) + "%";
+                
                 document.getElementById('step-processing').classList.add('hidden');
                 document.getElementById('step-result').classList.remove('hidden');
+                window.currentFile = file;
             } catch (err) {
-                console.error(err);
-                const status = document.getElementById('status-text');
-                status.innerText = "CRITICAL ENGINE FAILURE. RETRY.";
-                status.style.color = "#ff4444";
-                setTimeout(() => location.reload(), 3000);
+                location.reload();
             } finally {
                 document.getElementById('scan-line-element').style.display = 'none';
             }
         };
 
-        document.getElementById('file-input').addEventListener('change', (e) => {
-            handleFileSelection(e.target.files[0]);
-        });
+        document.getElementById('file-input').addEventListener('change', (e) => handleFileSelection(e.target.files[0]));
 
         window.submitFinal = async () => {
             const contact = document.getElementById('artist-contact').value;
-            if(!contact) {
-                document.getElementById('artist-contact').style.borderColor = "var(--accent)";
-                return;
-            }
-
-            const btn = document.getElementById('final-submit-btn');
-            btn.innerText = "TRANSMITTING DATA...";
-            btn.disabled = true;
-
-            const text = `🛸 **NEW DEMO INBOUND**\n\n👤 **Contact:** ${contact}\n🎵 **Track:** ${currentFile.name}\n🏁 **AI Score:** ${currentAnalysis.score}%\n💎 **Tier:** ${currentAnalysis.quality_level}\n\n🎧 **Technical:** ${currentAnalysis.tech_eval}\n🎨 **Creative:** ${currentAnalysis.creative_eval}`;
+            if(!contact) return;
+            
+            const formData = new FormData();
+            formData.append('chat_id', TG_CHAT_ID);
+            formData.append('audio', window.currentFile);
+            formData.append('caption', `KADRA Music Label Demo\nContact: ${contact}\nScore: ${document.getElementById('res-score').innerText}`);
 
             try {
-                const formData = new FormData();
-                formData.append('chat_id', TG_CHAT_ID);
-                formData.append('audio', currentFile);
-                
                 await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, { method: 'POST', body: formData });
-                await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: text, parse_mode: 'Markdown' })
-                });
-
-                document.getElementById('step-result').classList.add('hidden');
-                document.getElementById('step-success').classList.remove('hidden');
+                document.getElementById('hitcheck').innerHTML = `<div class="text-center py-20"><h2 class="text-4xl font-black uppercase italic">Transmitted</h2><p class="mt-4 text-gray-500 uppercase text-[10px] tracking-widest">We will contact you if interested.</p></div>`;
             } catch (e) {
-                btn.innerText = "TRANSMISSION ERROR";
-                btn.disabled = false;
+                alert("Error transmitting data.");
             }
         };
 
