@@ -54,8 +54,10 @@
 
         .orb {
             position: fixed;
-            width: 600px;
-            height: 600px;
+            width: 60vw;
+            height: 60vw;
+            max-width: 600px;
+            max-height: 600px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(0, 242, 255, 0.05) 0%, transparent 70%);
             filter: blur(80px);
@@ -64,8 +66,8 @@
         }
 
         @keyframes float {
-            0% { transform: translate(-20%, -20%); }
-            100% { transform: translate(20%, 20%); }
+            0% { transform: translate(-10%, -10%); }
+            100% { transform: translate(10%, 10%); }
         }
 
         .bento-card {
@@ -97,7 +99,9 @@
             background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%);
             position: fixed; pointer-events: none; z-index: 0;
             transform: translate(-50%, -50%);
+            display: none;
         }
+        @media (min-width: 1024px) { .glow-cursor { display: block; } }
 
         .roster-scroll-container {
             display: flex;
@@ -108,17 +112,19 @@
             scrollbar-width: none;
         }
 
-        .artist-slide { flex: 0 0 400px; scroll-snap-align: start; }
-        @media (max-width: 640px) { .artist-slide { flex: 0 0 85vw; } }
+        .artist-slide { flex: 0 0 320px; scroll-snap-align: start; }
+        @media (min-width: 768px) { .artist-slide { flex: 0 0 400px; } }
+        @media (max-width: 640px) { .artist-slide { flex: 0 0 80vw; } }
 
         .artist-card {
-            height: 550px;
+            height: 450px;
             position: relative;
             overflow: hidden;
             border-radius: 32px;
             border: 1px solid var(--glass-border);
             background-color: #0a0a0a;
         }
+        @media (min-width: 768px) { .artist-card { height: 550px; } }
 
         .artist-image {
             width: 100%; height: 100%;
@@ -132,7 +138,7 @@
             position: absolute;
             inset: 0;
             background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
-            padding: 40px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -161,7 +167,17 @@
             transition: width 0.4s;
         }
         
-        .header-hidden { transform: translateY(-100%); }
+        .hero-title {
+            font-size: clamp(3.2rem, 14vw, 10rem);
+            line-height: 0.9;
+            padding: 0 1rem;
+        }
+
+        /* Анимация пульсации при загрузке */
+        @keyframes pulse-ring {
+            0% { transform: scale(.33); }
+            80%, 100% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -170,16 +186,16 @@
     
     <div class="glow-cursor" id="cursor"></div>
 
-    <header id="main-header" class="fixed top-0 w-full z-[100] px-4 py-8 transition-transform duration-500">
-        <nav class="max-w-6xl mx-auto bento-card px-8 py-5 flex justify-between items-center">
-            <div class="text-xl md:text-2xl font-black tracking-tighter uppercase flex items-center gap-3">
-                <div class="w-3 h-3 bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]"></div>
-                KADRA MUSIC LABEL <span class="text-gray-500 font-light ml-1 text-sm">2026</span>
+    <header id="main-header" class="fixed top-0 w-full z-[100] px-4 py-4 md:py-8 transition-transform duration-500">
+        <nav class="max-w-6xl mx-auto bento-card px-4 md:px-8 py-4 md:py-5 flex justify-between items-center">
+            <div class="text-lg md:text-2xl font-black tracking-tighter uppercase flex items-center gap-2 md:gap-3">
+                <div class="w-2 h-2 md:w-3 md:h-3 bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]"></div>
+                <span class="whitespace-nowrap text-kinetic">KADRA MUSIC LABEL</span>
             </div>
-            <div class="flex items-center gap-6">
-                <a href="#artists" class="hidden md:block text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">Roster</a>
-                <a href="#studio" class="hidden md:block text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">Studio</a>
-                <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase transition-all">
+            <div class="flex items-center gap-3 md:gap-6">
+                <a href="#artists" class="hidden lg:block text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">Roster</a>
+                <a href="#studio" class="hidden lg:block text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">Studio</a>
+                <button onclick="document.getElementById('hitcheck').scrollIntoView({behavior:'smooth'})" class="bg-white text-black px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase transition-all">
                     Send Demo
                 </button>
             </div>
@@ -187,29 +203,32 @@
     </header>
 
     <main>
-        <!-- Hero -->
-        <section class="min-h-screen flex flex-col justify-center items-center relative pt-20 px-4">
-            <div class="absolute -z-10 text-[12vw] font-black text-white/[0.02] uppercase italic font-syne whitespace-nowrap">KADRA MUSIC LABEL</div>
-            <h1 class="text-6xl md:text-[10rem] font-extrabold tracking-tighter text-center uppercase italic font-syne leading-[0.85]">
-                BEYOND <br> <span class="text-kinetic">REALITY</span>
+        <!-- Hero Section -->
+        <section class="min-h-screen flex flex-col justify-center items-center relative pt-20 px-4 text-center">
+            <div class="absolute -z-10 text-[15vw] md:text-[12vw] font-black text-white/[0.02] uppercase italic font-syne whitespace-nowrap select-none pointer-events-none">KADRA MUSIC LABEL</div>
+            
+            <h1 class="hero-title font-extrabold tracking-tighter uppercase italic font-syne max-w-[95vw] md:max-w-none">
+                BEYOND <br> <span class="text-kinetic inline-block px-2">REALITY</span>
             </h1>
-            <p class="mt-12 text-gray-500 text-[10px] font-bold uppercase tracking-[0.6em] animate-pulse">Electronic Future / AI Integration</p>
-            <div class="mt-16 flex flex-col md:flex-row gap-6">
-                <a href="#hitcheck" class="bento-card px-10 py-5 font-bold uppercase text-xs border-[var(--accent)]/40 text-[var(--accent)] hover:bg-[var(--accent)] hover:text-black transition">AI Audit System</a>
-                <a href="#artists" class="bento-card px-10 py-5 font-bold uppercase text-xs text-white border-white/10">View Artists</a>
+            
+            <p class="mt-8 md:mt-12 text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.4em] md:tracking-[0.6em] animate-pulse">Electronic Future / AI Integration</p>
+            
+            <div class="mt-12 md:mt-16 flex flex-col sm:flex-row gap-4 md:gap-6 w-full sm:w-auto px-6 sm:px-0">
+                <a href="#hitcheck" class="bento-card px-8 md:px-10 py-4 md:py-5 font-bold uppercase text-[10px] md:text-xs border-[var(--accent)]/40 text-[var(--accent)] hover:bg-[var(--accent)] hover:text-black transition">AI Audit System</a>
+                <a href="#artists" class="bento-card px-8 md:px-10 py-4 md:py-5 font-bold uppercase text-[10px] md:text-xs text-white border-white/10">View Artists</a>
             </div>
         </section>
 
-        <!-- Roster -->
-        <section id="artists" class="py-32 px-4 max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-10">
+        <!-- Roster Section -->
+        <section id="artists" class="py-20 md:py-32 px-4 max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-16 gap-8">
                 <div>
-                    <p class="text-[var(--accent)] text-[11px] font-black uppercase tracking-[0.5em] mb-4">The Selection</p>
-                    <h2 class="text-6xl font-extrabold font-syne uppercase italic text-white leading-tight">Active <br><span class="text-gray-600">Roster</span></h2>
+                    <p class="text-[var(--accent)] text-[10px] md:text-[11px] font-black uppercase tracking-[0.5em] mb-4">The Selection</p>
+                    <h2 class="text-4xl md:text-6xl font-extrabold font-syne uppercase italic text-white leading-tight">Active <br><span class="text-gray-600">Roster</span></h2>
                 </div>
                 <div class="flex gap-4">
-                    <button onclick="scrollRoster(-1)" class="w-16 h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fas fa-chevron-left"></i></button>
-                    <button onclick="scrollRoster(1)" class="w-16 h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fas fa-chevron-right"></i></button>
+                    <button onclick="scrollRoster(-1)" class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fas fa-chevron-left text-sm md:text-base"></i></button>
+                    <button onclick="scrollRoster(1)" class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fas fa-chevron-right text-sm md:text-base"></i></button>
                 </div>
             </div>
             
@@ -222,99 +241,124 @@
             </div>
         </section>
 
-        <!-- Studio Section (Added back) -->
-        <section id="studio" class="py-32 px-4 max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div class="bento-card p-12 min-h-[400px] flex flex-col justify-between">
+        <!-- Studio Section -->
+        <section id="studio" class="py-20 md:py-32 px-4 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+                <div class="bento-card p-8 md:p-12 min-h-[350px] md:min-h-[400px] flex flex-col justify-between">
                     <div>
-                        <h2 class="text-4xl font-black uppercase italic font-syne mb-4">Recording <br>Studio</h2>
-                        <p class="text-gray-500 text-[11px] uppercase tracking-widest leading-relaxed">Профессиональное акустическое пространство в центре города для записи вокала, сведения и мастеринга.</p>
+                        <h2 class="text-3xl md:text-4xl font-black uppercase italic font-syne mb-4">Recording <br>Studio</h2>
+                        <p class="text-gray-500 text-[10px] md:text-[11px] uppercase tracking-widest leading-relaxed">Профессиональное акустическое пространство в центре города для записи вокала, сведения и мастеринга.</p>
                     </div>
                     <div class="flex flex-col gap-4">
                         <div class="flex items-center gap-4">
                             <i class="fas fa-microphone-alt text-[var(--accent)]"></i>
-                            <span class="text-[10px] font-bold uppercase tracking-widest">U87 Ai / Avalon VT-737sp</span>
+                            <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest">U87 Ai / Avalon VT-737sp</span>
                         </div>
-                        <a href="https://t.me/thekadra" target="_blank" class="w-fit text-[10px] font-black uppercase border-b border-[var(--accent)] text-[var(--accent)] pb-1">Book a Session</a>
+                        <a href="https://t.me/thekadra" target="_blank" class="w-fit text-[9px] md:text-[10px] font-black uppercase border-b border-[var(--accent)] text-[var(--accent)] pb-1">Book a Session</a>
                     </div>
                 </div>
-                <div class="bento-card overflow-hidden group">
+                <div class="bento-card overflow-hidden group h-[300px] md:h-auto">
                     <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="Studio">
                 </div>
             </div>
         </section>
 
         <!-- AI Demo Section -->
-        <section id="hitcheck" class="py-32 px-4 max-w-7xl mx-auto">
-            <div class="bento-card p-10 md:p-24 border-[var(--accent)]/20 relative overflow-hidden">
+        <section id="hitcheck" class="py-20 md:py-32 px-4 max-w-7xl mx-auto">
+            <div class="bento-card p-8 md:p-24 border-[var(--accent)]/20 relative overflow-hidden">
                 <div id="scan-line-element" class="scan-line"></div>
                 
                 <div class="max-w-4xl mx-auto text-center relative z-10">
-                    <div class="inline-block px-4 py-1 border border-[var(--accent)]/30 rounded-full mb-8">
-                        <p class="text-[var(--accent)] text-[9px] font-black uppercase tracking-[0.4em]">Neural Engine v2.5</p>
+                    <div class="inline-block px-4 py-1 border border-[var(--accent)]/30 rounded-full mb-6 md:mb-8">
+                        <p class="text-[var(--accent)] text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em]">A&R Portal v3.0</p>
                     </div>
-                    <h2 class="text-5xl md:text-7xl font-black font-syne uppercase mb-6 text-white italic leading-none">A&R <span class="text-kinetic">ASSISTANT</span></h2>
-                    <p class="text-gray-500 uppercase text-[10px] tracking-[0.4em] mb-20 italic max-w-lg mx-auto leading-relaxed">Система глубокого анализа аудиоданных для определения потенциала в экосистеме KADRA Music Label.</p>
+                    <h2 class="text-4xl md:text-7xl font-black font-syne uppercase mb-6 text-white italic leading-none">SUBMIT <span class="text-kinetic">DEMO</span></h2>
+                    <p class="text-gray-500 uppercase text-[9px] md:text-[10px] tracking-[0.3em] md:tracking-[0.4em] mb-12 md:mb-20 italic max-w-lg mx-auto leading-relaxed px-4">
+                        Загрузите ваш трек для автоматической оценки нейросетью KADRA. Лучшие работы попадают напрямую к главе лейбла.
+                    </p>
 
                     <div id="step-1">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                            <div class="bento-card p-12 cursor-pointer group" onclick="document.getElementById('file-input').click()">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-12">
+                            <div class="bento-card p-8 md:p-12 cursor-pointer group hover:border-[var(--accent)]/50" onclick="document.getElementById('file-input').click()">
                                 <input type="file" id="file-input" class="hidden" accept="audio/*">
-                                <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-8 mx-auto group-hover:scale-110 transition-transform">
-                                    <i class="fas fa-bolt-lightning text-2xl text-[var(--accent)]"></i>
+                                <div class="w-12 h-12 md:w-16 md:h-16 bg-[var(--accent)]/5 rounded-2xl flex items-center justify-center mb-6 md:mb-8 mx-auto group-hover:bg-[var(--accent)]/10 transition-all">
+                                    <i class="fas fa-microchip text-xl md:text-2xl text-[var(--accent)]"></i>
                                 </div>
-                                <h3 class="text-white font-bold uppercase text-sm mb-4 tracking-tighter">AI Deep Scan</h3>
-                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-[0.2em]">Мгновенный анализ качества</p>
+                                <h3 class="text-white font-bold uppercase text-xs md:text-sm mb-3 md:mb-4 tracking-tighter italic">Neuro Scan & Submit</h3>
+                                <p class="text-[8px] md:text-[9px] text-gray-500 uppercase leading-relaxed tracking-[0.2em]">Загрузить файл для AI-анализа</p>
                             </div>
                             
-                            <div class="bento-card p-12 cursor-pointer group" onclick="showManualInfo()">
-                                <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-8 mx-auto group-hover:scale-110 transition-transform">
-                                    <i class="fas fa-envelope-open text-2xl text-white"></i>
+                            <div class="bento-card p-8 md:p-12 cursor-pointer group hover:border-white/30" onclick="showManualInfo()">
+                                <div class="w-12 h-12 md:w-16 md:h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6 md:mb-8 mx-auto group-hover:bg-white/10 transition-all">
+                                    <i class="fas fa-paper-plane text-xl md:text-2xl text-white"></i>
                                 </div>
-                                <h3 class="text-white font-bold uppercase text-sm mb-4 tracking-tighter">Direct Submission</h3>
-                                <p class="text-[9px] text-gray-500 uppercase leading-relaxed tracking-[0.2em]">Отправить напрямую менеджеру</p>
+                                <h3 class="text-white font-bold uppercase text-xs md:text-sm mb-3 md:mb-4 tracking-tighter italic">Manual Request</h3>
+                                <p class="text-[8px] md:text-[9px] text-gray-500 uppercase leading-relaxed tracking-[0.2em]">Прямая почта A&R отдела</p>
                             </div>
                         </div>
                     </div>
 
-                    <div id="step-processing" class="hidden py-16">
-                        <div class="relative w-24 h-24 mb-10 mx-auto">
+                    <div id="step-processing" class="hidden py-12 md:py-16">
+                        <div class="relative w-16 h-16 md:w-24 md:h-24 mb-8 md:mb-10 mx-auto">
                             <div class="absolute inset-0 border-4 border-[var(--accent)]/20 rounded-full"></div>
                             <div class="absolute inset-0 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
                         </div>
-                        <p id="status-text" class="text-[11px] uppercase font-black text-[var(--accent)] tracking-[0.5em]">Decompressing Layers...</p>
+                        <p id="status-text" class="text-[9px] md:text-[11px] uppercase font-black text-[var(--accent)] tracking-[0.4em] md:tracking-[0.5em] animate-pulse">Analyzing Audio DNA...</p>
                     </div>
 
                     <div id="step-result" class="hidden text-left">
-                        <div class="bento-card p-8 md:p-12 border-white/5 mb-8 bg-white/[0.02]">
-                            <h3 id="res-filename" class="text-3xl font-black uppercase truncate text-white italic tracking-tighter mb-10">Track Name</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-                                <div class="space-y-4">
-                                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Technical Grade</p>
-                                    <p id="res-tech" class="text-sm text-gray-300 italic">--</p>
+                        <div class="bento-card p-6 md:p-12 border-white/5 mb-6 md:mb-8 bg-white/[0.02]">
+                            <h3 id="res-filename" class="text-xl md:text-3xl font-black uppercase truncate text-white italic tracking-tighter mb-8 md:mb-10 text-kinetic">Track Name</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-8 md:mb-12">
+                                <div class="space-y-3 md:space-y-4">
+                                    <p class="text-[9px] md:text-[10px] text-gray-400 uppercase font-black tracking-widest flex items-center gap-2">
+                                        <i class="fas fa-sliders h-3"></i> Mix Quality
+                                    </p>
+                                    <p id="res-tech" class="text-xs md:text-sm text-gray-300 italic leading-relaxed">--</p>
                                 </div>
-                                <div class="space-y-4">
-                                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Creative Vision</p>
-                                    <p id="res-creative" class="text-sm text-gray-300">--</p>
+                                <div class="space-y-3 md:space-y-4">
+                                    <p class="text-[9px] md:text-[10px] text-gray-400 uppercase font-black tracking-widest flex items-center gap-2">
+                                        <i class="fas fa-star h-3"></i> Potential
+                                    </p>
+                                    <p id="res-creative" class="text-xs md:text-sm text-gray-300 leading-relaxed">--</p>
                                 </div>
                             </div>
-                            <div class="pt-10 border-t border-white/5 flex justify-between">
+                            <div class="pt-8 md:pt-10 border-t border-white/5 flex justify-between items-end">
                                 <div>
-                                    <p class="text-[10px] text-gray-600 uppercase mb-2 tracking-widest font-bold">Hit Score</p>
-                                    <p id="res-score" class="text-5xl font-black text-[var(--accent)]">--</p>
+                                    <p class="text-[9px] md:text-[10px] text-gray-600 uppercase mb-2 tracking-widest font-bold">Overall Rating</p>
+                                    <p id="res-score" class="text-4xl md:text-5xl font-black text-[var(--accent)]">--</p>
                                 </div>
-                                <div id="res-verdict-badge" class="px-6 py-2 rounded-full border border-[var(--accent)] text-[var(--accent)] text-[10px] font-black h-fit mt-auto uppercase">READY</div>
+                                <div id="res-verdict-badge" class="px-4 md:px-6 py-2 rounded-full border border-[var(--accent)] text-[var(--accent)] text-[8px] md:text-[10px] font-black uppercase tracking-widest">AI VERIFIED</div>
                             </div>
                         </div>
-                        <input type="text" id="artist-contact" placeholder="@Telegram / Email" class="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 text-white mb-6 focus:border-[var(--accent)] outline-none text-sm transition-all">
-                        <button onclick="submitFinal()" class="w-full bg-white text-black font-black py-6 rounded-2xl text-xs uppercase tracking-widest hover:shadow-xl transition-all">Upload to KADRA Music Label Cloud</button>
+                        <p class="text-[9px] uppercase tracking-widest text-gray-500 mb-4 px-2">Укажите контактные данные для обратной связи:</p>
+                        <input type="text" id="artist-contact" placeholder="@Telegram / Email" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 md:px-8 py-4 md:py-5 text-white mb-4 md:mb-6 focus:border-[var(--accent)] outline-none text-xs md:text-sm transition-all font-bold">
+                        
+                        <button id="submit-btn" onclick="submitFinal()" class="w-full bg-white text-black font-black py-5 md:py-6 rounded-2xl text-[10px] md:text-xs uppercase tracking-widest hover:bg-[var(--accent)] transition-all flex items-center justify-center gap-3">
+                            <span>Upload to KADRA Cloud</span>
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </button>
                     </div>
 
-                    <div id="manual-info" class="hidden py-16">
-                        <div class="bento-card p-12 bg-white/[0.02] border-white/10 text-center">
-                            <p class="text-[10px] text-gray-600 uppercase mb-4 tracking-widest">A&R Official Inbox</p>
-                            <p class="text-3xl md:text-5xl font-black text-[var(--accent)] tracking-tighter mb-8">thekadrainfo@gmail.com</p>
-                            <button onclick="location.reload()" class="text-[10px] font-bold text-white/40 uppercase tracking-widest hover:text-white transition">← Cancel</button>
+                    <!-- Оверлей загрузки -->
+                    <div id="final-loading" class="hidden fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center">
+                         <div class="relative w-24 h-24 mb-8">
+                            <div class="absolute inset-0 border-4 border-[var(--accent)]/10 rounded-full"></div>
+                            <div class="absolute inset-0 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+                            <i class="fas fa-cloud text-[var(--accent)] text-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
+                        </div>
+                        <h2 class="text-xl md:text-3xl font-black italic uppercase text-white tracking-tighter mb-2">Transmitting to Cloud</h2>
+                        <div class="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+                            <div id="upload-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-300"></div>
+                        </div>
+                        <p class="text-[9px] text-gray-500 uppercase mt-4 tracking-[0.5em]">Encrypting Data Packets...</p>
+                    </div>
+
+                    <div id="manual-info" class="hidden py-12 md:py-16">
+                        <div class="bento-card p-8 md:p-12 bg-white/[0.02] border-white/10 text-center">
+                            <p class="text-[9px] md:text-[10px] text-gray-600 uppercase mb-4 tracking-widest">A&R Official Inbox</p>
+                            <p class="text-xl md:text-5xl font-black text-[var(--accent)] tracking-tighter mb-8 break-all font-syne italic">thekadrainfo@gmail.com</p>
+                            <button onclick="location.reload()" class="text-[9px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest hover:text-white transition">← Back to AI Scan</button>
                         </div>
                     </div>
                 </div>
@@ -322,34 +366,34 @@
         </section>
     </main>
 
-    <footer class="py-32 px-4 border-t border-white/5">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
+    <footer class="py-20 md:py-32 px-4 border-t border-white/5">
+        <div class="max-w-7xl mx-auto text-center md:text-left">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-16 mb-16">
                 <div class="col-span-1 md:col-span-2">
-                    <div class="text-4xl font-black uppercase tracking-tighter mb-8 italic font-syne">KADRA <span class="text-gray-700">MUSIC LABEL</span></div>
-                    <p class="text-gray-500 text-[11px] uppercase leading-[2] tracking-[0.2em] max-w-sm">Будущее музыкальной индустрии 2026. Фокус на талантах, усиленных технологиями.</p>
+                    <div class="text-2xl md:text-4xl font-black uppercase tracking-tighter mb-6 italic font-syne">KADRA <span class="text-gray-700">MUSIC LABEL</span></div>
+                    <p class="text-gray-500 text-[10px] md:text-[11px] uppercase leading-[2] tracking-[0.2em] max-w-sm mx-auto md:mx-0">Будущее музыкальной индустрии 2026. Фокус на талантах, усиленных технологиями.</p>
                 </div>
                 <div>
-                    <h4 class="text-white text-[11px] font-black uppercase tracking-[0.4em] mb-10">Access</h4>
-                    <ul class="flex flex-col gap-6 text-[10px] font-bold uppercase text-gray-500 tracking-widest">
-                        <li><a href="#artists" class="hover:text-[var(--accent)]">Artist Archive</a></li>
-                        <li><a href="#hitcheck" class="hover:text-[var(--accent)]">Demo Protocol</a></li>
-                        <li><a href="#studio" class="hover:text-[var(--accent)]">Studio Booking</a></li>
+                    <h4 class="text-white text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] mb-6">Access</h4>
+                    <ul class="flex flex-col gap-4 text-[9px] md:text-[10px] font-bold uppercase text-gray-500 tracking-widest">
+                        <li><a href="#artists" class="hover:text-[var(--accent)] transition">Artist Archive</a></li>
+                        <li><a href="#hitcheck" class="hover:text-[var(--accent)] transition">Demo Protocol</a></li>
+                        <li><a href="#studio" class="hover:text-[var(--accent)] transition">Studio Booking</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-white text-[11px] font-black uppercase tracking-[0.4em] mb-10">Connect</h4>
-                    <ul class="flex flex-col gap-6 text-[10px] font-bold uppercase text-gray-500 tracking-widest">
-                        <li><a href="mailto:thekadrainfo@gmail.com" class="hover:text-white underline">thekadrainfo@gmail.com</a></li>
-                        <li class="flex gap-4">
+                    <h4 class="text-white text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] mb-6">Connect</h4>
+                    <ul class="flex flex-col gap-4 text-[9px] md:text-[10px] font-bold uppercase text-gray-500 tracking-widest">
+                        <li><a href="mailto:thekadrainfo@gmail.com" class="hover:text-white underline transition break-all">thekadrainfo@gmail.com</a></li>
+                        <li class="flex justify-center md:justify-start gap-4">
                             <a href="#" class="w-10 h-10 bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fab fa-spotify"></i></a>
                             <a href="https://t.me/thekadra" class="w-10 h-10 bento-card flex items-center justify-center hover:border-[var(--accent)]"><i class="fab fa-telegram"></i></a>
                         </li>
                     </ul>
                 </div>
             </div>
-            <div class="pt-12 border-t border-white/5 text-gray-700">
-                <p class="text-[10px] uppercase tracking-[0.3em]">© 2026 KADRA MUSIC LABEL. ALL RIGHTS RESERVED.</p>
+            <div class="pt-8 border-t border-white/5 text-gray-700">
+                <p class="text-[8px] md:text-[10px] uppercase tracking-[0.3em]">© 2026 KADRA MUSIC LABEL. ALL RIGHTS RESERVED.</p>
             </div>
         </div>
     </footer>
@@ -357,7 +401,6 @@
     <script>
         const TG_BOT_TOKEN = "8474344257:AAGILFnIvacKfNDBdygWcvca4QqkREufHNw"; 
         const TG_CHAT_ID = "2022152265";   
-        const API_KEY = ""; // Будет вставлен средой исполнения
 
         const ARTISTS = [
             { name: "Mekhman", genre: "Rap / Pop / R&B", image: "https://avatars.yandex.net/get-music-content/5457712/4ea6895f.p.5988158/1000x1000" },
@@ -382,8 +425,8 @@
                         <div class="artist-card">
                             <img src="${a.image}" class="artist-image" alt="${a.name}">
                             <div class="artist-overlay">
-                                <h3 class="text-white font-extrabold uppercase text-4xl italic font-syne mb-2">${a.name}</h3>
-                                <p class="text-[var(--accent)] font-black text-[10px] uppercase tracking-[0.4em]">${a.genre}</p>
+                                <h3 class="text-white font-extrabold uppercase text-2xl md:text-4xl italic font-syne mb-2">${a.name}</h3>
+                                <p class="text-[var(--accent)] font-black text-[9px] md:text-[10px] uppercase tracking-[0.4em]">${a.genre}</p>
                             </div>
                         </div>
                     </div>
@@ -398,7 +441,8 @@
 
         function scrollRoster(dir) {
             const grid = document.getElementById('roster-grid');
-            grid.scrollBy({ left: dir * 400, behavior: 'smooth' });
+            const scrollAmount = window.innerWidth < 768 ? 300 : 400;
+            grid.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
         }
 
         const handleFileSelection = async (file) => {
@@ -408,13 +452,17 @@
             document.getElementById('scan-line-element').style.display = 'block';
 
             try {
-                // Имитация анализа для демонстрации
-                await new Promise(r => setTimeout(r, 3000));
+                // Имитация AI-анализа
+                const statuses = ["Extracting Vocals...", "Calculating RMS...", "Checking Phase Correlaton...", "Analyzing Market Fit..."];
+                for(let status of statuses) {
+                    document.getElementById('status-text').innerText = status;
+                    await new Promise(r => setTimeout(r, 800));
+                }
                 
                 document.getElementById('res-filename').innerText = file.name;
-                document.getElementById('res-tech').innerText = "Динамический диапазон в норме. Рекомендуется небольшая коррекция суб-баса.";
-                document.getElementById('res-creative').innerText = "Уникальный тембр вокала, коммерческий потенциал припева высокий.";
-                document.getElementById('res-score').innerText = Math.floor(Math.random() * 20 + 80) + "%";
+                document.getElementById('res-tech').innerText = "Динамический диапазон сбалансирован. Частотный спектр соответствует стандартам жанра.";
+                document.getElementById('res-creative').innerText = "Высокий уровень мелодики. Трек имеет коммерческий потенциал для радио.";
+                document.getElementById('res-score').innerText = Math.floor(Math.random() * 20 + 78) + "%";
                 
                 document.getElementById('step-processing').classList.add('hidden');
                 document.getElementById('step-result').classList.remove('hidden');
@@ -430,18 +478,46 @@
 
         window.submitFinal = async () => {
             const contact = document.getElementById('artist-contact').value;
-            if(!contact) return;
+            if(!contact) {
+                 document.getElementById('artist-contact').style.borderColor = 'red';
+                 return;
+            }
+
+            // Показ анимации загрузки
+            const loadingOverlay = document.getElementById('final-loading');
+            const progressBar = document.getElementById('upload-progress');
+            loadingOverlay.classList.remove('hidden');
+            
+            // Имитация прогресса загрузки
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if(progress > 100) progress = 100;
+                progressBar.style.width = progress + '%';
+                if(progress === 100) clearInterval(interval);
+            }, 200);
             
             const formData = new FormData();
             formData.append('chat_id', TG_CHAT_ID);
             formData.append('audio', window.currentFile);
-            formData.append('caption', `KADRA Music Label Demo\nContact: ${contact}\nScore: ${document.getElementById('res-score').innerText}`);
+            formData.append('caption', `🆕 NEW DEMO SUBMISSION\n\n👤 Artist: ${contact}\n📊 AI Score: ${document.getElementById('res-score').innerText}\n📂 File: ${window.currentFile.name}\n\n#demodrop #kadracloud`);
 
             try {
                 await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendAudio`, { method: 'POST', body: formData });
-                document.getElementById('hitcheck').innerHTML = `<div class="text-center py-20"><h2 class="text-4xl font-black uppercase italic">Transmitted</h2><p class="mt-4 text-gray-500 uppercase text-[10px] tracking-widest">We will contact you if interested.</p></div>`;
+                
+                setTimeout(() => {
+                    loadingOverlay.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-check-circle text-[var(--accent)] text-6xl mb-6"></i>
+                            <h2 class="text-3xl font-black italic uppercase text-white tracking-tighter mb-4">Transmission Success</h2>
+                            <p class="text-gray-500 uppercase text-[10px] tracking-[0.4em] mb-10">Your demo is now in KADRA A&R Database.</p>
+                            <button onclick="location.reload()" class="bg-white text-black px-10 py-4 rounded-full font-black uppercase text-[10px] tracking-widest">Done</button>
+                        </div>
+                    `;
+                }, 1500);
             } catch (e) {
-                alert("Error transmitting data.");
+                loadingOverlay.classList.add('hidden');
+                alert("Error transmitting data to cloud.");
             }
         };
 
