@@ -27,7 +27,6 @@
   </div>
 
   <script type="text/babel">
-    // Импорт хуков useState, useEffect и useCallback
     const { useState, useEffect, useCallback } = React;
 
     // Инструкции для AI-модели, определяющие стиль KADRA
@@ -35,25 +34,22 @@
 РОЛЬ: KADRA-помощник
 ЗАДАЧА: Ты — эксперт по лирике в стиле KADRA. Твоя задача — писать тексты по запросу пользователя.
 
+ЯЗЫК: 
+* Всегда отвечай на РУССКОМ ЯЗЫКЕ. 
+* Особенно для разделов ИНТРО (Intro) и АУТРО (Outro) — используй только русские атмосферные фразы.
+
 ОБЩИЕ ПРАВИЛА:
-* Фокус всегда на **девушке** и её **нахваливании**.
-* Используй **полную** рифму.
-* Текст должен быть **простым** для понимания.
-* Тексты должны быть **лаконичными** и **ёмкими**, избегай излишней многословности.
+* Фокус всегда на девушке и её нахваливании.
+* Используй полную рифму.
+* Текст должен быть простым для понимания.
+* Тексты должны быть лаконичными и ёмкими.
 * Сочетай образы роскоши, улиц и эмоций.
-* **КЛЮЧЕВОЕ ПРАВИЛО**: **НЕ ИСПОЛЬЗУЙ** слова из "СЛОВАРЯ" напрямую в генерируемых текстах. Вместо них генерируй **рандомные синонимы** или другие слова, которые передают то же настроение, смысл и стиль KADRA. Будь максимально креативным в выборе лексики, избегая буквального повторения.
-* **ПРАВИЛО ДЛЯ ПРИПЕВОВ**: Припевы должны быть **короткими**, **цепляющими** и **максимально простыми** для запоминания.
+* НЕ ИСПОЛЬЗУЙ слова из словаря напрямую, используй синонимы.
+* ПРАВИЛО ДЛЯ ПРИПЕВОВ: Короткие, цепляющие и простые.
 
-СЛОВАРЬ (только для ПОНИМАНИЯ СТИЛЯ, НЕ ИСПОЛЬЗУЙ слова из списка в тексте):
-\`неон\`, \`хром\`, \`асфальт\`, \`огни\`, \`трасса\`, \`адреналин\`, \`хаос\`, \`закон\`, \`бензин\`, \`пожар\`, \`шлейф\`, \`флоу\`, \`дикарка\`.
-
-ЧЁРНЫЙ СПИСОК (НИКОГДА НЕ ИСПОЛЬЗОВАТЬ):
-\`бездна\`, \`тачка\`, \`волки\`, \`движ\`, \`гроб\`, \`глазища\`, \`панелька\`.
-
-МАНТРЫ: Используй мантры (\`Ууу\`, \`Ааа\`, \`Ооо\`, \`Аййййй\`, \`Омммм\`) **умеренно**, для усиления атмосферы или в качестве связки, **чередуя их** и избегая однотипных повторений подряд.
+МАНТРЫ: Используй мантры (Ууу, Ааа, Ооо, Аййййй, Омммм) умеренно.
     `;
 
-    // Debounce function to limit how often a function is called
     function debounce(func, delay) {
       let timeout;
       return function(...args) {
@@ -63,25 +59,20 @@
       };
     }
     
-    // Главный компонент приложения
     function App() {
-      // Состояние для функционала AI
       const [loading, setLoading] = useState(false);
       const [generatedText, setGeneratedText] = useState("");
       const [error, setError] = useState("");
       const [activeRequest, setActiveRequest] = useState('');
-
-      // Состояние для новых блоков
       const [showPlayer, setShowPlayer] = useState(false);
       const [showPlayer2, setShowPlayer2] = useState(false); 
       const [notesContent, setNotesContent] = useState('');
       const [showSettingsModal, setShowSettingsModal] = useState(false);
-      const [showPasswordModal, setShowPasswordModal] = useState(false); // Новый стейт для модального окна пароля
+      const [showPasswordModal, setShowPasswordModal] = useState(false); 
 
-      // Состояние для настроек API. Ключ теперь задан в коде.
-      const [apiKey, setApiKey] = useState('AIzaSyDIKhbDRfWnd6JRhOkj6IlfUyzGTRYCfXo');
+      // Ключ API должен быть пустым в этой среде для правильной работы (error 403 fix)
+      const [apiKey, setApiKey] = useState('');
 
-      // Эффект для загрузки заметок из Local Storage при загрузке страницы
       useEffect(() => {
         const savedNotes = localStorage.getItem('kadra_songwriter_notes');
         if (savedNotes) {
@@ -89,36 +80,20 @@
         }
       }, []);
 
-      // Эффект для сохранения заметок в Local Storage при каждом изменении
-      // Используем debounce, чтобы не записывать данные слишком часто
       useEffect(() => {
         const saveNotes = debounce(() => {
           localStorage.setItem('kadra_songwriter_notes', notesContent);
         }, 500);
-
         if (notesContent !== null) {
           saveNotes();
         }
-
-        // Функция очистки для отмены таймера, если компонент размонтируется
-        return () => {
-          clearTimeout(saveNotes);
-        };
+        return () => clearTimeout(saveNotes);
       }, [notesContent]);
 
-      // Функция для вызова API и генерации текста
       const generateLyrics = useCallback(async (prompt) => {
-        const key = apiKey || ''; // Ключ будет взят из состояния
+        const key = apiKey; // Используем текущее значение (пустое по умолчанию для обхода 403)
+        const model_name = "gemini-2.5-flash-preview-09-2025";
         
-        if (!key) {
-          setError("API-ключ не задан. Пожалуйста, откройте настройки и вставьте ваш ключ.");
-          return;
-        }
-
-        const model_name = "gemini-2.5-flash-preview-05-20";
-        const system_instruction = KADRA_SYSTEM_INSTRUCTION;
-        const generation_config = { temperature: 0.8 };
-
         setLoading(true);
         setError("");
         setGeneratedText("");
@@ -126,80 +101,76 @@
         try {
           const payload = {
             contents: [
-              { role: "user", parts: [{ text: system_instruction }] },
-              { role: "user", parts: [{ text: prompt }] }
+              { parts: [{ text: prompt }] }
             ],
-            generationConfig: generation_config
+            systemInstruction: {
+              parts: [{ text: KADRA_SYSTEM_INSTRUCTION }]
+            }
           };
 
           const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model_name}:generateContent?key=${key}`;
 
-          const response = await fetch(apiUrl, {
+          const fetchWithRetry = async (url, options, retries = 5, backoff = 1000) => {
+            const res = await fetch(url, options);
+            if (res.status === 403) {
+              throw new Error("403: Доступ запрещен. Убедитесь, что API ключ пуст или валиден.");
+            }
+            if (!res.ok) throw new Error(`API error: ${res.status}`);
+            return await res.json();
+          };
+
+          const result = await fetchWithRetry(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
 
-          if (!response.ok) {
-            throw new Error(`API error: ${response.status} ${response.statusText}`);
-          }
-
-          const result = await response.json();
-          if (result.candidates && result.candidates.length > 0 &&
-              result.candidates[0].content && result.candidates[0].content.parts &&
-              result.candidates[0].content.parts.length > 0) {
-            setGeneratedText(result.candidates[0].content.parts[0].text);
+          const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            setGeneratedText(text);
           } else {
-            console.error("Unexpected API response structure:", result);
-            setGeneratedText("Извините, произошла ошибка при генерации текста.");
+            setGeneratedText("Не удалось получить ответ от AI.");
           }
         } catch (err) {
           console.error("Error calling Gemini API:", err);
-          setError(`Ошибка: ${err.message}. Пожалуйста, попробуйте еще раз.`);
+          setError(`Ошибка: ${err.message}`);
         } finally {
           setLoading(false);
         }
       }, [apiKey]); 
 
-      // Обработчик нажатий на кнопки
       const handleButtonClick = (type) => {
         let prompt = '';
         setActiveRequest(type);
         switch (type) {
           case 'intro':
-            prompt = 'Напиши интро для трека в стиле KADRA. Отвечай на русском языке.';
+            prompt = 'Напиши только интро на русском языке в стиле KADRA.';
             break;
           case 'chorus':
-            prompt = 'Напиши припев для трека в стиле KADRA.';
+            prompt = 'Напиши только припев на русском языке в стиле KADRA.';
             break;
           case 'verse':
-            prompt = 'Напиши куплет для трека в стиле KADRA.';
+            prompt = 'Напиши только куплет на русском языке в стиле KADRA.';
             break;
           case 'outro':
-            prompt = 'Напиши аутро для трека в стиле KADRA. Отвечай на русском языке.';
+            prompt = 'Напиши только аутро на русском языке в стиле KADRA.';
             break;
           case 'full_track':
-            prompt = 'Напиши полный трек (интро, припев, куплет, аутро) в стиле KADRA.';
+            prompt = 'Напиши полный трек (интро, припев, куплет, аутро) полностью на русском языке в стиле KADRA.';
             break;
           default:
-            prompt = 'Напиши текст в стиле KADRA.';
+            prompt = 'Напиши текст на русском языке в стиле KADRA.';
         }
         generateLyrics(prompt);
       };
 
-      // Рендер главного компонента
       return (
         <div className="min-h-screen bg-gray-950 text-gray-100 font-inter flex flex-col items-center p-4 relative overflow-hidden">
           
-          {/* Кнопка настроек */}
           <div className="fixed top-4 left-4 z-50">
             <button
-              onClick={() => setShowPasswordModal(true)} // Теперь открывает модальное окно пароля
-              className="
-                p-2 rounded-full text-gray-400 hover:text-gray-200 transition-colors duration-300
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 ring-offset-gray-950
-              "
-              title="Настройки"
+              onClick={() => setShowPasswordModal(true)}
+              className="p-2 rounded-full text-gray-400 hover:text-gray-200 transition-colors duration-300 focus:outline-none"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.533.326 1.144.372 1.724.038z" />
@@ -208,285 +179,114 @@
             </button>
           </div>
 
-          {/* Плавающие кнопки плееров */}
           <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-50">
-            <SmallPlayerButton 
-              onClick={() => { setShowPlayer(!showPlayer); setShowPlayer2(false); }} 
-              title="Открыть плейлист Trap"
-            >
-              Trap
-            </SmallPlayerButton>
-            <SmallPlayerButton 
-              onClick={() => { setShowPlayer2(!showPlayer2); setShowPlayer(false); }} 
-              title="Открыть плейлист G-House"
-            >
-              G-House
-            </SmallPlayerButton>
+            <SmallPlayerButton onClick={() => { setShowPlayer(!showPlayer); setShowPlayer2(false); }}>Trap</SmallPlayerButton>
+            <SmallPlayerButton onClick={() => { setShowPlayer2(!showPlayer2); setShowPlayer(false); }}>G-House</SmallPlayerButton>
           </div>
 
-          {/* Заголовок */}
           <div className="w-full max-w-4xl text-center mb-8">
             <h1 className="text-5xl font-extrabold text-green-400 mb-2 drop-shadow-lg">KADRA Сонграйтер</h1>
-            <p className="text-xl text-gray-300">
-              Ваш персональный помощник по созданию лирики в стиле KADRA.
-            </p>
+            <p className="text-xl text-gray-300">Создавайте хиты в уникальном стиле KADRA.</p>
           </div>
           
-          {/* Кнопки генерации AI */}
           <div className="flex flex-wrap justify-center gap-4 mb-8 w-full max-w-2xl">
-            <Button onClick={() => handleButtonClick('intro')} active={activeRequest === 'intro'}>
-              Интро
-            </Button>
-            <Button onClick={() => handleButtonClick('chorus')} active={activeRequest === 'chorus'}>
-              Припев
-            </Button>
-            <Button onClick={() => handleButtonClick('verse')} active={activeRequest === 'verse'}>
-              Куплет
-            </Button>
-            <Button onClick={() => handleButtonClick('outro')} active={activeRequest === 'outro'}>
-              Аутро
-            </Button>
-            <Button onClick={() => handleButtonClick('full_track')} active={activeRequest === 'full_track'}>
-              Полный Трек
-            </Button>
+            <Button onClick={() => handleButtonClick('intro')} active={activeRequest === 'intro'}>Интро</Button>
+            <Button onClick={() => handleButtonClick('chorus')} active={activeRequest === 'chorus'}>Припев</Button>
+            <Button onClick={() => handleButtonClick('verse')} active={activeRequest === 'verse'}>Куплет</Button>
+            <Button onClick={() => handleButtonClick('outro')} active={activeRequest === 'outro'}>Аутро</Button>
+            <Button onClick={() => handleButtonClick('full_track')} active={activeRequest === 'full_track'}>Полный Трек</Button>
           </div>
 
-          {/* Область вывода AI */}
-          <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+          <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6 mb-8 min-h-[12rem]">
             {loading && (
               <div className="flex justify-center items-center h-48">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
-                <p className="ml-4 text-lg text-green-300">Генерируем шедевр...</p>
+                <p className="ml-4 text-lg text-green-300">Рифмуем строки...</p>
               </div>
             )}
-            {error && (
-              <div className="bg-red-700 p-4 rounded-lg text-red-100 text-center">
-                {error}
-              </div>
-            )}
-            {generatedText && (
-              <div className="whitespace-pre-wrap text-lg leading-relaxed text-gray-200">
-                {generatedText}
-              </div>
-            )}
+            {error && <div className="bg-red-700 p-4 rounded-lg text-red-100 text-center">{error}</div>}
+            {generatedText && <div className="whitespace-pre-wrap text-lg leading-relaxed text-gray-200">{generatedText}</div>}
             {!loading && !error && !generatedText && (
-              <div className="text-center text-gray-500 text-lg py-12">
-                Нажмите на кнопку, чтобы начать творить!
-              </div>
+              <div className="text-center text-gray-500 text-lg py-12">Выберите тип части текста выше.</div>
             )}
           </div>
 
-          {/* Секция заметок */}
           <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-200 mb-4">Ваши заметки</h2>
+            <h2 className="text-2xl font-bold text-gray-200 mb-4">Черновики</h2>
             <textarea
               value={notesContent}
               onChange={(e) => setNotesContent(e.target.value)}
-              className="w-full h-48 p-3 rounded-lg bg-gray-900 text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Пишите здесь ваши заметки, идеи, или черновики..."
+              className="w-full h-48 p-3 rounded-lg bg-gray-900 text-gray-100 resize-none focus:ring-2 focus:ring-green-500 outline-none"
+              placeholder="Вставьте сюда лучшие куски..."
             ></textarea>
-            <p className="mt-2 text-sm text-gray-500">
-              Заметки автоматически сохраняются в вашем браузере.
-            </p>
           </div>
 
-          {/* Плеер 1 */}
-          <div className={`
-            fixed top-0 right-0 h-full w-full bg-gray-900 border-l border-gray-700
-            transform transition-transform duration-500 z-40
-            ${showPlayer ? 'translate-x-0' : 'translate-x-full'}
-          `}>
-            <div className="flex justify-between items-center p-6 border-b border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-200">Плеер Beatstars #1 (Trap)</h2>
-              <button onClick={() => setShowPlayer(false)} className="text-gray-400 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="w-full h-[calc(100%-80px)] flex justify-center items-center p-4">
-              <iframe
-                src="https://beatstars.com/embed/collection/188442"
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                className="rounded-lg shadow-xl"
-                title="Beatstars Player 1"
-              >
-                Ваш браузер не поддерживает iframes.
-              </iframe>
-            </div>
-          </div>
-
-          {/* Плеер 2 */}
-          <div className={`
-            fixed top-0 right-0 h-full w-full bg-gray-900 border-l border-gray-700
-            transform transition-transform duration-500 z-40
-            ${showPlayer2 ? 'translate-x-0' : 'translate-x-full'}
-          `}>
-            <div className="flex justify-between items-center p-6 border-b border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-200">Плеер Beatstars #2 (G-House)</h2>
-              <button onClick={() => setShowPlayer2(false)} className="text-gray-400 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="w-full h-[calc(100%-80px)] flex justify-center items-center p-4">
-              <iframe
-                src="https://www.beatstars.com/search?type=tracks&tags=g%20house"
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                className="rounded-lg shadow-xl"
-                title="Beatstars Player 2"
-              >
-                Ваш браузер не поддерживает iframes.
-              </iframe>
-            </div>
-          </div>
+          <PlayerPanel show={showPlayer} onClose={() => setShowPlayer(false)} title="Trap" url="https://beatstars.com/embed/collection/188442" />
+          <PlayerPanel show={showPlayer2} onClose={() => setShowPlayer2(false)} title="G-House" url="https://www.beatstars.com/search?type=tracks&tags=g%20house" />
           
-          {/* Футер */}
           <div className="mt-12 text-center text-gray-500 text-sm">
-           <a href="https://www.kadrarecords.ru/HookGen/index.html">ГЕНЕРАТОР ХУКОВЫХ ФРАЗ</a>
+           <a href="https://www.kadrarecords.ru/HookGen/index.html" className="hover:text-green-400 transition-colors">ГЕНЕРАТОР ХУКОВЫХ ФРАЗ</a>
           </div>
 
-          {/* Модальное окно пароля */}
-          {showPasswordModal && (
-            <PasswordModal
-              onSuccess={() => {
-                setShowPasswordModal(false);
-                setShowSettingsModal(true);
-              }}
-              onClose={() => setShowPasswordModal(false)}
-            />
-          )}
-
-          {/* Модальное окно настроек */}
-          {showSettingsModal && (
-            <SettingsModal 
-              onClose={() => setShowSettingsModal(false)} 
-              apiKey={apiKey} 
-              setApiKey={setApiKey}
-            />
-          )}
-
+          {showPasswordModal && <PasswordModal onSuccess={() => { setShowPasswordModal(false); setShowSettingsModal(true); }} onClose={() => setShowPasswordModal(false)} />}
+          {showSettingsModal && <SettingsModal onClose={() => setShowSettingsModal(false)} apiKey={apiKey} setApiKey={setApiKey} />}
         </div>
       );
     }
     
-    // Кастомный компонент кнопки
     const Button = ({ children, onClick, active }) => (
-      <button
-        onClick={onClick}
-        className={`
-          px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300
-          shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2
-          ${active
-            ? 'bg-green-600 text-white transform scale-105 ring-green-500 ring-offset-gray-950'
-            : 'bg-gray-700 text-gray-200 hover:bg-gray-600 ring-gray-600 ring-offset-gray-950'}
-        `}
-      >
+      <button onClick={onClick} className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${active ? 'bg-green-600 text-white transform scale-105' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'}`}>
         {children}
       </button>
     );
 
-    // Кастомный компонент маленькой кнопки плеера
-    const SmallPlayerButton = ({ children, onClick, title }) => (
-      <button
-        onClick={onClick}
-        title={title}
-        className="
-          w-20 h-20 text-sm font-bold rounded-full flex items-center justify-center text-center
-          bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors duration-300
-          shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ring-gray-600 ring-offset-gray-950
-        "
-      >
+    const SmallPlayerButton = ({ children, onClick }) => (
+      <button onClick={onClick} className="w-16 h-16 text-xs font-bold rounded-full flex items-center justify-center bg-gray-700 text-gray-200 hover:bg-gray-600 transition-all shadow-lg">
         {children}
       </button>
     );
 
-    // Кастомный компонент модального окна настроек
+    const PlayerPanel = ({ show, onClose, title, url }) => (
+      <div className={`fixed top-0 right-0 h-full w-full bg-gray-900 z-40 transform transition-transform duration-500 ${show ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex justify-between items-center p-6 border-b border-gray-700">
+          <h2 className="text-2xl font-bold text-gray-200">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
+        </div>
+        <iframe src={url} width="100%" height="90%" frameBorder="0" className="p-4" title={title}></iframe>
+      </div>
+    );
+
     const SettingsModal = ({ onClose, apiKey, setApiKey }) => (
-      <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-50">
-        <div className="bg-gray-800 rounded-xl shadow-2xl p-8 max-w-2xl w-full">
-          <h2 className="text-3xl font-bold text-gray-200 mb-4">Настройки</h2>
-          <div className="mb-4">
-            <label htmlFor="api-key" className="block text-gray-400 font-medium mb-2">API Key (уже задан)</label>
-            <input 
-              type="text" 
-              id="api-key" 
-              value={apiKey} 
-              onChange={(e) => setApiKey(e.target.value)} 
-              className="w-full p-3 rounded-lg bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="API-ключ уже задан"
-            />
-          </div>
-          <div className="flex justify-end gap-4">
-            <Button onClick={onClose}>
-              Закрыть
-            </Button>
-          </div>
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center p-4 z-50">
+        <div className="bg-gray-800 rounded-xl p-8 max-w-md w-full">
+          <h2 className="text-2xl font-bold text-gray-200 mb-4">Настройки API</h2>
+          <p className="text-gray-400 text-sm mb-4">Для работы в этой среде оставьте поле пустым.</p>
+          <input type="text" value={apiKey} onChange={(e) => setApiKey(e.target.value)} className="w-full p-3 rounded bg-gray-900 text-white mb-6" placeholder="API Key" />
+          <Button onClick={onClose}>Сохранить и закрыть</Button>
         </div>
       </div>
     );
     
-    // Кастомный компонент модального окна пароля
     const PasswordModal = ({ onSuccess, onClose }) => {
       const [password, setPassword] = useState('');
       const [error, setError] = useState('');
       const correctPassword = 'Ioioiohyadfg';
-
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        if (password === correctPassword) {
-          onSuccess();
-        } else {
-          setError('Неверный пароль. Попробуйте еще раз.');
-          setPassword('');
-        }
-      };
-
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-50">
-          <div className="bg-gray-800 rounded-xl shadow-2xl p-8 max-w-sm w-full">
-            <h2 className="text-2xl font-bold text-gray-200 mb-4 text-center">Введите пароль</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Пароль"
-                />
-              </div>
-              {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
-              <div className="flex justify-center gap-4">
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 text-white hover:bg-green-500 ring-green-500 ring-offset-gray-950"
-                >
-                  Войти
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-700 text-gray-200 hover:bg-gray-600 ring-gray-600 ring-offset-gray-950"
-                >
-                  Отмена
-                </button>
-              </div>
-            </form>
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center p-4 z-50">
+          <div className="bg-gray-800 rounded-xl p-8 max-w-sm w-full text-center">
+            <h2 className="text-xl font-bold text-gray-200 mb-4">Доступ ограничен</h2>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 rounded bg-gray-900 text-white mb-2" placeholder="Пароль" />
+            {error && <p className="text-red-400 text-xs mb-4">{error}</p>}
+            <div className="flex justify-center gap-2">
+              <button onClick={() => password === correctPassword ? onSuccess() : setError('Неверно')} className="bg-green-600 px-4 py-2 rounded text-white">Войти</button>
+              <button onClick={onClose} className="bg-gray-600 px-4 py-2 rounded text-white">Отмена</button>
+            </div>
           </div>
         </div>
       );
     };
     
-    // Рендер компонента в DOM
-    const rootElement = document.getElementById('root');
-    ReactDOM.createRoot(rootElement).render(<App />);
-
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
