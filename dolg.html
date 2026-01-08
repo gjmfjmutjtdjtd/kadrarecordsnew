@@ -52,6 +52,10 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
+
+        #promo-offer {
+            display: none;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center py-12 px-4">
@@ -73,9 +77,16 @@
                         Риск: Расторжение договора аранжировок (Союз Мьюзик)
                     </p>
                     
-                    <button onclick="openModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition duration-200 transform active:scale-95 flex items-center gap-2">
-                        Погасить долг
-                    </button>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button onclick="openModal('standard')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition duration-200 transform active:scale-95 flex items-center gap-2">
+                            Погасить долг
+                        </button>
+                        
+                        <!-- Спецпредложение (появляется один раз) -->
+                        <button id="promo-offer" onclick="openModal('promo')" class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-400 hover:to-orange-500 text-black font-black py-3 px-6 rounded-lg transition duration-200 transform active:scale-95 animate-bounce shadow-lg shadow-yellow-500/20">
+                            ⚡ Погасить досрочно без % за 1 час
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="text-right">
@@ -125,14 +136,19 @@
             </button>
             
             <div class="text-center">
-                <div class="bg-yellow-400 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <div id="modal-icon" class="bg-yellow-400 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-6 transition-colors">
                     <span class="text-black font-black text-2xl font-serif italic">T</span>
                 </div>
-                <h3 class="text-2xl font-bold mb-4">Реквизиты Т-Банк</h3>
+                <h3 id="modal-title" class="text-2xl font-bold mb-2 text-white">Реквизиты Т-Банк</h3>
+                <p id="modal-desc" class="text-gray-500 text-sm mb-6">Для полной очистки кредитной истории</p>
                 
                 <div class="bg-black/40 rounded-xl p-4 mb-6 border border-gray-800">
                     <div class="text-xs text-gray-500 uppercase mb-1">Номер телефона</div>
                     <div class="text-2xl font-bold text-yellow-400 tracking-wider">+7 961 077 74 03</div>
+                </div>
+
+                <div id="promo-timer" class="hidden mb-6 py-2 px-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <span class="text-yellow-500 text-xs font-bold uppercase tracking-widest">Предложение истекает через: <span id="timer-val">59:59</span></span>
                 </div>
 
                 <button onclick="closeModal()" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-gray-200 transition">
@@ -151,6 +167,14 @@
         let keyRate = 0.21; 
         let inflationRate = 0.091; 
         let totalRate = keyRate + inflationRate;
+
+        // Проверка одноразовой кнопки
+        window.onload = function() {
+            const hasSeenPromo = localStorage.getItem('seen_debt_promo');
+            if (!hasSeenPromo) {
+                document.getElementById('promo-offer').style.display = 'block';
+            }
+        };
 
         async function fetchRealData() {
             const query = "текущая ключевая ставка ЦБ РФ и инфляция январь 2026";
@@ -202,8 +226,49 @@
             document.getElementById('per-second').innerText = '+' + growth.toFixed(5) + ' ₽';
         }
 
-        function openModal() { document.getElementById('paymentModal').classList.add('active'); }
-        function closeModal() { document.getElementById('paymentModal').classList.remove('active'); }
+        let timerInterval;
+        function startTimer() {
+            let seconds = 3600;
+            const display = document.getElementById('timer-val');
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                let mins = Math.floor(seconds / 60);
+                let secs = seconds % 60;
+                display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                if (--seconds < 0) clearInterval(timerInterval);
+            }, 1000);
+        }
+
+        function openModal(type) { 
+            const modal = document.getElementById('paymentModal');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const icon = document.getElementById('modal-icon');
+            const timer = document.getElementById('promo-timer');
+
+            if (type === 'promo') {
+                title.innerText = "Акция: 60 000.00 ₽";
+                desc.innerText = "Заморозка процентов при оплате в течение часа";
+                icon.classList.replace('bg-yellow-400', 'bg-green-500');
+                timer.classList.remove('hidden');
+                startTimer();
+                // Помечаем как увиденное, чтобы кнопка исчезла после закрытия или перезагрузки
+                localStorage.setItem('seen_debt_promo', 'true');
+                document.getElementById('promo-offer').style.display = 'none';
+            } else {
+                title.innerText = "Реквизиты Т-Банк";
+                desc.innerText = "Для полной очистки кредитной истории";
+                icon.classList.replace('bg-green-500', 'bg-yellow-400');
+                timer.classList.add('hidden');
+            }
+
+            modal.classList.add('active'); 
+        }
+
+        function closeModal() { 
+            document.getElementById('paymentModal').classList.remove('active'); 
+            clearInterval(timerInterval);
+        }
 
         fetchRealData();
         setInterval(fetchRealData, 3600000);
