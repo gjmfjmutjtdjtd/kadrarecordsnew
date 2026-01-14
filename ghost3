@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOSTWRITER 3.0 - AI Music Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030303;
+            color: #ffffff;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .logo-font { font-family: 'Syncopate', sans-serif; }
+
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+        }
+
+        .artist-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .artist-item:hover { background: rgba(255, 255, 255, 0.03); transform: translateX(5px); }
+
+        .artist-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: -5px 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .artist-item.active::before {
+            content: ''; position: absolute; left: 0; top: 20%; height: 60%; width: 3px; background: var(--accent); border-radius: 0 4px 4px 0;
+        }
+
+        .neon-button {
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+
+        .neon-button:hover {
+            box-shadow: 0 0 25px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+
+        #studio-panel { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .panel-hidden { transform: translateX(100%); opacity: 0; }
+
+        .bar { width: 4px; background: var(--accent); border-radius: 4px; }
+        @keyframes wave { 0% { height: 20%; } 50% { height: 100%; } 100% { height: 20%; } }
+        .playing .bar { animation: wave 0.8s ease-in-out infinite; }
+
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .artist-desc { font-size: 10px; color: rgba(255, 255, 255, 0.3); display: block; margin-top: 2px; font-weight: 400; }
+
+        .theme-chip {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 16px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 90px;
+        }
+        
+        .theme-chip:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-chip i {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.4);
+            transition: color 0.2s;
+        }
+
+        .theme-chip:hover i { color: #60a5fa; }
+        
+        .theme-chip span {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .theme-chip:hover span { color: white; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .section-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Tools Panel -->
+    <div id="studio-panel" class="fixed top-0 right-0 h-full w-80 bg-[#050505]/95 backdrop-blur-3xl border-l border-white/5 z-50 p-8 panel-hidden shadow-2xl">
+        <div class="flex justify-between items-center mb-10">
+            <h3 class="logo-font text-[10px] font-bold tracking-widest text-blue-500 uppercase">Настройки Движка</h3>
+            <button onclick="togglePanel()" class="text-white/40 hover:text-white transition-all text-2xl">&times;</button>
+        </div>
+        
+        <div class="space-y-8">
+            <div class="p-6 rounded-3xl bg-white/5 border border-white/10">
+                <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-4">Параметры Стиля (Suno Style)</p>
+                <div id="suno-prompt" class="text-xs text-gray-400 italic mb-6 leading-relaxed">Выберите артиста для настройки параметров...</div>
+                <button onclick="copyToClipboard('suno-prompt')" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black tracking-widest rounded-2xl transition-all shadow-lg shadow-blue-600/20">КОПИРОВАТЬ PROMPT</button>
+            </div>
+
+            <div class="space-y-4">
+                <p class="text-[10px] text-white/30 font-bold uppercase tracking-widest">Внешний Продакшн</p>
+                <a href="https://suno.com" target="_blank" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-blue-600/10 border border-white/5 hover:border-blue-500/30 transition-all">
+                    <span class="text-sm font-medium">SUNO AI</span>
+                    <i class="fas fa-external-link-alt text-[10px]"></i>
+                </a>
+                <a href="https://udio.com" target="_blank" class="block p-4 rounded-2xl bg-white/5 hover:bg-purple-600/10 border border-white/5 hover:border-purple-500/30 transition-all text-sm font-medium flex justify-between items-center">
+                    <span>UDIO AI</span>
+                    <i class="fas fa-external-link-alt text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8 lg:py-12">
+        <nav class="flex justify-between items-center mb-12 lg:mb-20">
+            <div class="flex items-center gap-5">
+                <div class="w-14 h-14 bg-blue-600 rounded-[22px] flex items-center justify-center shadow-2xl shadow-blue-600/30">
+                    <i class="fas fa-compact-disc text-2xl text-white animate-spin-slow"></i>
+                </div>
+                <div>
+                    <h1 class="logo-font text-2xl font-bold tracking-tighter">GHOST<span class="text-blue-500">3.0</span></h1>
+                    <p class="text-[10px] text-white/30 font-bold uppercase tracking-[0.3em]">Neural Ghostwriting System</p>
+                </div>
+            </div>
+            
+            <button id="tools-btn" onclick="togglePanel()" class="px-8 py-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-black text-[10px] tracking-widest uppercase">
+                Инструменты
+            </button>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <!-- 01. Студия Артистов -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="section-header">
+                    <div class="section-dot"></div>
+                    <h2 class="text-[10px] font-black text-white/50 uppercase tracking-[0.3em]">01. Студия Артистов (30+30)</h2>
+                </div>
+
+                <div id="gender-selector" class="flex p-1.5 bg-white/5 rounded-2xl border border-white/10 mb-2">
+                    <button onclick="setGender('male')" id="btn-male" class="flex-1 py-3.5 rounded-xl transition-all font-black text-[10px] tracking-widest uppercase active">MALE</button>
+                    <button onclick="setGender('female')" id="btn-female" class="flex-1 py-3.5 rounded-xl transition-all font-black text-[10px] tracking-widest uppercase">FEMALE</button>
+                </div>
+
+                <div class="glass-panel p-2 flex flex-col h-[700px] relative" id="artist-panel">
+                    <div id="artist-list" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
+                        <!-- Artists rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 02. Творческая Лаборатория -->
+            <div class="lg:col-span-8 space-y-8">
+                <div class="section-header">
+                    <div class="section-dot"></div>
+                    <h2 class="text-[10px] font-black text-white/50 uppercase tracking-[0.3em]">02. Творческая Лаборатория</h2>
+                </div>
+
+                <div class="glass-panel p-8 lg:p-12 relative overflow-hidden group border-white/10" id="input-panel">
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-4 mb-8">
+                            <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Ввод Концепции</span>
+                            <div class="h-[1px] flex-1 bg-white/5"></div>
+                        </div>
+
+                        <!-- Theme Chips Grid -->
+                        <div id="themes-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-6">
+                            <!-- Theme chips injected here -->
+                        </div>
+                        
+                        <textarea id="topic-input" rows="4" placeholder="О чем будет трек? Опишите ситуацию или выберите тему..." 
+                               class="w-full bg-white/[0.02] border border-white/5 rounded-[32px] px-8 py-7 focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-white text-xl placeholder-white/10 transition-all resize-none mb-8"></textarea>
+                        
+                        <div class="flex flex-col sm:flex-row gap-5">
+                            <button onclick="generateLyrics()" id="generate-btn" class="flex-[3] neon-button text-white font-black py-6 rounded-[24px] transition-all flex items-center justify-center tracking-[0.2em] uppercase text-xs">
+                                <i class="fas fa-bolt-lightning mr-3"></i> Создать Текст
+                            </button>
+                            <button onclick="generateVoice()" id="voice-btn" class="hidden flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-6 rounded-[24px] transition-all border border-white/10 flex items-center justify-center">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="audio-player" class="hidden mt-10 p-6 bg-blue-600/10 border border-blue-500/20 rounded-[28px] flex items-center gap-6 fade-in">
+                        <div class="flex items-end gap-1.5 h-10 playing">
+                            <div class="bar h-2"></div><div class="bar h-6"></div><div class="bar h-4"></div><div class="bar h-8"></div><div class="bar h-3"></div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Генерация Аудио</p>
+                            <p class="text-sm text-white/50 italic font-medium">Прослушивание AI-голоса...</p>
+                        </div>
+                        <button onclick="stopAudio()" class="w-12 h-12 bg-white/10 hover:bg-red-500/20 hover:text-red-500 rounded-full flex items-center justify-center transition-all">
+                            <i class="fas fa-stop text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 03. Цифровая Рукопись -->
+                <div id="result-container" class="hidden space-y-6 fade-in">
+                    <div class="section-header">
+                        <div class="section-dot"></div>
+                        <h2 class="text-[10px] font-black text-white/50 uppercase tracking-[0.3em]">03. Результат</h2>
+                    </div>
+                    
+                    <div class="flex justify-between items-center px-6">
+                        <span class="text-[10px] font-black text-white/20 uppercase tracking-widest">Текст песни</span>
+                        <button onclick="copyLyrics()" class="text-[10px] font-black text-blue-500 hover:text-white transition-all uppercase tracking-widest">Копировать</button>
+                    </div>
+                    <div id="lyrics-output" class="glass-panel p-10 lg:p-16 text-white/90 leading-relaxed text-2xl font-light italic border-white/5">
+                        <!-- Lyrics -->
+                    </div>
+                </div>
+
+                <!-- Loader -->
+                <div id="loader" class="hidden py-40 flex flex-col items-center">
+                    <div class="w-24 h-1 bg-white/5 rounded-full overflow-hidden relative">
+                        <div class="absolute inset-0 bg-blue-500 w-1/2 animate-loader-progress"></div>
+                    </div>
+                    <p class="mt-8 text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Нейросеть пишет хит...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "";
+        let audioContext, audioSource;
+        let currentGender = 'male';
+        let selectedArtistId = 'macan';
+        let lastGeneratedText = "";
+
+        const artists = {
+            male: [
+                { id: 'macan', name: 'MACAN', voice: 'Zephyr', desc: 'Уличная романтика, BMW, верность', prompt: 'MACAN. Пацанский рэп, современный шансон. Тексты о чести, дорогах и пацанах.', suno: 'Russian Rap, Melodic Trap, Raspy male voice, Heavy Bass' },
+                { id: 'scriptonite', name: 'Скриптонит', voice: 'Charon', desc: 'Сложный арт-рэп, атмосфера', prompt: 'Скриптонит. Сложный продакшн, глубокий голос, хриплый вокал.', suno: 'Gritty jazz-hop, Mumbled flow, Dark production' },
+                { id: 'miyagi', name: 'Miyagi', voice: 'Orus', desc: 'Регги-хип-хоп, философия', prompt: 'Miyagi. Глубокий философский регги-рэп. Добро, свет, душа.', suno: 'Reggae Hip-Hop, Deep Male Voice, Melodic Soul' },
+                { id: 'kizaru', name: 'KIZARU', voice: 'Alnilam', desc: 'Мемфис трэп, трушность', prompt: 'KIZARU. Барселона, трэп старой школы, классический флоу.', suno: 'West Coast Trap, 808 Bass, Chill flow' },
+                { id: 'buda', name: 'OG Buda', voice: 'Puck', desc: 'Детройт, панчи, юмор', prompt: 'OG Buda. Детройт-трэп, игра слов, смешные панчи, энергично.', suno: 'Detroit Rap, Fast off-beat flow, High energy' },
+                { id: 'friendly_thug', name: 'Friendly Thug 52', voice: 'Rasalgethi', desc: 'Питерский реализм', prompt: 'Friendly Thug 52. Уличный реализм, честность, спокойная подача.', suno: 'Boom Bap, Street Rap, Real Talk' },
+                { id: 'jony', name: 'JONY', voice: 'Kore', desc: 'Лиричный поп-вокал', prompt: 'JONY. Соул, поп-музыка, высокий вокал, романтика.', suno: 'Pop R&B, Melodic, Romantic, Smooth' },
+                { id: 'pharaoh', name: 'PHARAOH', voice: 'Fenrir', desc: 'Клауд-рэп, рок-эстетика', prompt: 'PHARAOH. Клауд-рэп, нигилизм, высокая мода, рок-вайб.', suno: 'Cloud Rap, Emo Trap, Atmospheric' },
+                { id: 'obladaet', name: 'OBLADAET', voice: 'Iapetus', desc: 'Дрилл, стиль, мода', prompt: 'OBLADAET. Грайм, дрилл, техничный флоу, флекс.', suno: 'UK Drill, Grime, Fast flow, Sharp' },
+                { id: 'morgenshtern', name: 'MORGENSHTERN', voice: 'Puck', desc: 'Шоу, деньги, хайп', prompt: 'MORGENSHTERN. Эпатаж, простые биты, деньги, веселье.', suno: 'Club Trap, Party, High energy, Simple hooks' },
+                { id: 'eldzhey', name: 'Элджей', voice: 'Umbriel', desc: 'Клубный хаус-рэп', prompt: 'Элджей. Клубный вайб, хаус-рэп, танцы, киберпанк.', suno: 'House Rap, Synth-pop, Dance, Deep voice' },
+                { id: 'jah_khalib', name: 'Jah Khalib', voice: 'Orus', desc: 'Восточная лирика, соул', prompt: 'Jah Khalib. Мужская лирика, восточные мотивы, сильный голос.', suno: 'Soulful Pop, Middle Eastern, Melodic' },
+                { id: 'fedoruk', name: 'FEDUK', voice: 'Kore', desc: 'Летний хаус, мелодизм', prompt: 'FEDUK. Летний вайб, мелодичный рэп, позитив, хаус.', suno: 'Summer Pop, House, Melodic Rap' },
+                { id: 'markul', name: 'MARKUL', voice: 'Algieba', desc: 'Стильный поп-рэп', prompt: 'MARKUL. Качественный продакшн, мелодичность, Лондонский вайб.', suno: 'Melodic Rap, Pop, Clean production' },
+                { id: 'saluki', name: 'SALUKI', voice: 'Despina', desc: 'Экспериментальный хип-хоп', prompt: 'SALUKI. Сложный звук, авангардный рэп, атмосфера.', suno: 'Experimental Hip-hop, Dark, Glitchy' },
+                { id: 'gone_fludd', name: 'GONE.Fludd', voice: 'Puck', desc: 'Яркий рэп, флоу, фантазия', prompt: 'GONE.Fludd. Быстрая читка, яркие образы, позитив.', suno: 'Hyper-active rap, Fast flow, Cartoonish' },
+                { id: 'big_baby_tape', name: 'Big Baby Tape', voice: 'Iapetus', desc: 'Трэп, сленг, 808', prompt: 'Big Baby Tape. Трэп, много сленга, агрессивная подача.', suno: 'Heavy Trap, 808, Memphis style' },
+                { id: 'rocket', name: 'ROCKET', voice: 'Fenrir', desc: 'Минималистичный трэп', prompt: 'ROCKET. Ленивый флоу, минимализм, спокойствие.', suno: 'Minimalist Trap, Chill, Slow flow' },
+                { id: 'l_one', name: 'L`ONE', voice: 'Rasalgethi', desc: 'Мотивация, стадионный рэп', prompt: 'L`ONE. Энергия, мотивация, большие цели.', suno: 'Anthemic Rap, Energetic, Uplifting' },
+                { id: 'noize_mc', name: 'Noize MC', voice: 'Algieba', desc: 'Интеллектуальный рок-рэп', prompt: 'Noize MC. Гитара, умные тексты, фристайл-вайб.', suno: 'Rap Rock, Acoustic Guitar, Clever Lyrics' },
+                { id: 'oxxxymiron', name: 'Oxxxymiron', voice: 'Iapetus', desc: 'Текстоцентричный грайм', prompt: 'Oxxxymiron. Сложные рифмы, метафоры, техничный грайм.', suno: 'Grime, Fast multi-syllabic rap, Dark' },
+                { id: 'mayot', name: 'MAYOT', voice: 'Puck', desc: 'Мелодик трэп, искренность', prompt: 'MAYOT. Мягкий трэп, лирика, чувства.', suno: 'Melodic Trap, Soft voice, Auto-tune' },
+                { id: 'scally_milano', name: 'Scally Milano', voice: 'Puck', desc: 'Детройт, абсурд, юмор', prompt: 'Scally Milano. Грязный детройт, много шуток, провокация.', suno: 'Scam Rap, Detroit, Aggressive' },
+                { id: 't_fest', name: 'T-Fest', voice: 'Kore', desc: 'Мелодичный хип-хоп', prompt: 'T-Fest. Уникальный тембр, мелодичность, гитара.', suno: 'Acoustic Hip-Hop, Melodic, Soulful' },
+                { id: 'mot', name: 'МОТ', voice: 'Algieba', desc: 'Лиричный поп-рэп', prompt: 'МОТ. Танцевально, лирично, классический хип-хоп вайб.', suno: 'Pop Rap, Danceable, Soulful' },
+                { id: 'niletto', name: 'NILETTO', voice: 'Kore', desc: 'Танцевальный поп-соул', prompt: 'NILETTO. Простые чувства, сильный вокал, танцы.', suno: 'Dance Pop, Modern Soul, Energetic' },
+                { id: 'navai', name: 'NAVAI', voice: 'Orus', desc: 'Кальянный рэп, вокал', prompt: 'NAVAI. Глубокий голос, восточная мелодика, лирика.', suno: 'Hookah Rap, Middle Eastern, Deep vocals' },
+                { id: 'bah_hhtee', name: 'Bahh Tee', voice: 'Algieba', desc: 'Классическая лирика 2010-х', prompt: 'Bahh Tee. Очень грустно, про любовь, искренне.', suno: 'Sad Piano Rap, Melodic, Storytelling' },
+                { id: 'lizer', name: 'LIZER', voice: 'Fenrir', desc: 'Грустный рэп, гитара', prompt: 'LIZER. Подростковая тоска, гитарный рэп, честность.', suno: 'Sad Rap, Guitar-driven, Emotional' },
+                { id: '10age', name: '10AGE', voice: 'Iapetus', desc: 'Агрессивный концепт-рэп', prompt: '10AGE. Энергия, необычный флоу, надрыв.', suno: 'Aggressive Rap, High energy, Unique flow' }
+            ],
+            female: [
+                { id: 'asti', name: 'ANNA ASTI', voice: 'Aoede', desc: 'Драматичный поп', prompt: 'ANNA ASTI. Мощный женский поп, драма, песни про сильных женщин.', suno: 'Russian Pop, Emotional Female Vocal, Powerful' },
+                { id: 'instasamka', name: 'INSTASAMKA', voice: 'Leda', desc: 'Деньги, стиль, провокация', prompt: 'INSTASAMKA. Поп-рэп, флекс богатством, стервозный вайб.', suno: 'Pop-Rap, Sassy, Club, Money' },
+                { id: 'zivert', name: 'ZIVERT', voice: 'Callirrhoe', desc: 'Ретро-вайб, винтаж', prompt: 'ZIVERT. Ретро-поп, винтажный звук, стиль, харизма.', suno: 'Retro Pop, Synthwave, Disco-pop' },
+                { id: 'monetochka', name: 'Монеточка', voice: 'Despina', desc: 'Ироничный инди-поп', prompt: 'Монеточка. Высокий голос, ирония, метафоры, легкий звук.', suno: 'Indie Pop, High-pitched female voice, Quirky' },
+                { id: 'tosya', name: 'Тося Чайкина', voice: 'Algenib', desc: 'Арт-поп, вокал', prompt: 'Тося Чайкина. Экспериментальный вокал, искренность, драма.', suno: 'Art Pop, Alt-pop, Breathless vocals' },
+                { id: 'dakooka', name: 'DaKooka', voice: 'Erinome', desc: 'Трип-хоп, мрак, инди', prompt: 'DaKooka. Темная электроника, шепот, глубокие смыслы.', suno: 'Trip-Hop, Dark Pop, Atmospheric' },
+                { id: 'klava_koka', name: 'Клава Кока', voice: 'Aoede', desc: 'Тик-ток поп', prompt: 'Клава Кока. Яркий молодежный поп, вирусные мотивы.', suno: 'Teen Pop, Bright, Danceable' },
+                { id: 'mary_gu', name: 'Mary Gu', voice: 'Callirrhoe', desc: 'Лиричный гитарный поп', prompt: 'Mary Gu. Искренность, гитара, девичьи переживания.', suno: 'Pop Rock, Melodic, Acoustic' },
+                { id: 'maruv', name: 'MARUV', voice: 'Leda', desc: 'Эротичный электро-поп', prompt: 'MARUV. Сексуальный вокал, электроника, клубный драйв.', suno: 'Slap House, Sexy female vocals, Electronic' },
+                { id: 'polina_gagarina', name: 'Полина Гагарина', voice: 'Achernar', desc: 'Драматичный вокал', prompt: 'Полина Гагарина. Сильный вокал, эпичные баллады, театральность.', suno: 'Orchestral Pop, Soulful, Powerful' },
+                { id: 'iowa', name: 'IOWA', voice: 'Aoede', desc: 'Позитивный инди-поп', prompt: 'IOWA. Улыбка, ритм, необычный вокал, позитив.', suno: 'Indie Pop, Funky, Energetic' },
+                { id: 'mari_kraimbrery', name: 'Мари Краймбрери', voice: 'Callirrhoe', desc: 'Лиричный поп-R&B', prompt: 'Мари Краймбрери. Простая честная лирика, ритмичный поп.', suno: 'Modern Pop, R&B, Emotional' },
+                { id: 'manizha', name: 'Manizha', voice: 'Achernar', desc: 'Арт-поп, этника', prompt: 'Manizha. Сильный голос, этнические мотивы, смысл.', suno: 'Art Pop, World Music, Soulful' },
+                { id: 'lobola', name: 'LOBODA', voice: 'Leda', desc: 'Эпичный дива-поп', prompt: 'LOBODA. Шоу, драма, танцевальные хиты.', suno: 'Glam Pop, Dance, High energy' },
+                { id: 'temnikova', name: 'Лена Темникова', voice: 'Callirrhoe', desc: 'Стильный дип-хаус поп', prompt: 'Лена Темникова. Мягкий вокал, дип-хаус, стиль.', suno: 'Deep House Pop, Chill, Smooth' },
+                { id: 'elka', name: 'Ёлка', voice: 'Aoede', desc: 'Добрый поп-джаз', prompt: 'Ёлка. Теплый голос, позитив, уютная музыка.', suno: 'Soft Pop, Jazzy, Soulful' },
+                { id: 'nyusha', name: 'Нюша', voice: 'Aoede', desc: 'R&B поп 2010-х', prompt: 'Нюша. Танцы, R&B, классика поп-хитов.', suno: 'Pop R&B, Dance, Catchy' },
+                { id: 'luna', name: 'ЛУНА', voice: 'Despina', desc: 'Гипнотический поп', prompt: 'ЛУНА. Меланхолия, шепот, 90-е, магия.', suno: 'Dream Pop, Synth-pop, Hypnotic' },
+                { id: 'kedr_livanskiy', name: 'Кедр Ливанский', voice: 'Despina', desc: 'Лоу-фай электроника', prompt: 'Кедр Ливанский. Андерграунд электроника, мечтательный вокал.', suno: 'Lo-fi House, Dreamy, Electronic' },
+                { id: 'hofmannita', name: 'HOFMANNITA', voice: 'Despina', desc: 'Гиперпоп, хаос', prompt: 'HOFMANNITA. Трэш-эстетика, высокий голос, сюрреализм.', suno: 'Hyperpop, Experimental, Glitch' },
+                { id: 'mia_boyka', name: 'MIA BOYKA', voice: 'Aoede', desc: 'Тик-ток хиты', prompt: 'MIA BOYKA. Синие волосы, детские хиты, ярко.', suno: 'Kids Pop, Hyper, Energetic' },
+                { id: 'anika', name: 'ANIKV', voice: 'Erinome', desc: 'Стильный соул/рэп', prompt: 'ANIKV. Мягкий R&B голос, стиль, грув.', suno: 'R&B, Neo-Soul, Smooth' },
+                { id: 'aygel', name: 'АИГЕЛ', voice: 'Despina', desc: 'Татарская электроника', prompt: 'АИГЕЛ. Речитатив, электроника, самобытность.', suno: 'Experimental Rap, Electronic, Ethnic' },
+                { id: 'zemfira', name: 'Земфира', voice: 'Erinome', desc: 'Легендарный рок', prompt: 'Земфира. Рок-лирика, интеллект, нерв.', suno: 'Alt Rock, Emotional, Piano' },
+                { id: 'diana_arbenina', name: 'Диана Арбенина', voice: 'Achernar', desc: 'Ночные Снайперы', prompt: 'Диана Арбенина. Рок, энергия, сильные тексты.', suno: 'Rock, Powerful Female Vocals' },
+                { id: 'grechka', name: 'Гречка', voice: 'Erinome', desc: 'Подростковый рок', prompt: 'Гречка. Гитара, честность, дворовый вайб.', suno: 'Indie Rock, Raw, Acoustic' },
+                { id: 'alena_shvets', name: 'алёна швец.', voice: 'Despina', desc: 'Девичьи песни под гитару', prompt: 'алёна швец. Мило, грустно, про школу и любовь.', suno: 'Bedroom Pop, Acoustic Guitar, Sweet' },
+                { id: 'mukka_f', name: 'Мэйби Бэйби', voice: 'Despina', desc: 'Кей-поп по-русски', prompt: 'Мэйби Бэйби. Голубые волосы, кей-поп вайб, рэп.', suno: 'K-pop style, Bubblegum Pop, Rap' },
+                { id: 'fogel_f', name: 'Дора', voice: 'Callirrhoe', desc: 'Кьют-рок', prompt: 'Дора. Кьют-рок, гитары, девчачьи проблемы.', suno: 'Cute Rock, Pop-punk, Sweet vocals' },
+                { id: 'zavalskaya', name: 'ZAVALSKA', voice: 'Aoede', desc: 'Джаз-поп', prompt: 'ZAVALSKA. Изысканно, джазово, профессиональный вокал.', suno: 'Jazz Pop, Soulful, Classy' }
+            ]
+        };
+
+        const themes = [
+            { icon: 'fa-heart-crack', text: 'Любовь', prompts: ['Разбитое сердце', 'Первая встреча', 'Токсичные отношения', 'Любовь на расстоянии'], currentIndex: 0 },
+            { icon: 'fa-car-side', text: 'Драйв', prompts: ['Ночной город', 'Скорость 200', 'Побег из дома', 'Магистраль'], currentIndex: 0 },
+            { icon: 'fa-money-bill-wave', text: 'Успех', prompts: ['Путь наверх', 'Миллионы на счету', 'Завистники', 'Роскошь'], currentIndex: 0 },
+            { icon: 'fa-city', text: 'Улицы', prompts: ['Мой район', 'Верные друзья', 'Законы улиц', 'Бетонные джунгли'], currentIndex: 0 },
+            { icon: 'fa-cloud-rain', text: 'Грусть', prompts: ['Одиночество', 'Дождь в окне', 'Воспоминания', 'Поиск смысла'], currentIndex: 0 }
+        ];
+
+        function renderThemes() {
+            const grid = document.getElementById('themes-grid');
+            grid.innerHTML = themes.map((t, index) => `
+                <div class="theme-chip" onclick="setTopic(${index})">
+                    <i class="fas ${t.icon}"></i>
+                    <span>${t.text}</span>
+                </div>
+            `).join('');
+        }
+
+        function setTopic(themeIndex) {
+            const theme = themes[themeIndex];
+            const currentPrompt = theme.prompts[theme.currentIndex];
+            theme.currentIndex = (theme.currentIndex + 1) % theme.prompts.length;
+            document.getElementById('topic-input').value = currentPrompt;
+        }
+
+        function togglePanel() {
+            document.getElementById('studio-panel').classList.toggle('panel-hidden');
+        }
+
+        function setGender(gender) {
+            currentGender = gender;
+            document.querySelectorAll('#gender-selector button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${gender}`).classList.add('active');
+            renderArtists();
+        }
+
+        function renderArtists() {
+            const list = document.getElementById('artist-list');
+            list.innerHTML = '';
+            artists[currentGender].forEach(artist => {
+                const div = document.createElement('div');
+                div.className = `artist-item p-4 rounded-2xl cursor-pointer flex justify-between items-center ${artist.id === selectedArtistId ? 'active' : ''}`;
+                div.onclick = () => selectArtist(artist.id);
+                div.innerHTML = `<div class="flex flex-col"><span class="text-sm font-bold tracking-tight">${artist.name}</span><span class="artist-desc">${artist.desc}</span></div>${artist.id === selectedArtistId ? '<i class="fas fa-check text-[10px] text-blue-500"></i>' : ''}`;
+                list.appendChild(div);
+            });
+        }
+
+        function selectArtist(id) {
+            selectedArtistId = id;
+            renderArtists();
+            const artist = (artists.male.find(a => a.id === id) || artists.female.find(a => a.id === id));
+            if(artist) document.getElementById('suno-prompt').innerText = artist.suno;
+        }
+
+        async function generateLyrics() {
+            const topic = document.getElementById('topic-input').value;
+            if (!topic) return;
+            const loader = document.getElementById('loader');
+            const res = document.getElementById('result-container');
+            const btn = document.getElementById('generate-btn');
+            const voiceBtn = document.getElementById('voice-btn');
+
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            res.classList.add('hidden');
+            voiceBtn.classList.add('hidden');
+
+            const artist = (artists.male.find(a => a.id === selectedArtistId) || artists.female.find(a => a.id === selectedArtistId));
+            const prompt = `Напиши текст песни СТРОГО в стиле артиста: ${artist.prompt}. Тема: ${topic}. Используй разметку [Куплет], [Припев], [Бридж]. Только текст песни на русском языке.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                lastGeneratedText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Ошибка генерации";
+                document.getElementById('lyrics-output').innerHTML = `<pre class="whitespace-pre-wrap font-inherit">${lastGeneratedText}</pre>`;
+                res.classList.remove('hidden');
+                voiceBtn.classList.remove('hidden');
+            } catch (e) { console.error(e); } finally {
+                loader.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        async function generateVoice() {
+            const artist = (artists.male.find(a => a.id === selectedArtistId) || artists.female.find(a => a.id === selectedArtistId));
+            const loader = document.getElementById('loader');
+            const player = document.getElementById('audio-player');
+            loader.classList.remove('hidden');
+            stopAudio();
+
+            const cleanText = lastGeneratedText.replace(/\[.*?\]/g, "").substring(0, 400);
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Say this in a musical rhythmic way as ${artist.name}: ${cleanText}` }] }],
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: artist.voice } } }
+                        }
+                    })
+                });
+                const data = await response.json();
+                const audioData = data.candidates[0].content.parts[0].inlineData.data;
+                const sampleRate = parseInt(data.candidates[0].content.parts[0].inlineData.mimeType.match(/rate=(\d+)/)[1]);
+                playPCM(audioData, sampleRate);
+                player.classList.remove('hidden');
+            } catch (e) { console.error(e); } finally { loader.classList.add('hidden'); }
+        }
+
+        function playPCM(base64Data, sampleRate) {
+            const binaryString = atob(base64Data);
+            const bytes = new Int16Array(binaryString.length / 2);
+            for (let i = 0; i < binaryString.length; i += 2) {
+                bytes[i / 2] = (binaryString.charCodeAt(i + 1) << 8) | binaryString.charCodeAt(i);
+            }
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioBuffer = audioContext.createBuffer(1, bytes.length, sampleRate);
+            audioBuffer.getChannelData(0).set(Array.from(bytes).map(v => v / 32768));
+            audioSource = audioContext.createBufferSource();
+            audioSource.buffer = audioBuffer;
+            audioSource.connect(audioContext.destination);
+            audioSource.start();
+            audioSource.onended = () => document.getElementById('audio-player').classList.add('hidden');
+        }
+
+        function stopAudio() {
+            if (audioSource) { try { audioSource.stop(); } catch(e){} document.getElementById('audio-player').classList.add('hidden'); }
+        }
+
+        function copyLyrics() { navigator.clipboard.writeText(document.getElementById('lyrics-output').innerText); }
+        function copyToClipboard(id) { 
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text);
+        }
+
+        window.onload = () => {
+            renderArtists();
+            renderThemes();
+        };
+    </script>
+</body>
+</html>
